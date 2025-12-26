@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Mia Pagina Mobile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <style>
         /* Reset e Stili Base */
         * {
@@ -13,12 +17,13 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
+            /* Applicazione del font Josefin Sans a tutto il corpo */
+            font-family: 'Josefin Sans', sans-serif;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             /* Immagine di Sfondo */
-            background-image: url('wllpaper.jpg'); /* Aggiunto url() per correttezza */
+            background-image: url('wllpaper.jpg'); 
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -31,14 +36,13 @@
             display: block;
         }
 
-        /* Footer - ORA SOTTO L'HEADER */
+        /* Footer - Posizionato SOTTO l'Header */
         footer {
-            background-color: rgba(0, 0, 0, 0.7); /* Sfondo semi-trasparente */
+            background-color: rgba(0, 0, 0, 0.7); 
             color: white;
             padding: 20px;
             text-align: center;
             width: 100%;
-            z-index: 10;
         }
 
         .footer-links {
@@ -51,15 +55,15 @@
         .footer-links a {
             color: white;
             text-decoration: none;
-            font-size: 14px;
-            font-weight: bold;
+            font-size: 16px; /* Leggermente aumentato per Josefin Sans */
+            font-weight: 600; /* Peso semi-bold per migliore leggibilità */
+            letter-spacing: 0.5px;
         }
 
         /* Contenitore Centrale (Griglia) */
         .main-content {
             display: grid;
             grid-template-columns: repeat(2, 1fr); 
-            grid-template-rows: auto;   
             gap: 20px;
             padding: 40px 20px;
             justify-items: center;
