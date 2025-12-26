@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabella Contatti</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Josefin Sans', sans-serif;
+            background-color: #f4f4f9;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        table {
+            width: 100%;
+            max-width: 800px;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden; /* Per mantenere i bordi arrotondati */
+        }
+
+        thead {
+            background-color: #333;
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            color: #333;
+        }
+
+        /* Effetto riga alternata (Zebra) */
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Effetto hover sulla riga */
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Stile specifico per i link del telefono */
+        td a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        @media (max-width: 480px) {
+            th, td {
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Telefono</th>
+                <th>Territorio</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Mario Rossi</td>
+                <td><a href="tel:+390584123456">0584 123456</a></td>
+                <td>Camaiore</td>
+            </tr>
+            <tr>
+                <td>Luca Bianchi</td>
+                <td><a href="tel:+390584223344">0584 223344</a></td>
+                <td>Forte dei Marmi</td>
+            </tr>
+            <tr>
+                <td>Giulia Verdi</td>
+                <td><a href="tel:+390584334455">0584 334455</a></td>
+                <td>Massarosa</td>
+            </tr>
+            <tr>
+                <td>Alessandro Neri</td>
+                <td><a href="tel:+390585112233">0585 112233</a></td>
+                <td>Montignoso</td>
+            </tr>
+            <tr>
+                <td>Elena Bruni</td>
+                <td><a href="tel:+390584556677">0584 556677</a></td>
+                <td>Pietrasanta</td>
+            </tr>
+            <tr>
+                <td>Roberto Gialli</td>
+                <td><a href="tel:+390584998877">0584 998877</a></td>
+                <td>Seravezza</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>
