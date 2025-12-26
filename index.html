@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Mia Pagina Mobile</title>
-   <style>
-        /* Reset */
+    <style>
+        /* Reset e Stili Base */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -13,93 +13,80 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            /* IMMAGINE DI SFONDO */
-            background-image: url('sfondo.jpg'); 
+            /* Immagine di Sfondo */
+            background-image: wllpaper.jpg; 
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            color: white; /* Testo bianco per leggere meglio sullo sfondo */
         }
 
         /* Immagine Orizzontale Superiore */
-        .header-container {
-            width: 100%;
-            overflow: hidden;
-        }
         .header-img {
             width: 100%;
             height: auto;
             display: block;
         }
 
-        /* Griglia Centrale 4 righe x 2 colonne */
+        /* Contenitore Centrale (Griglia) */
         .main-content {
-            flex: 1;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* Due colonne uguali */
-            grid-template-rows: repeat(4, auto);    /* Quattro righe */
-            gap: 25px;
-            padding: 30px 20px;
-            justify-items: center;
-            align-items: start;
-        }
+    flex: 1;
+    display: grid;
+    /* Correggi la riga qui sotto: deve essere "1fr 1fr" */
+    grid-template-columns: repeat(2, 1fr); 
+    grid-template-rows: repeat(4, auto);   
+    gap: 20px;
+    padding: 40px 20px;
+    justify-items: center;
+    align-items: center;
+    width: 100%; /* Assicurati che prenda tutta la larghezza */
+}
 
-        /* Stile del singolo blocco Icona + Testo */
         .grid-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-decoration: none;
-            color: white; /* Colore del testo sotto l'icona */
             width: 100%;
+            max-width: 120px; /* Dimensione massima icone */
             transition: transform 0.2s;
         }
 
         .grid-item:active {
-            transform: scale(0.95); /* Effetto clic al tocco */
+            transform: scale(0.9); /* Effetto pressione al tocco */
         }
 
-        .grid-item img {
-            width: 70px;  /* Dimensione icone */
-            height: 70px;
-            margin-bottom: 10px;
-            /* Ombra per far risaltare l'icona se lo sfondo è colorato */
-            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.3));
-        }
-
-        .icon-label {
-            font-size: 14px;
-            font-weight: 600;
-            text-align: center;
-            text-shadow: 1px 1px 4px rgba(0,0,0,0.8); /* Ombra al testo per leggibilità */
+        .grid-item svg, .grid-item img {
+            width: 100%;
+            height: auto;
+            display: block;
         }
 
         /* Footer */
         footer {
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0.7); /* Sfondo semi-trasparente */
+            color: white;
             padding: 20px;
-            margin-top: auto;
+            text-align: center;
         }
 
         .footer-links {
             display: flex;
             justify-content: space-around;
-            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .footer-links a {
-            color: #ddd;
+            color: white;
             text-decoration: none;
-            font-size: 13px;
-            transition: color 0.3s;
+            font-size: 14px;
         }
 
-        .footer-links a:hover {
-            color: white;
+        /* Ottimizzazione per Mobile */
+        @media (max-width: 480px) {
+            .main-content {
+                gap: 15px;
+            }
         }
     </style>
 </head>
