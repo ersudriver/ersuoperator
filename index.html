@@ -18,7 +18,7 @@
             display: flex;
             flex-direction: column;
             /* Immagine di Sfondo */
-            background-image: wllpaper.jpg; 
+            background-image: url('wllpaper.jpg'); /* Aggiunto url() per correttezza */
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -31,42 +31,14 @@
             display: block;
         }
 
-        /* Contenitore Centrale (Griglia) */
-        .main-content {
-    flex: 1;
-    display: grid;
-    /* Correggi la riga qui sotto: deve essere "1fr 1fr" */
-    grid-template-columns: repeat(2, 1fr); 
-    grid-template-rows: repeat(4, auto);   
-    gap: 20px;
-    padding: 40px 20px;
-    justify-items: center;
-    align-items: center;
-    width: 100%; /* Assicurati che prenda tutta la larghezza */
-}
-
-        .grid-item {
-            width: 100%;
-            max-width: 120px; /* Dimensione massima icone */
-            transition: transform 0.2s;
-        }
-
-        .grid-item:active {
-            transform: scale(0.9); /* Effetto pressione al tocco */
-        }
-
-        .grid-item svg, .grid-item img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        /* Footer */
+        /* Footer - ORA SOTTO L'HEADER */
         footer {
             background-color: rgba(0, 0, 0, 0.7); /* Sfondo semi-trasparente */
             color: white;
             padding: 20px;
             text-align: center;
+            width: 100%;
+            z-index: 10;
         }
 
         .footer-links {
@@ -80,12 +52,42 @@
             color: white;
             text-decoration: none;
             font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Contenitore Centrale (Griglia) */
+        .main-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); 
+            grid-template-rows: auto;   
+            gap: 20px;
+            padding: 40px 20px;
+            justify-items: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .grid-item {
+            width: 100%;
+            max-width: 120px;
+            transition: transform 0.2s;
+        }
+
+        .grid-item:active {
+            transform: scale(0.9);
+        }
+
+        .grid-item img {
+            width: 100%;
+            height: auto;
+            display: block;
         }
 
         /* Ottimizzazione per Mobile */
         @media (max-width: 480px) {
             .main-content {
                 gap: 15px;
+                padding: 20px 10px;
             }
         }
     </style>
@@ -93,6 +95,15 @@
 <body>
 
     <img src="header.jpg" alt="Header" class="header-img">
+
+    <footer>
+        <div class="footer-links">
+            <a href="#">Coordinatori</a>
+            <a href="https://drive.google.com/file/d/1y11JstruZxgq-VSLvjSuxFWLEFW2RuA1/view">Meccanici</a>
+            <a href="#">Malattie</a>
+            <a href="#">Rubrica</a>
+        </div>
+    </footer>
 
     <main class="main-content">
         <a href="https://sito1.com" class="grid-item">
@@ -124,25 +135,5 @@
         </a>
     </main>
 
-    <footer>
-        <div class="footer-links">
-            <a href="#">Coordinatori</a>
-            <a href="https://drive.google.com/file/d/1y11JstruZxgq-VSLvjSuxFWLEFW2RuA1/view">Meccanici</a>
-            <a href="#">Malattie</a>
-            <a href="#">Rubrica</a>
-        </div>
-    </footer>
-
 </body>
-
 </html>
-
-
-
-
-
-
-
-
-
-
