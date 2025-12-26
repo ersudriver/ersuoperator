@@ -60,6 +60,26 @@
             height: auto;
             display: block;
         }
+        
+        .grid-item {
+    display: flex;
+    flex-direction: column; /* Mette l'immagine sopra e il testo sotto */
+    align-items: center;
+    text-decoration: none; /* Rimuove la sottolineatura dal link */
+    color: #333; /* Colore del testo (cambialo in white se lo sfondo è scuro) */
+}
+
+.grid-item img {
+    width: 80px;  /* Regola la grandezza delle icone */
+    height: 80px;
+    margin-bottom: 8px; /* Spazio tra icona e testo */
+}
+
+.icon-label {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
 
         /* Footer */
         footer {
@@ -136,6 +156,7 @@
 </body>
 
 </html>
+
 
 
 
