@@ -14,7 +14,8 @@
             background-color: #f4f4f9;
             padding: 20px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
         }
 
         table {
@@ -24,7 +25,8 @@
             background-color: white;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             border-radius: 8px;
-            overflow: hidden; /* Per mantenere i bordi arrotondati */
+            overflow: hidden;
+            margin-bottom: 30px; /* Spazio per il pulsante */
         }
 
         thead {
@@ -46,27 +48,46 @@
             color: #333;
         }
 
-        /* Effetto riga alternata (Zebra) */
         tbody tr:nth-child(even) {
             background-color: #f9f9f9;
         }
 
-        /* Effetto hover sulla riga */
-        tbody tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        /* Stile specifico per i link del telefono */
         td a {
             color: #007bff;
             text-decoration: none;
             font-weight: 600;
         }
 
+        /* Stile Pulsante Scarica */
+        .btn-download {
+            background-color: #28a745;
+            color: white;
+            padding: 15px 25px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            display: inline-block;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: none;
+            cursor: pointer;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 16px;
+        }
+
+        .btn-download:active {
+            transform: scale(0.95);
+            background-color: #218838;
+        }
+
         @media (max-width: 480px) {
             th, td {
                 padding: 10px;
                 font-size: 14px;
+            }
+            .btn-download {
+                width: 100%;
+                text-align: center;
             }
         }
     </style>
@@ -112,8 +133,22 @@
                 <td><a href="tel:+390584998877">0584 998877</a></td>
                 <td>Seravezza</td>
             </tr>
+            <tr>
+                <td>Sofia Viola</td>
+                <td><a href="tel:+390584887766">0584 887766</a></td>
+                <td>Stazzema</td>
+            </tr>
+            <tr>
+                <td>Marco Arancio</td>
+                <td><a href="tel:+390584111222">0584 111222</a></td>
+                <td>Viareggio</td>
+            </tr>
         </tbody>
     </table>
+
+    <a href="rubrica.vcf" class="btn-download">
+        scarica questi contatti in rubrica
+    </a>
 
 </body>
 </html>
