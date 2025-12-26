@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Mia Pagina Mobile</title>
-    <style>
-        /* Reset e Stili Base */
+   <style>
+        /* Reset */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -13,80 +13,93 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            /* Immagine di Sfondo */
-            background-image: wllpaper.jpg; 
+            /* IMMAGINE DI SFONDO */
+            background-image: url('sfondo.jpg'); 
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
+            color: white; /* Testo bianco per leggere meglio sullo sfondo */
         }
 
         /* Immagine Orizzontale Superiore */
+        .header-container {
+            width: 100%;
+            overflow: hidden;
+        }
         .header-img {
             width: 100%;
             height: auto;
             display: block;
         }
 
-        /* Contenitore Centrale (Griglia) */
+        /* Griglia Centrale 4 righe x 2 colonne */
         .main-content {
-    flex: 1;
-    display: grid;
-    /* Correggi la riga qui sotto: deve essere "1fr 1fr" */
-    grid-template-columns: repeat(2, 1fr); 
-    grid-template-rows: repeat(4, auto);   
-    gap: 20px;
-    padding: 40px 20px;
-    justify-items: center;
-    align-items: center;
-    width: 100%; /* Assicurati che prenda tutta la larghezza */
-}
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Due colonne uguali */
+            grid-template-rows: repeat(4, auto);    /* Quattro righe */
+            gap: 25px;
+            padding: 30px 20px;
+            justify-items: center;
+            align-items: start;
+        }
 
+        /* Stile del singolo blocco Icona + Testo */
         .grid-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: white; /* Colore del testo sotto l'icona */
             width: 100%;
-            max-width: 120px; /* Dimensione massima icone */
             transition: transform 0.2s;
         }
 
         .grid-item:active {
-            transform: scale(0.9); /* Effetto pressione al tocco */
+            transform: scale(0.95); /* Effetto clic al tocco */
         }
 
-        .grid-item svg, .grid-item img {
-            width: 100%;
-            height: auto;
-            display: block;
+        .grid-item img {
+            width: 70px;  /* Dimensione icone */
+            height: 70px;
+            margin-bottom: 10px;
+            /* Ombra per far risaltare l'icona se lo sfondo è colorato */
+            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.3));
+        }
+
+        .icon-label {
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.8); /* Ombra al testo per leggibilità */
         }
 
         /* Footer */
         footer {
-            background-color: rgba(0, 0, 0, 0.7); /* Sfondo semi-trasparente */
-            color: white;
+            background-color: rgba(0, 0, 0, 0.8);
             padding: 20px;
-            text-align: center;
+            margin-top: auto;
         }
 
         .footer-links {
             display: flex;
             justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 10px;
+            align-items: center;
         }
 
         .footer-links a {
-            color: white;
+            color: #ddd;
             text-decoration: none;
-            font-size: 14px;
+            font-size: 13px;
+            transition: color 0.3s;
         }
 
-        /* Ottimizzazione per Mobile */
-        @media (max-width: 480px) {
-            .main-content {
-                gap: 15px;
-            }
+        .footer-links a:hover {
+            color: white;
         }
     </style>
 </head>
@@ -136,6 +149,7 @@
 </body>
 
 </html>
+
 
 
 
