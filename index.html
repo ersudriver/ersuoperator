@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Mia Pagina Mobile</title>
+    <style>
+        /* Reset e Stili Base */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* Immagine di Sfondo */
+            background-image: url('tuo-sfondo.jpg'); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        /* Immagine Orizzontale Superiore */
+        .header-img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Contenitore Centrale (Griglia) */
+        .main-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(2, 1sfr); /* 2 colonne */
+            grid-template-rows: repeat(4, auto);   /* 4 righe */
+            gap: 20px;
+            padding: 40px 20px;
+            justify-items: center;
+            align-items: center;
+        }
+
+        .grid-item {
+            width: 100%;
+            max-width: 120px; /* Dimensione massima icone */
+            transition: transform 0.2s;
+        }
+
+        .grid-item:active {
+            transform: scale(0.9); /* Effetto pressione al tocco */
+        }
+
+        .grid-item svg, .grid-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Footer */
+        footer {
+            background-color: rgba(0, 0, 0, 0.7); /* Sfondo semi-trasparente */
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        /* Ottimizzazione per Mobile */
+        @media (max-width: 480px) {
+            .main-content {
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <img src="https://via.placeholder.com/800x200" alt="Header" class="header-img">
+
+    <main class="main-content">
+        <a href="https://sito1.com" class="grid-item">
+            <img src="icona1.svg" alt="Camaiore">
+        </a>
+        <a href="https://sito2.com" class="grid-item">
+            <img src="icona2.svg" alt="Forte dei Marmi">
+        </a>
+
+        <a href="https://sito3.com" class="grid-item">
+            <img src="icona3.svg" alt="Massarosa">
+        </a>
+        <a href="https://sito4.com" class="grid-item">
+            <img src="icona4.svg" alt="Montignoso">
+        </a>
+
+        <a href="https://sito5.com" class="grid-item">
+            <img src="icona5.svg" alt="Pietrasanta">
+        </a>
+        <a href="https://sito6.com" class="grid-item">
+            <img src="icona6.svg" alt="Seravezza">
+        </a>
+
+        <a href="https://sito7.com" class="grid-item">
+            <img src="icona7.svg" alt="Stazzema">
+        </a>
+        <a href="https://sito8.com" class="grid-item">
+            <img src="icona8.svg" alt="Link 8">
+        </a>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <a href="#">Link1</a>
+            <a href="#">Link2</a>
+            <a href="#">Link3</a>
+            <a href="#">Link4</a>
+        </div>
+    </footer>
+
+</body>
+</html>
