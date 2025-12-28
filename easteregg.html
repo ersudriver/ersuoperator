@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagina Vuota</title>
+    
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #a5c54a;
+            font-family: 'Josefin Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            font-weight: 700;
+            font-size: 28px;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+            user-select: none; /* Impedisce la selezione del testo */
+        }
+
+        .center-img {
+            max-width: 250px;
+            width: 80%;
+            height: auto;
+            display: block;
+            margin-bottom: 40px;
+            cursor: pointer; /* Fa capire che l'immagine è cliccabile */
+            transition: transform 0.2s;
+        }
+
+        .center-img:active {
+            transform: scale(0.95); /* Effetto pressione al click */
+        }
+
+        .link-home {
+            color: #333;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 18px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .link-home:hover {
+            border-bottom: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>QUI NON C'È NIENTE</h1>
+
+    <img src="monke.jpg" alt="Vuoto" class="center-img" onclick="toggleAudio()">
+
+    <audio id="myAudio" loop>
+        <source src="3camionisti.mp3" type="audio/mpeg">
+        Il tuo browser non supporta l'elemento audio.
+    </audio>
+
+    <a href="index.html" class="link-home">homepage</a>
+
+    <script>
+        const audio = document.getElementById("myAudio");
+
+        function toggleAudio() {
+            if (audio.paused) {
+                audio.play();
+            } else {
+                audio.pause();
+                // Opzionale: decommenta la riga sotto se vuoi che la musica ricominci da capo ogni volta
+                // audio.currentTime = 0; 
+            }
+        }
+    </script>
+
+</body>
+</html>
