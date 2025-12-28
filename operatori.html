@@ -21,65 +21,81 @@
             margin: 0;
         }
 
-        /* Box di Login e Contenuto */
         .container {
             background-color: white;
             padding: 40px;
             border-radius: 15px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.2);
             text-align: center;
-            max-width: 400px;
+            max-width: 450px;
             width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centra tutti gli elementi interni */
         }
 
         h2 { color: #333; margin-bottom: 20px; }
-        p { color: #666; line-height: 1.5; }
+        p { color: #666; line-height: 1.5; margin-bottom: 20px; }
 
         input[type="password"] {
             width: 100%;
+            max-width: 300px;
             padding: 12px;
-            margin: 20px 0;
+            margin-bottom: 20px;
             border: 1px solid #ddd;
             border-radius: 8px;
-            box-sizing: border-box;
+            text-align: center;
             font-family: 'Josefin Sans', sans-serif;
             font-size: 16px;
         }
 
-        /* Pulsanti */
-        .btn {
+        /* Stile Pulsante Scarica (Centrato) */
+        .btn-download {
             background-color: #2a5f41;
             color: white;
-            padding: 15px 25px;
+            padding: 15px 30px;
             text-decoration: none;
             border-radius: 50px;
             font-weight: 600;
             display: inline-block;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             border: none;
             cursor: pointer;
-            width: 100%;
+            font-family: 'Josefin Sans', sans-serif;
             font-size: 16px;
-            transition: background 0.3s;
+            width: fit-content; /* Si adatta al testo e permette la centratura */
         }
 
-        .btn:hover { background-color: #1e4630; }
+        .btn-download:active {
+            transform: scale(0.95);
+            background-color: #218838;
+        }
 
         .warning {
             color: #d9534f;
             font-weight: 600;
-            margin-top: 20px;
+            margin-top: 25px;
             font-size: 14px;
             text-transform: uppercase;
+            max-width: 300px;
         }
 
-        /* Nascondi il contenuto inizialmente */
         #protected-content { display: none; }
         
+        /* Stile Link Homepage */
         .link-home {
-            display: block;
-            margin-top: 25px;
+            margin-top: 30px;
             color: #333;
             text-decoration: none;
+            font-weight: 400;
+            font-size: 18px;
+            transition: opacity 0.3s;
+        }
+
+        .link-home:hover {
+            text-decoration: underline;
+            opacity: 0.8;
         }
     </style>
 </head>
@@ -88,21 +104,21 @@
     <div id="login-form" class="container">
         <h2>Accesso Protetto</h2>
         <p>Per questione di privacy tutti i contatti sono protetti da password</p>
-        <input type="password" id="passwordField" placeholder="Inserisci la password">
-        <button class="btn" onclick="checkPassword()">Accedi</button>
+        <input type="password" id="passwordField" placeholder="Inserisci password">
+        <button class="btn-download" onclick="checkPassword()">Accedi</button>
     </div>
 
     <div id="protected-content" class="container">
-        <h2>Area Download</h2>
-        <p>Accesso eseguito con successo.</p>
+        <h2>Download Completo</h2>
+        <p>Puoi scaricare l'intera rubrica cliccando il tasto qui sotto:</p>
         
-        <a href="tutti-i-contatti.vcf" class="btn">
+        <a href="tutti-i-contatti.vcf" class="btn-download">
             scarica tutti i contatti
         </a>
 
-        <p class="warning">
+        <div class="warning">
             ATTENZIONE! questo file contiene più di 500 contatti.
-        </p>
+        </div>
 
         <a href="index.html" class="link-home">homepage</a>
     </div>
@@ -110,21 +126,19 @@
     <script>
         function checkPassword() {
             const password = document.getElementById("passwordField").value;
-            const passwordCorretta = "Pontenuovo22"; // IMPOSTA QUI LA TUA PASSWORD
+            const passwordCorretta = "1234"; // MODIFICA LA PASSWORD QUI
 
             if (password === passwordCorretta) {
                 document.getElementById("login-form").style.display = "none";
-                document.getElementById("protected-content").style.display = "block";
+                document.getElementById("protected-content").style.display = "flex";
             } else {
-                alert("Password errata. Riprova.");
+                alert("Password errata!");
             }
         }
 
-        // Permette di premere "Invio" per accedere
-        document.getElementById("passwordField").addEventListener("keyup", function(event) {
-            if (event.key === "Enter") {
-                checkPassword();
-            }
+        // Supporto tasto invio
+        document.getElementById("passwordField").addEventListener("keyup", function(e) {
+            if (e.key === "Enter") checkPassword();
         });
     </script>
 
