@@ -11,7 +11,6 @@
     <style>
         body {
             font-family: 'Josefin Sans', sans-serif;
-            /* Impostazione dello sfondo con il colore richiesto */
             background-color: #a4c445; 
             padding: 20px;
             display: flex;
@@ -28,7 +27,7 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             border-radius: 8px;
             overflow: hidden;
-            margin-bottom: 30px; /* Spazio per il pulsante */
+            margin-bottom: 30px;
         }
 
         thead {
@@ -75,11 +74,26 @@
             cursor: pointer;
             font-family: 'Josefin Sans', sans-serif;
             font-size: 16px;
+            margin-bottom: 20px; /* Spazio aggiunto sotto il bottone */
         }
 
         .btn-download:active {
             transform: scale(0.95);
             background-color: #218838;
+        }
+
+        /* Stile Link Homepage */
+        .link-home {
+            color: #333;
+            text-decoration: none;
+            font-weight: 400;
+            font-size: 18px;
+            transition: opacity 0.3s;
+        }
+
+        .link-home:hover {
+            text-decoration: underline;
+            opacity: 0.8;
         }
 
         @media (max-width: 480px) {
@@ -88,7 +102,7 @@
                 font-size: 14px;
             }
             .btn-download {
-                width: 100%; 
+                width: 100%;
                 text-align: center;
             }
         }
@@ -101,61 +115,41 @@
             <tr>
                 <th>Nome</th>
                 <th>Telefono</th>
-            
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td>Polloni Fabrizio</td>
                 <td><a href="tel:+393480039713">3480039713</a></td>
-               
             </tr>
             <tr>
                 <td>Cosci Mario</td>
                 <td><a href="tel:+393469928798">3469928798</a></td>
-                
             </tr>
             <tr>
                 <td>Fontana Fabio</td>
                 <td><a href="tel:+393401362633">3401362633</a></td>
-             
             </tr>
             <tr>
                 <td>Baldi Mauro</td>
                 <td><a href="tel:+393428587373">3428587373</a></td>
-                
             </tr>
             <tr>
                 <td>Doveri Daniele</td>
                 <td><a href="tel:+393487092482">3487092482</a></td>
-                
             </tr>
             <tr>
                 <td>Monaco Alessandro</td>
                 <td><a href="tel:+393427797137">3427797137</a></td>
-                
             </tr>
-          <tr>
+            <tr>
                 <td>Strambi Natalino</td>
-                <td><a href="tel:+393384398096">3384398096</a></td> 
-                
+                <td><a href="tel:+393384398096">3384398096</a></td>
             </tr>
-          <tr>
+            <tr>
                 <td>Piffari Gabriele</td>
                 <td><a href="tel:+393471437740">3471437740</a></td>
-                
             </tr>
-          <tr>
+            <tr>
                 <td>Sichi Massimiliano</td>
-                <td><a href="tel:+393483064559">3483064559</a></td>
-                
-            </tr>
-        </tbody>
-    </table>
-
-    <a href="meccanici.vcf" class="btn-download">
-        scarica questi contatti in rubrica
-    </a>
-
-</body>
-</html>
+                <td><a href="tel:+393483064559">34
