@@ -20,26 +20,22 @@
         }
 
         body {
-            /* Applicazione del font Josefin Sans a tutto il corpo */
             font-family: 'Josefin Sans', sans-serif;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            /* Immagine di Sfondo */
             background-color: #a4c445;  
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
         }
 
-        /* Immagine Orizzontale Superiore */
         .header-img {
             width: 100%;
             height: auto;
             display: block;
         }
 
-        /* Footer - Posizionato SOTTO l'Header */
         footer {
             background-color: rgba(0, 0, 0, 0.7); 
             color: white;
@@ -58,25 +54,29 @@
         .footer-links a {
             color: white;
             text-decoration: none;
-            font-size: 16px; /* Leggermente aumentato per Josefin Sans */
-            font-weight: 600; /* Peso semi-bold per migliore leggibilità */
+            font-size: 16px;
+            font-weight: 600;
             letter-spacing: 0.5px;
         }
 
-        /* Contenitore Centrale (Griglia) */
+        /* Griglia */
         .main-content {
             display: grid;
             grid-template-columns: repeat(2, 1fr); 
-            gap: 20px;
+            gap: 30px 20px; /* Aumentato gap verticale per far spazio ai titoli */
             padding: 40px 20px;
             justify-items: center;
-            align-items: center;
+            align-items: start;
             width: 100%;
         }
 
         .grid-item {
             width: 100%;
             max-width: 120px;
+            text-decoration: none; /* Rimuove sottolineatura dal link */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             transition: transform 0.2s;
         }
 
@@ -88,13 +88,26 @@
             width: 100%;
             height: auto;
             display: block;
+            margin-bottom: 8px; /* Spazio tra immagine e titolo */
         }
 
-        /* Ottimizzazione per Mobile */
+        /* Stile Titoli Sotto Immagini */
+        .grid-item span {
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         @media (max-width: 480px) {
             .main-content {
-                gap: 15px;
+                gap: 25px 15px;
                 padding: 20px 10px;
+            }
+            .grid-item span {
+                font-size: 12px;
             }
         }
     </style>
@@ -115,43 +128,40 @@
     <main class="main-content">
         <a href="https://sito1.com" class="grid-item">
             <img src="camaiore.png" alt="Camaiore">
+            <span>Camaiore</span>
         </a>
         <a href="https://sito2.com" class="grid-item">
             <img src="fdm.png" alt="Forte dei Marmi">
+            <span>Forte dei Marmi</span>
         </a>
 
         <a href="https://sito3.com" class="grid-item">
             <img src="massarosa.png" alt="Massarosa">
+            <span>Massarosa</span>
         </a>
         <a href="https://sito4.com" class="grid-item">
             <img src="montignoso.png" alt="Montignoso">
+            <span>Montignoso</span>
         </a>
 
         <a href="https://drive.google.com/drive/folders/1PMXmsSXfSTzlY-qTlGKgC5AEAp4cE6DM" class="grid-item">
             <img src="pietrasanta.png" alt="Pietrasanta">
+            <span>Pietrasanta</span>
         </a>
         <a href="https://sito6.com" class="grid-item">
             <img src="seravezza.png" alt="Seravezza">
+            <span>Seravezza</span>
         </a>
 
         <a href="https://sito7.com" class="grid-item">
             <img src="stazzema.png" alt="Stazzema">
+            <span>Stazzema</span>
         </a>
         <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" class="grid-item">
             <img src="icona8.svg" alt="Link 8">
+            <span>Link 8</span>
         </a>
     </main>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
