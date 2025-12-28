@@ -31,7 +31,7 @@
             width: 90%;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Centra tutti gli elementi interni */
+            align-items: center;
         }
 
         h2 { color: #333; margin-bottom: 20px; }
@@ -49,7 +49,6 @@
             font-size: 16px;
         }
 
-        /* Stile Pulsante Scarica (Centrato) */
         .btn-download {
             background-color: #2a5f41;
             color: white;
@@ -64,7 +63,7 @@
             cursor: pointer;
             font-family: 'Josefin Sans', sans-serif;
             font-size: 16px;
-            width: fit-content; /* Si adatta al testo e permette la centratura */
+            width: fit-content;
         }
 
         .btn-download:active {
@@ -106,10 +105,12 @@
         <p>Per questione di privacy tutti i contatti sono protetti da password</p>
         <input type="password" id="passwordField" placeholder="Inserisci password">
         <button class="btn-download" onclick="checkPassword()">Accedi</button>
+        
+        <a href="index.html" class="link-home">homepage</a>
     </div>
 
     <div id="protected-content" class="container">
-        <h2>Download Completo</h2>
+        <h2>Accesso Effettuato</h2>
         <p>Puoi scaricare l'intera rubrica cliccando il tasto qui sotto:</p>
         
         <a href="tutti-i-contatti.vcf" class="btn-download">
@@ -126,7 +127,7 @@
     <script>
         function checkPassword() {
             const password = document.getElementById("passwordField").value;
-            const passwordCorretta = "1234"; // MODIFICA LA PASSWORD QUI
+            const passwordCorretta = "Pontenuovo22"; // MODIFICA QUI LA TUA PASSWORD
 
             if (password === passwordCorretta) {
                 document.getElementById("login-form").style.display = "none";
@@ -136,7 +137,6 @@
             }
         }
 
-        // Supporto tasto invio
         document.getElementById("passwordField").addEventListener("keyup", function(e) {
             if (e.key === "Enter") checkPassword();
         });
