@@ -24,8 +24,8 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            background-color: #a4bb5b; /* Lo sfondo che abbiamo cambiato prima */
-            color: #2c603d;            /* Nuovo colore del testo principale */  
+            background-color: #a4bb5b; 
+            color: #2c603d;            
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -38,7 +38,6 @@
         }
 
        footer {
-            /* COLORE BARRA AGGIORNATO */
             background-color: #2c603d; 
             color: white;
             padding: 20px;
@@ -65,7 +64,7 @@
         .main-content {
             display: grid;
             grid-template-columns: repeat(2, 1fr); 
-            gap: 30px 20px; /* Aumentato gap verticale per far spazio ai titoli */
+            gap: 30px 20px;
             padding: 40px 20px;
             justify-items: center;
             align-items: start;
@@ -75,7 +74,7 @@
         .grid-item {
             width: 100%;
             max-width: 120px;
-            text-decoration: none; /* Rimuove sottolineatura dal link */
+            text-decoration: none;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -90,7 +89,10 @@
             width: 100%;
             height: auto;
             display: block;
-            margin-bottom: 8px; /* Spazio tra immagine e titolo */
+            margin-bottom: 8px;
+            /* AGGIUNTA OMBREGGIATURA */
+            filter: drop-shadow(0px 8px 10px rgba(0, 0, 0, 0.3));
+            border-radius: 10px; /* Opzionale: arrotonda leggermente se le immagini sono quadrate */
         }
 
         /* Stile Titoli Sotto Immagini */
@@ -130,7 +132,7 @@
     <main class="main-content">
         <a href="https://drive.google.com/drive/u/0/folders/1r5QDvhz84Pn3EYgovvnQAvMo9kwJN0Z_" class="grid-item">
             <img src="camaiore.png" alt="Camaiore">
-            <span>Camaiore OK</span>
+            <span>Camaiore</span>
         </a>
         <a href="https://sito2.com" class="grid-item">
             <img src="fdm.png" alt="Forte dei Marmi">
@@ -143,12 +145,12 @@
         </a>
         <a href="https://drive.google.com/drive/u/0/folders/17ZPAcVHmZygO3AwKNfkPIEgZfSrXhiv1" class="grid-item">
             <img src="montignoso.png" alt="Montignoso">
-            <span>Montignoso OK</span>
+            <span>Montignoso</span>
         </a>
 
         <a href="https://drive.google.com/drive/folders/1PMXmsSXfSTzlY-qTlGKgC5AEAp4cE6DM" class="grid-item">
             <img src="pietrasanta.png" alt="Pietrasanta">
-            <span>Pietrasanta OK</span>
+            <span>Pietrasanta</span>
         </a>
         <a href="https://sito6.com" class="grid-item">
             <img src="seravezza.png" alt="Seravezza">
@@ -166,9 +168,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
