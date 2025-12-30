@@ -11,8 +11,8 @@
             font-family: 'Josefin Sans', sans-serif;
             margin: 0;
             padding: 15px;
-            background-color: #a4bb5b; /* Sfondo verde oliva */
-            color: #2c603d; /* Testo verde scuro */
+            background-color: #a4bb5b; /* Colore sfondo richiesto */
+            color: #2c603d; /* Colore testo richiesto */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -31,38 +31,15 @@
         .hint-box {
             max-width: 1200px;
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             padding: 15px;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.9); /* Bianco semitrasparente per leggibilità */
             border-left: 5px solid #2c603d;
             border-radius: 4px;
             color: #2c603d;
             font-size: 1em;
             box-sizing: border-box;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        /* Stile per il link Homepage */
-        .nav-link {
-            max-width: 1200px;
-            width: 100%;
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .nav-link a {
-            color: #2c603d;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1em;
-            display: inline-flex;
-            align-items: center;
-            transition: opacity 0.3s;
-        }
-
-        .nav-link a:hover {
-            opacity: 0.7;
-            text-decoration: underline;
         }
 
         .container {
@@ -103,4 +80,15 @@
         <strong>💡 SUGGERIMENTO:</strong> puoi usare la funzione "Trova nella pagina" del tuo browser per scrivere il nome che stai cercando.
     </div>
 
-    <div class="nav-link">
+    <div class="container">
+        <div class="iframe-wrapper">
+            <iframe src="https://docs.google.com/spreadsheets/d/1d-cTpce5wSUAdDTgCtbjzYJoh8BdQlRccxcgFW5f1Ek/edit?rm=minimal"></iframe>
+        </div>
+    </div>
+
+    <footer>
+        Dati gestiti tramite Google Sheets &bull; 2025
+    </footer>
+
+</body>
+</html>
