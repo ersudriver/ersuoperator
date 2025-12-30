@@ -8,7 +8,7 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             background-color: #f4f7f6;
             display: flex;
             flex-direction: column;
@@ -18,32 +18,31 @@
         h1 {
             color: #333;
             margin-bottom: 20px;
+            font-size: 1.5rem;
+            text-align: center;
         }
 
         .container {
             width: 100%;
             max-width: 1200px;
             background: white;
-            padding: 10px;
+            padding: 5px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             border-radius: 8px;
-            overflow: hidden;
+            /* Permette lo scroll orizzontale se la tabella è larga */
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch;
         }
 
-        .responsive-iframe-container {
-            position: relative;
-            overflow: hidden;
+        /* Altezza ottimizzata per Mobile */
+        .iframe-wrapper {
             width: 100%;
-            padding-top: 65%; /* Leggermente più alto per mostrare più righe */
-            height: 0;
+            /* Altezza fissa generosa per vedere molte righe */
+            height: 80vh; /* 80% dell'altezza dello schermo */
+            min-height: 600px; 
         }
 
-        .responsive-iframe-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
+        .iframe-wrapper iframe {
             width: 100%;
             height: 100%;
             border: none;
@@ -58,11 +57,13 @@
             border-left: 5px solid #2196F3;
             border-radius: 4px;
             color: #0c5460;
-            font-size: 0.95em;
+            font-size: 0.9em;
+            box-sizing: border-box;
         }
 
         footer {
             margin-top: 30px;
+            padding-bottom: 20px;
             font-size: 0.8em;
             color: #777;
         }
@@ -70,16 +71,16 @@
 </head>
 <body>
 
-    <h1>Operatori</h1>
+    <h1>La Mia Tabella Dati</h1>
 
     <div class="container">
-        <div class="responsive-iframe-container">
+        <div class="iframe-wrapper">
             <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vS67eexfd9Plogb9viPBDF3GnSsaBAHn54ghW_qmWhlu3V5p5GsmYYG9f1lSFUldXxhM90AHhBZJGpB/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
         </div>
     </div>
 
     <div class="hint-box">
-        <strong>HINT:</strong> puoi usare la funzione "Trova nella pagina" del tuo browser per scrivere il nome che stai cercando.
+        <strong>💡 HINT:</strong> puoi usare la funzione "Trova nella pagina" tra le opzioni del tuo browser per trovare subito il nome che stai cercando.
     </div>
 
     <footer>
