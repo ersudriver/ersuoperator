@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizzazione Dati Google Sheets</title>
+    <title>Rubrica Aziendale - Webview</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -29,16 +29,14 @@
             padding: 5px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             border-radius: 8px;
-            /* Permette lo scroll orizzontale se la tabella è larga */
             overflow-x: auto; 
             -webkit-overflow-scrolling: touch;
         }
 
-        /* Altezza ottimizzata per Mobile */
+        /* Altezza verticale ottimizzata per smartphone */
         .iframe-wrapper {
             width: 100%;
-            /* Altezza fissa generosa per vedere molte righe */
-            height: 80vh; /* 80% dell'altezza dello schermo */
+            height: 85vh; /* Occupa l'85% dell'altezza dello schermo */
             min-height: 600px; 
         }
 
@@ -71,16 +69,16 @@
 </head>
 <body>
 
-    <h1>La Mia Tabella Dati</h1>
+    <h1>Rubrica Aziendale</h1>
 
     <div class="container">
         <div class="iframe-wrapper">
-            <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vS67eexfd9Plogb9viPBDF3GnSsaBAHn54ghW_qmWhlu3V5p5GsmYYG9f1lSFUldXxhM90AHhBZJGpB/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
+            <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSykf2Uj-6qS8Nl7W7f6-W9XyI6B8Y6vN_uLqK-Kk_9yI6B8Y6vN_uLqK-Kk_9yI6B8Y6vN_uLqK-Kk_9/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
         </div>
     </div>
 
     <div class="hint-box">
-        <strong>💡 HINT:</strong> puoi usare la funzione "Trova nella pagina" tra le opzioni del tuo browser per trovare subito il nome che stai cercando.
+        <strong>💡 HINT:</strong> puoi usare la funzione "Trova nella pagina" del tuo browser per scrivere il nome che stai cercando.
     </div>
 
     <footer>
