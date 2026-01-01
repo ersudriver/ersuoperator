@@ -64,7 +64,7 @@
         .main-content {
             display: grid;
             grid-template-columns: repeat(2, 1fr); 
-            gap: 30px 20px;
+            gap: 40px 20px;
             padding: 40px 20px;
             justify-items: center;
             align-items: start;
@@ -73,46 +73,56 @@
 
         .grid-item {
             width: 100%;
-            max-width: 120px;
-            text-decoration: none;
+            max-width: 140px; /* Leggermente aumentato per ospitare i link */
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: transform 0.2s;
-        }
-
-        .grid-item:active {
-            transform: scale(0.9);
         }
 
         .grid-item img {
             width: 100%;
+            max-width: 110px;
             height: auto;
             display: block;
-            margin-bottom: 8px;
-            /* AGGIUNTA OMBREGGIATURA */
+            margin-bottom: 12px;
             filter: drop-shadow(0px 8px 10px rgba(0, 0, 0, 0.3));
-            border-radius: 10px; /* Opzionale: arrotonda leggermente se le immagini sono quadrate */
+            border-radius: 10px;
         }
 
-        /* Stile Titoli Sotto Immagini */
-        .grid-item span {
-            color: #333;
-            font-weight: 600;
-            font-size: 14px;
+        /* Stile Link */
+        .grid-item a {
+            text-decoration: none;
             text-align: center;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            display: block;
+            padding: 2px 0;
+        }
+
+        .primary-link {
+            color: #333;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .secondary-link {
+            color: #2c603d;
+            font-weight: 400;
+            font-size: 11px;
+            text-decoration: underline !important;
+        }
+
+        .grid-item a:active {
+            transform: scale(0.95);
         }
 
         @media (max-width: 480px) {
             .main-content {
-                gap: 25px 15px;
+                gap: 35px 15px;
                 padding: 20px 10px;
             }
-            .grid-item span {
-                font-size: 12px;
-            }
+            .primary-link { font-size: 12px; }
+            .secondary-link { font-size: 10px; }
         }
     </style>
 </head>
@@ -130,45 +140,54 @@
     </footer>
 
     <main class="main-content">
-        <a href="https://drive.google.com/drive/u/0/folders/1r5QDvhz84Pn3EYgovvnQAvMo9kwJN0Z_" class="grid-item">
+        <div class="grid-item">
             <img src="camaiore.png" alt="Camaiore">
-            <span>Camaiore</span>
-        </a>
-        <a href="https://ersudriver.github.io/ersuoperator/#" class="grid-item">
+            <a href="https://drive.google.com/drive/u/0/folders/1r5QDvhz84Pn3EYgovvnQAvMo9kwJN0Z_" class="primary-link">Camaiore</a>
+            <a href="#" class="secondary-link">codici</a>
+        </div>
+
+        <div class="grid-item">
             <img src="fdm.png" alt="Forte dei Marmi">
-            <span>Forte dei Marmi</span>
-        </a>
+            <a href="https://ersudriver.github.io/ersuoperator/#" class="primary-link">Forte dei Marmi</a>
+            <a href="#" class="secondary-link">codici</a>
+        </div>
 
-        <a href="https://drive.google.com/drive/folders/1wpR4UX9MRdE1KE5xmvxzRI6-ZnjtYXbO" class="grid-item">
+        <div class="grid-item">
             <img src="massarosa.png" alt="Massarosa">
-            <span>Massarosa</span>
-        </a>
-        <a href="https://drive.google.com/drive/u/0/folders/17ZPAcVHmZygO3AwKNfkPIEgZfSrXhiv1" class="grid-item">
+            <a href="https://drive.google.com/drive/folders/1wpR4UX9MRdE1KE5xmvxzRI6-ZnjtYXbO" class="primary-link">Massarosa</a>
+            <a href="#" class="secondary-link">codici</a>
+        </div>
+
+        <div class="grid-item">
             <img src="montignoso.png" alt="Montignoso">
-            <span>Montignoso</span>
-        </a>
+            <a href="https://drive.google.com/drive/u/0/folders/17ZPAcVHmZygO3AwKNfkPIEgZfSrXhiv1" class="primary-link">Montignoso</a>
+            <a href="#" class="secondary-link">codici</a>
+        </div>
 
-        <a href="https://drive.google.com/drive/folders/1PMXmsSXfSTzlY-qTlGKgC5AEAp4cE6DM" class="grid-item">
+        <div class="grid-item">
             <img src="pietrasanta.png" alt="Pietrasanta">
-            <span>Pietrasanta</span>
-        </a>
-        <a href="https://ersudriver.github.io/ersuoperator/#" class="grid-item">
-            <img src="seravezza.png" alt="Seravezza">
-            <span>Seravezza</span>
-        </a>
+            <a href="https://drive.google.com/drive/folders/1PMXmsSXfSTzlY-qTlGKgC5AEAp4cE6DM" class="primary-link">Pietrasanta</a>
+            <a href="#" class="secondary-link">codici</a>
+        </div>
 
-        <a href="https://ersudriver.github.io/ersuoperator/#" class="grid-item">
+        <div class="grid-item">
+            <img src="seravezza.png" alt="Seravezza">
+            <a href="https://ersudriver.github.io/ersuoperator/#" class="primary-link">Seravezza</a>
+            <a href="#" class="secondary-link">codici</a>
+        </div>
+
+        <div class="grid-item">
             <img src="stazzema.png" alt="Stazzema">
-            <span>Stazzema</span>
-        </a>
-        <a href="https://ersudriver.github.io/ersuoperator/easteregg" class="grid-item">
-            <img src="vuoto.png" alt="vuoto">
-        </a>
+            <a href="https://ersudriver.github.io/ersuoperator/#" class="primary-link">Stazzema</a>
+            <a href="#" class="secondary-link">codici</a>
+        </div>
+
+        <div class="grid-item">
+            <a href="https://ersudriver.github.io/ersuoperator/easteregg">
+                <img src="vuoto.png" alt="vuoto">
+            </a>
+        </div>
     </main>
 
 </body>
 </html>
-
-
-
-
