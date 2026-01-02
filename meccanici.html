@@ -9,18 +9,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     
     <style>
-       body {
+        body {
             font-family: 'Josefin Sans', sans-serif;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            /* Cambiato da background-color a background-image */
+            /* CENTRAGGIO ORIZZONTALE */
+            align-items: center; 
+            padding: 20px;
+            
             background-image: url('wallpaper.jpg'); 
             color: #2c603d;            
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             background-repeat: no-repeat;
+            margin: 0;
         }
 
         table {
@@ -31,7 +35,10 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             border-radius: 8px;
             overflow: hidden;
-            margin-bottom: 30px; /* Spazio per il pulsante */
+            margin-bottom: 30px;
+            /* Centra la tabella rispetto al contenitore */
+            margin-left: auto;
+            margin-right: auto;
         }
 
         thead {
@@ -66,7 +73,7 @@
         /* Stile Pulsante Scarica */
         .btn-download {
             background-color: #2a5f41;
-            color: white;
+            color: white !important; /* Assicura il colore bianco del testo */
             padding: 15px 25px;
             text-decoration: none;
             border-radius: 50px;
@@ -78,7 +85,8 @@
             cursor: pointer;
             font-family: 'Josefin Sans', sans-serif;
             font-size: 16px;
-            margin-bottom: 20px; /* Spazio extra sotto il bottone */
+            margin-bottom: 20px;
+            text-align: center;
         }
 
         .btn-download:active {
@@ -87,6 +95,11 @@
         }
 
         /* Stile Link Homepage */
+        .home-link {
+            text-align: center;
+            width: 100%;
+        }
+
         .link-home {
             color: #333;
             text-decoration: none;
@@ -106,8 +119,7 @@
                 font-size: 14px;
             }
             .btn-download {
-                width: 100%; 
-                text-align: center;
+                width: 90%;
             }
         }
     </style>
@@ -119,54 +131,44 @@
             <tr>
                 <th>Nome</th>
                 <th>Telefono</th>
-            
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td>Polloni Fabrizio</td>
                 <td><a href="tel:+393480039713">3480039713</a></td>
-               
             </tr>
             <tr>
                 <td>Cosci Mario</td>
                 <td><a href="tel:+393469928798">3469928798</a></td>
-                
             </tr>
             <tr>
                 <td>Fontana Fabio</td>
                 <td><a href="tel:+393401362633">3401362633</a></td>
-             
             </tr>
             <tr>
                 <td>Baldi Mauro</td>
                 <td><a href="tel:+393428587373">3428587373</a></td>
-                
             </tr>
             <tr>
                 <td>Doveri Daniele</td>
                 <td><a href="tel:+393487092482">3487092482</a></td>
-                
             </tr>
             <tr>
                 <td>Monaco Alessandro</td>
                 <td><a href="tel:+393427797137">3427797137</a></td>
-                
             </tr>
-          <tr>
+            <tr>
                 <td>Strambi Natalino</td>
                 <td><a href="tel:+393384398096">3384398096</a></td> 
-                
             </tr>
-          <tr>
+            <tr>
                 <td>Piffari Gabriele</td>
                 <td><a href="tel:+393471437740">3471437740</a></td>
-                
             </tr>
-          <tr>
+            <tr>
                 <td>Sichi Massimiliano</td>
                 <td><a href="tel:+393483064559">3483064559</a></td>
-                
             </tr>
         </tbody>
     </table>
@@ -175,8 +177,8 @@
         scarica questi contatti in rubrica
     </a>
 
- <div class="home-link">
-        <a href="https://ersudriver.github.io/ersuoperator/">torna alla homepage</a>
+    <div class="home-link">
+        <a href="https://ersudriver.github.io/ersuoperator/" class="link-home">torna alla homepage</a>
     </div>
 
 </body>
