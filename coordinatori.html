@@ -9,18 +9,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     
     <style>
-       body {
+        body {
             font-family: 'Josefin Sans', sans-serif;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            /* Cambiato da background-color a background-image */
+            /* CENTRAGGIO ORIZZONTALE */
+            align-items: center; 
+            /* SPAZIATURA INTERNA */
+            padding: 20px;
+            
             background-image: url('wallpaper.jpg'); 
             color: #2c603d;            
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             background-repeat: no-repeat;
+            margin: 0;
         }
 
         table {
@@ -66,7 +71,7 @@
         /* Stile Pulsante Scarica */
         .btn-download {
             background-color: #2a5f41;
-            color: white;
+            color: white !important; /* Forza il colore bianco */
             padding: 15px 25px;
             text-decoration: none;
             border-radius: 50px;
@@ -78,7 +83,8 @@
             cursor: pointer;
             font-family: 'Josefin Sans', sans-serif;
             font-size: 16px;
-            margin-bottom: 20px; /* Spazio extra sotto il bottone */
+            margin-bottom: 20px;
+            text-align: center;
         }
 
         .btn-download:active {
@@ -86,7 +92,12 @@
             background-color: #218838;
         }
 
-        /* Stile Link Homepage */
+        /* Contenitore per il link home per assicurarne il centraggio */
+        .home-link {
+            text-align: center;
+            width: 100%;
+        }
+
         .link-home {
             color: #333;
             text-decoration: none;
@@ -106,8 +117,7 @@
                 font-size: 14px;
             }
             .btn-download {
-                width: 100%;
-                text-align: center;
+                width: 90%; /* Leggermente meno del 100% per estetica */
             }
         }
     </style>
@@ -165,8 +175,8 @@
         scarica questi contatti in rubrica
     </a>
 
- <div class="home-link">
-        <a href="https://ersudriver.github.io/ersuoperator/">torna alla homepage</a>
+    <div class="home-link">
+        <a href="https://ersudriver.github.io/ersuoperator/" class="link-home">torna alla homepage</a>
     </div>
 
 </body>
