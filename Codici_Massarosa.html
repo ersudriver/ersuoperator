@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codici Massarosa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Josefin Sans', sans-serif;
+            /* Impostazione immagine di sfondo */
+            background-image: url('wallpaper.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-color: #f0f7f0; /* Fallback se l'immagine manca */
+            padding: 15px;
+            color: #1a3c1a;
+            margin: 0;
+        }
+        h2 {
+            color: white;
+            text-align: center;
+            background-color: #2c603d; /* Colore richiesto */
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 700;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: rgba(255, 255, 255, 0.9); /* Sfondo semi-trasparente per vedere il wallpaper */
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        th {
+            background-color: #2c603d; /* Colore richiesto */
+            color: white;
+            padding: 15px 10px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #c8d8c8;
+            font-size: 14px;
+            font-weight: 400;
+        }
+        tr:nth-child(even) {
+            background-color: rgba(232, 245, 233, 0.7);
+        }
+        /* Codici su una riga sola */
+        .colonna-codice {
+            white-space: nowrap; 
+            width: 1%;
+        }
+        .codice {
+            font-weight: 700;
+            color: white;
+            background-color: #2c603d; /* Colore richiesto per evidenziare */
+            padding: 4px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Codici Massarosa</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>UTENZE</th>
+                <th>CODICE</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>SBARRA GIRO MIMOSA LAGHETTO</td>
+                <td class="colonna-codice"><span class="codice">2222/E</span></td>
+            </tr>
+            <tr>
+                <td>EUROSPIN STIAVA</td>
+                <td class="colonna-codice"><span class="codice">1234 # 3</span></td>
+            </tr>
+            <tr>
+                <td>SBARRA GIRO ELETTRA</td>
+                <td class="colonna-codice"><span class="codice">3489/E</span></td>
+            </tr>
+            <tr>
+                <td>GIRO IDRA CASE MASSACIUCCOLI</td>
+                <td class="colonna-codice"><span class="codice">5411*</span></td>
+            </tr>
+            <tr>
+                <td>GIRO HERCULES CASE SARZANESE QUIESA</td>
+                <td class="colonna-codice"><span class="codice">2050#</span></td>
+            </tr>
+            <tr>
+                <td>GIRO ULIVO KAMBUSA MONTRAMITO</td>
+                <td class="colonna-codice"><span class="codice">1985/A</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>
