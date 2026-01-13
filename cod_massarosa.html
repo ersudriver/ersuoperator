@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codici Massarosa</title>
+
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Reset e Stili Base (Coerenti con la pagina principale) */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Josefin Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: url('wallpaper.jpg'); 
+            color: #2c603d;            
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+
+        .header-img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Contenitore Tabella */
+        .container {
+            flex: 1;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            color: #2c603d;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        /* Stile Tabella */
+        .table-wrapper {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        thead {
+            background-color: #2c603d;
+            color: white;
+        }
+
+        th, td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(44, 96, 61, 0.05);
+        }
+
+        .codice-cell {
+            font-family: monospace;
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #d32f2f; /* Colore contrastante per i codici */
+        }
+
+        /* Pulsante Indietro */
+        .back-btn {
+            margin-top: 30px;
+            padding: 10px 25px;
+            background-color: #2c603d;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+
+        .back-btn:hover {
+            opacity: 0.9;
+        }
+
+        @media (max-width: 480px) {
+            th, td {
+                padding: 12px 10px;
+                font-size: 14px;
+            }
+            .codice-cell {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <img src="hder.png" alt="Header" class="header-img">
+
+    <main class="container">
+        <h1>Codici Massarosa</h1>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>UTENZE</th>
+                        <th>CODICE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>SBARRA GIRO MIMOSA LAGHETTO</td>
+                        <td class="codice-cell">2222/E</td>
+                    </tr>
+                    <tr>
+                        <td>EUROSPIN STIAVA</td>
+                        <td class="codice-cell">1234 # 3</td>
+                    </tr>
+                    <tr>
+                        <td>SBARRA GIRO ELETTRA</td>
+                        <td class="codice-cell">3489/E</td>
+                    </tr>
+                    <tr>
+                        <td>GIRO IDRA CASE MASSACIUCCOLI</td>
+                        <td class="codice-cell">5411*</td>
+                    </tr>
+                    <tr>
+                        <td>GIRO HERCULES CASE SARZANESE QUIESA</td>
+                        <td class="codice-cell">2050#</td>
+                    </tr>
+                    <tr>
+                        <td>GIRO ULIVO KAMBUSA MONTRAMITO</td>
+                        <td class="codice-cell">1985/A</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <a href="javascript:history.back()" class="back-btn">torna alla homepage</a>
+    </main>
+
+</body>
+</html>
