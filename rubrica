@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ricerca Contatti</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f7f6;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+        }
+        h2 { color: #333; margin-bottom: 20px; }
+        
+        /* Stile per l'Iframe */
+        .iframe-wrapper {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            padding-top: 56.25%; /* Rapporto 16:9 */
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Trova Contatto</h2>
+    <p>Inserisci il nome qui sotto per vedere il numero:</p>
+    
+    <div class="iframe-wrapper">
+        <iframe src="INSERISCI_QUI_IL_TUO_URL_DI_GOOGLE_APPS_SCRIPT"></iframe>
+    </div>
+</div>
+
+</body>
+</html>
