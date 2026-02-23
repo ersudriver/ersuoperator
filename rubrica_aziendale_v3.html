@@ -8,8 +8,8 @@
     <style>
         body { 
             font-family: 'Josefin Sans', sans-serif; 
-            background-color: #a4bb5b; /* Colore sfondo pagina */
-            color: #2c603d; /* Colore testo principale */
+            background-color: #a4bb5b; 
+            color: #2c603d; 
             display: flex; 
             justify-content: center; 
             padding: 20px; 
@@ -17,7 +17,7 @@
         }
         
         .container { 
-            background: #a4bb5b; /* Colore sfondo container */
+            background: #a4bb5b; 
             padding: 2rem; 
             border-radius: 12px; 
             border: 2px solid #2c603d; 
@@ -65,3 +65,87 @@
             font-weight: 600; 
             color: #2c603d; 
         }
+
+        /* Stile per il numero cliccabile */
+        .number-link { 
+            color: #2c603d; 
+            font-weight: 700; 
+            text-decoration: none; /* Rimuove la sottolineatura */
+            border: 1px solid #2c603d;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        /* Effetto visivo al tocco/click */
+        .number-link:active {
+            background-color: #2c603d;
+            color: #a4bb5b;
+        }
+
+        .no-results { 
+            color: #2c603d; 
+            margin-top: 20px; 
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Rubrica Aziendale</h2>
+    <input type="text" id="searchInput" placeholder="Inizia a scrivere un nome..." onkeyup="searchData()">
+    <div id="results"></div>
+</div>
+
+<script>
+    let dataCache = [];
+
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS67eexfd9Plogb9viPBDF3GnSsaBAHn54ghW_qmWhlu3V5p5GsmYYG9f1lSFUldXxhM90AHhBZJGpB/pub?output=csv';
+
+    async function loadData() {
+        try {
+            const response = await fetch(sheetUrl);
+            const text = await response.text();
+            const rows = text.split('\n').slice(1); 
+            dataCache = rows.map(row => {
+                const columns = row.split(',');
+                return { nome: columns[0]?.trim(), numero: columns[1]?.trim() };
+            });
+        } catch (error) {
+            console.error("Errore nel caricamento dati:", error);
+        }
+    }
+
+    function searchData() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
+
+        if (query.length < 2) return; 
+
+        const filtered = dataCache.filter(item => 
+            item.nome && item.nome.toLowerCase().includes(query)
+        );
+
+        if (filtered.length > 0) {
+            filtered.forEach(item => {
+                // Rimuoviamo eventuali spazi o caratteri speciali dal numero per il link tel:
+                const cleanNumber = item.numero.replace(/\s+/g, '');
+                
+                resultsDiv.innerHTML += `
+                    <div class="result-item">
+                        <span class="name">${item.nome}</span>
+                        <a href="tel:${cleanNumber}" class="number-link">${item.numero}</a>
+                    </div>`;
+            });
+        } else {
+            resultsDiv.innerHTML = '<p class="no-results">Nessun contatto trovato</p>';
+        }
+    }
+
+    loadData();
+</script>
+
+</body>
+</html>
