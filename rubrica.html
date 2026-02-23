@@ -3,60 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ricerca Contatti</title>
+    <title>Ricerca Contatti Real-time</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f4f7f6;
-        }
-        .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 90%;
-            max-width: 600px;
-        }
-        h2 { color: #333; margin-bottom: 20px; }
-        
-        /* Stile per l'Iframe */
-        .iframe-wrapper {
-            position: relative;
-            overflow: hidden;
-            width: 100%;
-            padding-top: 56.25%; /* Rapporto 16:9 */
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-        iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
+        .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+        input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .result-item { padding: 10px; border-bottom: 1px solid #eee; text-align: left; display: flex; justify-content: space-between; }
+        .name { font-weight: bold; color: #333; }
+        .number { color: #2ecc71; font-weight: bold; }
+        .no-results { color: #888; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>Trova Contatto</h2>
-    <p>Inserisci il nome qui sotto per vedere il numero:</p>
-    
-    <div class="iframe-wrapper">
-        <iframe src="https://script.google.com/macros/s/AKfycby_e8Qf-iHGLFLztfANS_byxNMI6H78Z8ddh18c6jE3X-Y9R2YB3VMrehuc5l3F9mfK/exec"></iframe>
-    </div>
+    <input type="text" id="searchInput" placeholder="Inizia a scrivere un nome..." onkeyup="searchData()">
+    <div id="results"></div>
 </div>
+
+<script>
+    let dataCache = [];
+
+    // SOSTITUISCI QUESTO URL con quello del tuo foglio pubblicato (formato CSV)
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS67eexfd9Plogb9viPBDF3GnSsaBAHn54ghW_qmWhlu3V5p5GsmYYG9f1lSFUldXxhM90AHhBZJGpB/pub?output=csv';
+
+    // Funzione per caricare i dati all'avvio
+    async function loadData() {
+        try {
+            const response = await fetch(sheetUrl);
+            const text = await response.text();
+            // Trasforma il CSV in un array di oggetti
+            const rows = text.split('\n').slice(1); // Salta l'intestazione
+            dataCache = rows.map(row => {
+                const columns = row.split(',');
+                return { nome: columns[0]?.trim(), numero: columns[1]?.trim() };
+            });
+        } catch (error) {
+            console.error("Errore nel caricamento dati:", error);
+        }
+    }
+
+    function searchData() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
+
+        if (query.length < 2) return; // Inizia a cercare dopo 2 caratteri
+
+        const filtered = dataCache.filter(item => 
+            item.nome && item.nome.toLowerCase().includes(query)
+        );
+
+        if (filtered.length > 0) {
+            filtered.forEach(item => {
+                resultsDiv.innerHTML += `
+                    <div class="result-item">
+                        <span class="name">${item.nome}</span>
+                        <span class="number">${item.numero}</span>
+                    </div>`;
+            });
+        } else {
+            resultsDiv.innerHTML = '<p class="no-results">Nessun contatto trovato</p>';
+        }
+    }
+
+    // Carica i dati appena la pagina è pronta
+    loadData();
+</script>
 
 </body>
 </html>
