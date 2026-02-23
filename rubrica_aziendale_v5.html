@@ -26,20 +26,15 @@
             text-align: center; 
         }
 
-        /* Contenitore per allineare freccia e titolo */
-        .header-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-
+        /* Stile per il link sopra il titolo */
         .back-link {
+            display: block;
+            text-align: left;
             text-decoration: none;
             color: #2c603d;
-            font-size: 24px;
-            font-weight: 700;
+            font-weight: 400;
+            margin-bottom: 15px;
+            font-size: 14px;
         }
 
         h2 {
@@ -47,7 +42,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin: 0; /* Rimosso margin per allineamento preciso */
+            margin-bottom: 15px;
         }
 
         .btn-vcf {
@@ -124,14 +119,12 @@
 <body>
 
 <div class="container">
-    <div class="header-container">
-        <a href="/" class="back-link">&lt;</a>
-        <h2>Rubrica Aziendale</h2>
-    </div>
+    <a href="/" class="back-link">&lt; torna alla homepage</a>
+    <h2>Rubrica Aziendale</h2>
 
-    <a href="rubrica_aziendale.vcf" class="btn-vcf">scarica tutti i contatti</a>
+    <a href="nome-tuo-file.vcf" class="btn-vcf">SCARICA TUTTI I CONTATTI</a>
     
-    <input type="text" id="searchInput" placeholder="oppure inizia scrivi un nome o un cognome..." onkeyup="searchData()">
+    <input type="text" id="searchInput" placeholder="Inizia a scrivere un nome..." onkeyup="searchData()">
     <div id="results"></div>
 </div>
 
