@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ricerca Contatti Real-time</title>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Josefin Sans', sans-serif; 
+            background-color: #a4bb5b; /* Colore sfondo pagina */
+            color: #2c603d; /* Colore testo principale */
+            display: flex; 
+            justify-content: center; 
+            padding: 20px; 
+            margin: 0;
+        }
+        
+        .container { 
+            background: #a4bb5b; /* Colore sfondo container */
+            padding: 2rem; 
+            border-radius: 12px; 
+            /* Ho aggiunto un bordo leggermente più scuro per dare profondità senza usare il bianco */
+            border: 2px solid #2c603d; 
+            width: 100%; 
+            max-width: 500px; 
+            text-align: center; 
+        }
+
+        h2 {
+            color: #2c603d;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 20px; 
+            border: 2px solid #2c603d; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 16px; 
+            font-family: 'Josefin Sans', sans-serif;
+            background-color: transparent;
+            color: #2c603d;
+            outline: none;
+        }
+
+        /* Placeholder personalizzato per abbinarsi al testo */
+        input::placeholder {
+            color: #2c603d;
+            opacity: 0.7;
+        }
+
+        .result-item { 
+            padding: 15px 10px; 
+            border-bottom: 1px solid #2c603d; 
+            text-align: left; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+        }
+
+        .name { 
+            font-weight: 600; 
+            color: #2c603d; 
+        }
+
+        .number { 
+            color: #2c603d; 
+            font-weight: 700; 
+        }
+
+        .no-results { 
+            color: #2c603d; 
+            margin-top: 20px; 
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Rubrica Aziendale</h2>
+    <input type="text" id="searchInput" placeholder="Inizia a scrivere un nome..." onkeyup="searchData()">
+    <div id="results"></div>
+</div>
+
+<script>
+    let dataCache = [];
+
+    // URL del foglio pubblicato
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS67eexfd9Plogb9viPBDF3GnSsaBAHn54ghW_qmWhlu3V5p5GsmYYG9f1lSFUldXxhM90AHhBZJGpB/pub?output=csv';
+
+    async function loadData() {
+        try {
+            const response = await fetch(sheetUrl);
+            const text = await response.text();
+            const rows = text.split('\n').slice(1); 
+            dataCache = rows.map(row => {
+                const columns = row.split(',');
+                return { nome: columns[0]?.trim(), numero: columns[1]?.trim() };
+            });
+        } catch (error) {
+            console.error("Errore nel caricamento dati:", error);
+        }
+    }
+
+    function searchData() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
+
+        if (query.length < 2) return; 
+
+        const filtered = dataCache.filter(item => 
+            item.nome && item.nome.toLowerCase().includes(query)
+        );
+
+        if (filtered.length > 0) {
+            filtered.forEach(item => {
+                resultsDiv.innerHTML += `
+                    <div class="result-item">
+                        <span class="name">${item.nome}</span>
+                        <span class="number">${item.numero}</span>
+                    </div>`;
+            });
+        } else {
+            resultsDiv.innerHTML = '<p class="no-results">Nessun contatto trovato</p>';
+        }
+    }
+
+    loadData();
+</script>
+
+</body>
+</html>
