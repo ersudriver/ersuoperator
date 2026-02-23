@@ -26,14 +26,18 @@
             text-align: center; 
         }
 
-        /* Stile per il link sopra il titolo */
-        .back-link {
-            display: block;
-            text-align: left;
+        /* Contenitore per i due link sopra il titolo */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .back-link, .list-link {
             text-decoration: none;
             color: #2c603d;
             font-weight: 400;
-            margin-bottom: 15px;
             font-size: 14px;
         }
 
@@ -119,7 +123,11 @@
 <body>
 
 <div class="container">
-    <a href="/" class="back-link">&lt; torna alla homepage</a>
+    <div class="top-nav">
+        <a href="/" class="back-link">&lt; torna alla homepage</a>
+        <a href="lista.html" class="list-link">visualizza la lista &gt;</a>
+    </div>
+
     <h2>Rubrica Aziendale</h2>
 
     <a href="nome-tuo-file.vcf" class="btn-vcf">SCARICA TUTTI I CONTATTI</a>
