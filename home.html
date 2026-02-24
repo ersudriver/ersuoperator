@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portale Operatori</title>
+
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Reset e Stili Base */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Josefin Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* SFONDO E TESTO RICHIESTI */
+            background-color: #a4bb5b;
+            color: #2c603d;
+        }
+
+        .header-img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        footer {
+            /* Colore testo per coerenza */
+            background-color: #2c603d; 
+            color: #a4bb5b;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .footer-links a {
+            color: #a4bb5b; /* Inversione per leggibilità sul verde scuro */
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* Griglia */
+        .main-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 30px 20px;
+            padding: 40px 20px;
+            justify-items: center;
+            align-items: start;
+            width: 100%;
+        }
+
+        .grid-item {
+            width: 100%;
+            max-width: 120px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+
+        .grid-item:active {
+            transform: scale(0.9);
+        }
+
+        .grid-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin-bottom: 8px;
+            /* Ombreggiatura più morbida coordinata */
+            filter: drop-shadow(0px 4px 6px rgba(44, 96, 61, 0.4));
+            border-radius: 10px;
+        }
+
+        /* Stile Titoli Sotto Immagini */
+        .grid-item span {
+            color: #2c603d; /* Cambiato da #333 a colore richiesto */
+            font-weight: 600;
+            font-size: 14px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        /* Stile per i link "codici" */
+        .grid-item .sub-link {
+            font-size: 12px;
+            color: #2c603d;
+            text-decoration: underline;
+            text-transform: none;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                gap: 25px 15px;
+                padding: 20px 10px;
+            }
+            .grid-item span {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <img src="hder.png" alt="Header" class="header-img">
+
+    <footer>
+        <div class="footer-links">
+            <a href="https://ersudriver.github.io/ersuoperator/coordinatori">Coordinatori</a>
+            <a href="https://ersudriver.github.io/ersuoperator/meccanici">Meccanici</a>
+            <a href="https://ersudriver.github.io/ersuoperator/rubrica_aziendale_v5">Rubrica Aziendale</a>
+        </div>
+    </footer>
+
+    <main class="main-content">
+        <div class="grid-item">
+            <a href="https://drive.google.com/drive/u/0/folders/1r5QDvhz84Pn3EYgovvnQAvMo9kwJN0Z_" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
+                <img src="camaiore.png" alt="Camaiore">
+                <span>Camaiore</span>
+            </a>
+            <a href="#" class="sub-link">codici</a>
+        </div>
+
+        <div class="grid-item">
+            <a href="https://ersudriver.github.io/ersuoperator/#" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
+                <img src="fdm.png" alt="Forte dei Marmi">
+                <span>Forte dei Marmi</span>
+            </a>
+            <a href="#" class="sub-link">codici</a>
+        </div>
+
+        <div class="grid-item">
+            <a href="https://drive.google.com/drive/folders/1wpR4UX9MRdE1KE5xmvxzRI6-ZnjtYXbO" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
+                <img src="massarosa.png" alt="Massarosa">
+                <span>Massarosa</span>
+            </a>
+            <a href="https://ersudriver.github.io/ersuoperator/cod_massarosa" class="sub-link">codici</a>
+        </div>
+
+        <div class="grid-item">
+            <a href="https://drive.google.com/drive/u/0/folders/17ZPAcVHmZygO3AwKNfkPIEgZfSrXhiv1" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
+                <img src="montignoso.png" alt="Montignoso">
+                <span>Montignoso</span>
+            </a>
+            <a href="#" class="sub-link">codici</a>
+        </div>
+
+        <div class="grid-item">
+            <a href="https://drive.google.com/drive/folders/1PMXmsSXfSTzlY-qTlGKgC5AEAp4cE6DM" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
+                <img src="pietrasanta.png" alt="Pietrasanta">
+                <span>Pietrasanta</span>
+            </a>
+            <a href="#" class="sub-link">codici</a>
+        </div>
+
+        <div class="grid-item">
+            <a href="https://ersudriver.github.io/ersuoperator/#" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
+                <img src="seravezza.png" alt="Seravezza">
+                <span>Seravezza</span>
+            </a>
+            <a href="#" class="sub-link">codici</a>
+        </div>
+
+        <div class="grid-item">
+            <a href="https://ersudriver.github.io/ersuoperator/#" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
+                <img src="stazzema.png" alt="Stazzema">
+                <span>Stazzema</span>
+            </a>
+            <a href="#" class="sub-link">codici</a>
+        </div>
+
+        <div class="grid-item">
+            <a href="https://ersudriver.github.io/ersuoperator/easteregg">
+                <img src="vuoto.png" alt="vuoto">
+            </a>
+        </div>
+    </main>
+
+</body>
+</html>
