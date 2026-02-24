@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizza Lista</title>
+    <title>Lista Contatti</title>
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         body { 
@@ -36,22 +36,38 @@
             margin-bottom: 20px;
         }
 
-        /* Iframe con altezza fissa per essere sicuri che si veda */
         iframe {
             width: 100%;
             height: 600px;
             border: 2px solid #2c603d;
             border-radius: 8px;
-            background-color: white; /* Aiuta a vedere il contenuto se il foglio è bianco */
+            background-color: white;
+            margin-bottom: 20px; /* Spazio per il link sotto */
+        }
+
+        /* Stile per il link sotto l'iframe */
+        .back-link-bottom {
+            display: inline-block;
+            text-decoration: none;
+            color: #2c603d;
+            font-weight: 400;
+            font-size: 16px;
+            transition: opacity 0.3s;
+        }
+
+        .back-link-bottom:hover {
+            opacity: 0.7;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Lista Completa Contatti</h2>
+    <h2>Lista Contatti</h2>
     
     <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vS67eexfd9Plogb9viPBDF3GnSsaBAHn54ghW_qmWhlu3V5p5GsmYYG9f1lSFUldXxhM90AHhBZJGpB/pubhtml?widget=true&amp;headers=false"></iframe>
+
+    <a href="https://ersudriver.github.io/ersuoperator/#" class="back-link-bottom">&lt; torna alla homepage</a>
 </div>
 
 </body>
