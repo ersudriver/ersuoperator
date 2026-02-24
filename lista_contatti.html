@@ -12,10 +12,9 @@
             color: #2c603d; 
             display: flex; 
             justify-content: center; 
-            align-items: center;
-            min-height: 100vh;
             padding: 20px; 
             margin: 0;
+            min-height: 100vh;
         }
         
         .container { 
@@ -24,9 +23,8 @@
             border-radius: 12px; 
             border: 2px solid #2c603d; 
             width: 100%; 
-            max-width: 800px; /* Più largo per ospitare meglio l'iframe */
+            max-width: 600px; 
             text-align: center; 
-            box-sizing: border-box;
         }
 
         h2 {
@@ -34,15 +32,27 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 20px;
             margin-top: 0;
+            margin-bottom: 20px;
         }
 
-        .iframe-container {
-            position: relative;
+        /* Iframe con altezza fissa per essere sicuri che si veda */
+        iframe {
             width: 100%;
-            padding-bottom: 150%; /* Proporzione per visualizzare bene la lista */
-            height: 0;
-            overflow: hidden;
+            height: 600px;
+            border: 2px solid #2c603d;
             border-radius: 8px;
-            border: 1
+            background-color: white; /* Aiuta a vedere il contenuto se il foglio è bianco */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Lista Completa Contatti</h2>
+    
+    <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vS67eexfd9Plogb9viPBDF3GnSsaBAHn54ghW_qmWhlu3V5p5GsmYYG9f1lSFUldXxhM90AHhBZJGpB/pubhtml?widget=true&amp;headers=false"></iframe>
+</div>
+
+</body>
+</html>
