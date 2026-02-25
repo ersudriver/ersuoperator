@@ -65,7 +65,7 @@
             margin-top: 15px;
             color: #2c603d;
             width: 100%;
-            min-height: 20px; /* Evita che il layout salti se il testo sparisce un istante */
+            min-height: 20px; /* Mantiene lo spazio anche durante il cambio testo */
         }
 
         /* Griglia */
@@ -134,6 +134,88 @@
         </div>
     </footer>
 
-    <div id="messaggio-dinamico" class="scroll-hint">
+    <div id="testo-dinamico" class="scroll-hint">
         Buongiorno!
     </div>
+
+    <main class="main-content">
+        <div class="grid-item">
+            <a href="https://drive.google.com/drive/u/0/folders/1r5QDvhz84Pn3EYgovvnQAvMo9kwJN0Z_" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
+                <img src="camaiore.png" alt="Camaiore">
+                <span>Camaiore</span>
+            </a>
+        </div>
+
+        <div class="grid-item">
+            <a href="https://ersudriver.github.io/ersuoperator/#" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
+                <img src="fdm.png" alt="Forte dei Marmi">
+                <span>Forte dei Marmi</span>
+            </a>
+        </div>
+
+        <div class="grid-item">
+            <a href="https://drive.google.com/drive/folders/1wpR4UX9MRdE1KE5xmvxzRI6-ZnjtYXbO" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
+                <img src="massarosa.png" alt="Massarosa">
+                <span>Massarosa</span>
+            </a>
+        </div>
+
+        <div class="grid-item">
+            <a href="https://drive.google.com/drive/u/0/folders/17ZPAcVHmZygO3AwKNfkPIEgZfSrXhiv1" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
+                <img src="montignoso.png" alt="Montignoso">
+                <span>Montignoso</span>
+            </a>
+        </div>
+
+        <div class="grid-item">
+            <a href="https://drive.google.com/drive/folders/1PMXmsSXfSTzlY-qTlGKgC5AEAp4cE6DM" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
+                <img src="pietrasanta.png" alt="Pietrasanta">
+                <span>Pietrasanta</span>
+            </a>
+        </div>
+
+        <div class="grid-item">
+            <a href="https://ersudriver.github.io/ersuoperator/#" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
+                <img src="seravezza.png" alt="Seravezza">
+                <span>Seravezza</span>
+            </a>
+        </div>
+
+        <div class="grid-item">
+            <a href="https://ersudriver.github.io/ersuoperator/#" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
+                <img src="stazzema.png" alt="Stazzema">
+                <span>Stazzema</span>
+            </a>
+        </div>
+
+        <div class="grid-item">
+            <a href="https://ersudriver.github.io/ersuoperator/easteregg">
+                <img src="vuoto.png" alt="vuoto">
+            </a>
+        </div>
+    </main>
+
+    <script>
+        const frasi = [
+            "le cartine su google drive sono a cura dei coordinatori",
+            "in \"Rubrica\" puoi trovare numeri di telefono e codici vari",
+            "scorri la pagina per vedere tutti i comuni",
+            "sono disponibili: Camaiore, Pietrasanta, Massarosa e Montignoso",
+            "Buongiorno!"
+        ];
+
+        const contenitore = document.getElementById('testo-dinamico');
+
+        function cambiaFrase() {
+            // Sceglie un indice a caso dall'elenco
+            const indiceCasuale = Math.floor(Math.random() * frasi.length);
+            // Inserisce il testo nell'elemento HTML
+            contenitore.textContent = frasi[indiceCasuale];
+        }
+
+        // Esegue il cambio ogni 3000 millisecondi (3 secondi)
+        setInterval(cambiaFrase, 3000);
+    </script>
+
+</body>
+</html>
