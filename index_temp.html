@@ -65,6 +65,7 @@
             margin-top: 15px;
             color: #2c603d;
             width: 100%;
+            min-height: 20px;
         }
 
         /* Griglia */
@@ -72,10 +73,11 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr); 
             gap: 30px 20px;
-            padding: 20px 20px 40px 20px; /* Ridotto il padding top per la scritta */
+            padding: 20px 20px 40px 20px;
             justify-items: center;
             align-items: start;
             width: 100%;
+            flex-grow: 1; /* Spinge il counter verso il basso */
         }
 
         .grid-item {
@@ -110,6 +112,15 @@
             letter-spacing: 0.5px;
         }
 
+        /* Stile per il Counter Visite */
+        .visit-counter {
+            text-align: center;
+            padding: 20px 0;
+            font-size: 12px;
+            color: #2c603d;
+            opacity: 0.8;
+        }
+
         @media (max-width: 480px) {
             .main-content {
                 gap: 25px 15px;
@@ -129,14 +140,12 @@
         <div class="footer-links">
             <a href="https://ersudriver.github.io/ersuoperator/coordinatori">Coordinatori</a>
             <a href="https://ersudriver.github.io/ersuoperator/meccanici">Meccanici</a>
-            <a href="https://ersudriver.github.io/ersuoperator/rubrica_aziendale_v5">Rubrica</a>
+            <a href="https://ersudriver.github.io/ersuoperator/rubrica_aziendale_v3">Rubrica</a>
         </div>
     </footer>
 
-    <div class="scroll-hint">
-        scorri in basso per vedere tutti i comuni
-        puoi vedere i codici dei cancelli nella rubrica
-        
+    <div id="testo-dinamico" class="scroll-hint">
+        Buongiorno!
     </div>
 
     <main class="main-content">
@@ -195,6 +204,32 @@
             </a>
         </div>
     </main>
+
+    <div class="visit-counter">
+        <p>Visite totali:</p>
+        <a href="https://www.hitwebcounter.com" target="_blank">
+            <img src="https://hitwebcounter.com/counter/counter.php?page=10000001&style=0006&nbdigits=5&type=page&initCount=0" title="Counter" Alt="Visit Counter" border="0" />
+        </a>                                    
+    </div>
+
+    <script>
+        const frasi = [
+            "le cartine su google drive sono a cura dei coordinatori",
+            "in \"Rubrica\" puoi trovare numeri di telefono e codici vari",
+            "scorri la pagina per vedere tutti i comuni",
+            "sono disponibili: Camaiore, Pietrasanta, Massarosa e Montignoso",
+            "Buongiorno!"
+        ];
+
+        const contenitore = document.getElementById('testo-dinamico');
+
+        function cambiaFrase() {
+            const indiceCasuale = Math.floor(Math.random() * frasi.length);
+            contenitore.textContent = frasi[indiceCasuale];
+        }
+
+        setInterval(cambiaFrase, 5000);
+    </script>
 
 </body>
 </html>
