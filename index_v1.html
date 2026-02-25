@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portale Operatori</title>
+
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Reset e Stili Base */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Josefin Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #a4bb5b;
+            color: #2c603d;
+        }
+
+        .header-img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        footer {
+            background-color: #2c603d; 
+            color: #a4bb5b;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .footer-links a {
+            color: #a4bb5b;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* Scritta Italic Sotto il Footer */
+        .scroll-hint {
+            text-align: center;
+            font-style: italic;
+            font-size: 14px;
+            margin-top: 15px;
+            color: #2c603d;
+            width: 100%;
+            min-height: 20px; /* Evita che il layout salti se il testo sparisce un istante */
+        }
+
+        /* Griglia */
+        .main-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 30px 20px;
+            padding: 20px 20px 40px 20px;
+            justify-items: center;
+            align-items: start;
+            width: 100%;
+        }
+
+        .grid-item {
+            width: 100%;
+            max-width: 120px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+
+        .grid-item:active {
+            transform: scale(0.9);
+        }
+
+        .grid-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin-bottom: 8px;
+            filter: drop-shadow(0px 4px 6px rgba(44, 96, 61, 0.4));
+            border-radius: 10px;
+        }
+
+        .grid-item span {
+            color: #2c603d;
+            font-weight: 600;
+            font-size: 14px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                gap: 25px 15px;
+                padding: 10px 10px 30px 10px;
+            }
+            .grid-item span {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <img src="hder.png" alt="Header" class="header-img">
+
+    <footer>
+        <div class="footer-links">
+            <a href="https://ersudriver.github.io/ersuoperator/coordinatori">Coordinatori</a>
+            <a href="https://ersudriver.github.io/ersuoperator/meccanici">Meccanici</a>
+            <a href="https://ersudriver.github.io/ersuoperator/rubrica_aziendale_v5">Rubrica</a>
+        </div>
+    </footer>
+
+    <div id="messaggio-dinamico" class="scroll-hint">
+        Buongiorno!
+    </div>
