@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ricerca Contatti Real-time</title>
+    <title>Ricerca Contatti</title>
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         body { 
@@ -26,11 +26,48 @@
             text-align: center; 
         }
 
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .back-link, .list-link {
+            text-decoration: none;
+            color: #2c603d;
+            font-weight: 400;
+            font-size: 14px;
+        }
+
         h2 {
             color: #2c603d;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .btn-vcf {
+            display: inline-block;
+            background-color: #2c603d;
+            color: #a4bb5b;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            transition: opacity 0.3s;
+        }
+
+        /* Nuovo stile per l'istruzione di ricerca */
+        .search-instruction {
+            font-size: 14px;
+            font-style: italic;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            color: #2c603d;
+            text-align: center;
         }
 
         input { 
@@ -66,18 +103,16 @@
             color: #2c603d; 
         }
 
-        /* Stile per il numero cliccabile */
         .number-link { 
             color: #2c603d; 
             font-weight: 700; 
-            text-decoration: none; /* Rimuove la sottolineatura */
+            text-decoration: none; 
             border: 1px solid #2c603d;
             padding: 5px 10px;
             border-radius: 5px;
             transition: background 0.3s;
         }
 
-        /* Effetto visivo al tocco/click */
         .number-link:active {
             background-color: #2c603d;
             color: #a4bb5b;
@@ -93,14 +128,26 @@
 <body>
 
 <div class="container">
+    <div class="top-nav">
+        <a href="https://ersudriver.github.io/ersuoperator/#" class="back-link">&lt; torna alla homepage</a>
+        <a href="https://ersudriver.github.io/ersuoperator/lista_contatti" class="list-link">visualizza la lista &gt;</a>
+    </div>
+
     <h2>Rubrica Aziendale</h2>
-    <input type="text" id="searchInput" placeholder="Inizia a scrivere un nome..." onkeyup="searchData()">
+
+    <a href="rubrica_aziendale.vcf" class="btn-vcf">scarica tutti i contatti</a>
+    
+    <p class="search-instruction">
+        digita un nome/cognome per vedere un numero di telefono <br>
+        o un nome di un comune per i codici di lucchetti/cancelli/altro...
+    </p>
+
+    <input type="text" id="searchInput" placeholder="oppure scrivi un nome/cognome..." onkeyup="searchData()">
     <div id="results"></div>
 </div>
 
 <script>
     let dataCache = [];
-
     const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS67eexfd9Plogb9viPBDF3GnSsaBAHn54ghW_qmWhlu3V5p5GsmYYG9f1lSFUldXxhM90AHhBZJGpB/pub?output=csv';
 
     async function loadData() {
@@ -130,8 +177,7 @@
 
         if (filtered.length > 0) {
             filtered.forEach(item => {
-                // Rimuoviamo eventuali spazi o caratteri speciali dal numero per il link tel:
-                const cleanNumber = item.numero.replace(/\s+/g, '');
+                const cleanNumber = item.numero ? item.numero.replace(/\s+/g, '') : '';
                 
                 resultsDiv.innerHTML += `
                     <div class="result-item">
