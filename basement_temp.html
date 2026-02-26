@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Basement</title>
+    <title>Pagina Musicale Grande</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,6 +16,7 @@
             width: 100%;
             height: 100%;
             background-color: #a4bb5b;
+            overflow: hidden; /* Evita lo scroll se non necessario */
         }
 
         body {
@@ -29,15 +30,15 @@
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 30px;
+            font-size: 3rem; /* Testo più grande */
+            margin-bottom: 20px;
             text-transform: uppercase;
         }
 
-        /* Contenitore immagine senza bordi */
+        /* Contenitore immagine MOLTO più grande */
         .bottone-container {
-            width: 600px;
-            height: 600px;
+            width: 350px;  /* Dimensione aumentata */
+            height: 350px; /* Dimensione aumentata */
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -46,30 +47,33 @@
         }
 
         #bottone-immagine {
-            max-width: 100%;
-            max-height: 100%;
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Mantiene le proporzioni dell'immagine */
             transition: transform 0.1s;
         }
 
         /* Effetto pressione al click */
         #bottone-immagine:active {
-            transform: scale(0.9);
+            transform: scale(0.95);
         }
 
-        /* Link Homepage senza sottolineatura */
         #link-home {
             margin-top: 40px;
             color: #2c603d;
             font-weight: bold;
-            text-decoration: none; /* Rimuove la sottolineatura */
-            font-size: 1.2rem;
-            text-transform: lowercase; /* Opzionale, per stile */
+            text-decoration: none;
+            font-size: 1.5rem; /* Link più grande */
         }
 
-        /* Media query per smartphone */
+        /* Regolazioni per Smartphone */
         @media (max-width: 600px) {
-            h1 { font-size: 1.8rem; }
-            .bottone-container { width: 180px; height: 180px; }
+            h1 { font-size: 2rem; }
+            .bottone-container { 
+                width: 80vw; /* Usa l'80% della larghezza dello schermo del telefono */
+                height: 80vw; 
+            }
+            #link-home { font-size: 1.2rem; }
         }
     </style>
 </head>
@@ -83,7 +87,7 @@
              alt="Premi per la musica">
     </div>
 
-    <a id="link-home" href="/">torna alla homepage</a>
+    <a id="link-home" href="/">homepage</a>
 
     <audio id="musica" loop>
         <source src="tre_camionisti.mp3" type="audio/mpeg">
@@ -94,7 +98,9 @@
 
         function toggleMusica() {
             if (musica.paused) {
-                musica.play().catch(e => console.log("Audio non caricato"));
+                musica.play().catch(e => {
+                    alert("Clicca sull'immagine per far partire la musica!");
+                });
             } else {
                 musica.pause();
             }
