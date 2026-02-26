@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagina Musicale</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Impostazioni generali della pagina */
+        body {
+            background-color: #a4bb5b; /* Il tuo colore di sfondo */
+            color: #2c603d;           /* Il tuo colore del testo */
+            font-family: 'Josefin Sans', sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* Stile per i testi */
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        a.home-link {
+            color: #2c603d;
+            text-decoration: none;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        /* Stile per il bottone immagine */
+        #music-btn {
+            cursor: pointer;
+            max-width: 800px; /* Puoi regolare la dimensione dell'immagine */
+            transition: transform 0.2s;
+        }
+
+        #music-btn:hover {
+            transform: scale(1.05); /* Effetto ingrandimento al passaggio del mouse */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>qui non c'è niente</h1>
+
+    <img src="https://drive.google.com/file/d/1MdDdrLP9hHrvoTIsNI-Q5pcokGUvBbHq/view?usp=drive_link" id="music-btn" alt="Play Music">
+
+    <audio id="myAudio" loop>
+        <source src="URL_DELLA_CANZONE_SU_GITHUB?raw=true" type="audio/mpeg">
+        Il tuo browser non supporta l'elemento audio.
+    </audio>
+
+    <a href="https://ersudriver.github.io/ersuoperator/#" class="home-link">&lt; torna alla homepage</a>
+
+    <script>
+        const button = document.getElementById('music-btn');
+        const audio = document.getElementById('myAudio');
+
+        button.addEventListener('click', () => {
+            // Se la musica è in pausa, la avvia, altrimenti la mette in pausa
+            if (audio.paused) {
+                audio.play();
+            } else {
+                audio.pause();
+            }
+        });
+    </script>
+
+</body>
+</html>
