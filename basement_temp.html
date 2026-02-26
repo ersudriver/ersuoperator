@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Pagina Musicale Personalizzata</title>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #a4bb5b; /* Il verde richiesto */
+            color: #2c603d;           /* Il verde scuro per il testo */
+            font-family: 'Josefin Sans', sans-serif;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        /* Stile per l'immagine che funge da bottone */
+        #bottone-immagine {
+            cursor: pointer;          /* Fa apparire la manina al passaggio del mouse */
+            width: 150px;             /* Puoi regolare la grandezza qui */
+            height: auto;
+            transition: transform 0.2s; /* Effetto fluido al click */
+        }
+
+        #bottone-immagine:active {
+            transform: scale(0.95);    /* Effetto "pressione" quando clicchi */
+        }
+
+        #link-home {
+            margin-top: 30px;
+            color: #2c603d;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>QUI NON C'È NIENTE</h1>
+
+    <img id="bottone-immagine" src="https://lh3.googleusercontent.com/u/0/d/13y1rIMH7gzAYdEYEs-k5rpraZis5Rb0o" alt="Premi per la musica">
+
+    <a id="link-home" href="index.html">Homepage</a>
+
+    <audio id="musica" loop>
+        <source src="tre_camionisti.mp3" type="audio/mpeg">
+        Il tuo browser non supporta l'elemento audio.
+    </audio>
+
+    <script>
+        const immagine = document.getElementById('bottone-immagine');
+        const musica = document.getElementById('musica');
+
+        immagine.addEventListener('click', function() {
+            if (musica.paused) {
+                musica.play();
+                console.log("Musica in riproduzione...");
+            } else {
+                musica.pause();
+                console.log("Musica in pausa.");
+            }
+        });
+    </script>
+
+</body>
+</html>
