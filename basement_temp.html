@@ -2,74 +2,64 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Pagina Musicale Personalizzata</title>
-    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagina Musicale Mobile</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
+        /* Reset di base per evitare margini indesiderati */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            background-color: #a4bb5b; /* Il verde richiesto */
-            color: #2c603d;           /* Il verde scuro per il testo */
+            background-color: #a4bb5b;
+            color: #2c603d;
             font-family: 'Josefin Sans', sans-serif;
-            text-align: center;
+            
+            /* Centratura perfetta sia su PC che su Mobile */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
+            min-height: 100vh;
+            padding: 20px;
+            text-align: center;
         }
 
         h1 {
-            font-size: 2rem;
-            margin-bottom: 20px;
+            font-size: 8vw; /* Dimensione dinamica basata sulla larghezza schermo */
+            max-font-size: 40px; /* Limite massimo per schermi grandi */
+            margin-bottom: 40px;
+            letter-spacing: 2px;
         }
 
-        /* Stile per l'immagine che funge da bottone */
         #bottone-immagine {
-            cursor: pointer;          /* Fa apparire la manina al passaggio del mouse */
-            width: 150px;             /* Puoi regolare la grandezza qui */
+            cursor: pointer;
+            width: 60%;      /* Occupa il 60% della larghezza su mobile */
+            max-width: 300px; /* Non diventa troppo grande su PC */
             height: auto;
-            transition: transform 0.2s; /* Effetto fluido al click */
+            border-radius: 50%; /* Opzionale: rende l'immagine tonda se è quadrata */
+            transition: transform 0.1s ease-in-out;
+            -webkit-tap-highlight-color: transparent; /* Rimuove il fastidioso rettangolo blu al tocco su Android/iOS */
         }
 
         #bottone-immagine:active {
-            transform: scale(0.95);    /* Effetto "pressione" quando clicchi */
+            transform: scale(0.9);
         }
 
         #link-home {
-            margin-top: 30px;
+            margin-top: 50px;
             color: #2c603d;
-            text-decoration: underline;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 2px solid #2c603d;
+            padding-bottom: 5px;
+            font-size: 1.2rem;
         }
-    </style>
-</head>
-<body>
 
-    <h1>QUI NON C'È NIENTE</h1>
-
-    <img id="bottone-immagine" src="https://lh3.googleusercontent.com/u/0/d/13y1rIMH7gzAYdEYEs-k5rpraZis5Rb0o" alt="Premi per la musica">
-
-    <a id="link-home" href="index.html">Homepage</a>
-
-    <audio id="musica" loop>
-        <source src="tre_camionisti.mp3" type="audio/mpeg">
-        Il tuo browser non supporta l'elemento audio.
-    </audio>
-
-    <script>
-        const immagine = document.getElementById('bottone-immagine');
-        const musica = document.getElementById('musica');
-
-        immagine.addEventListener('click', function() {
-            if (musica.paused) {
-                musica.play();
-                console.log("Musica in riproduzione...");
-            } else {
-                musica.pause();
-                console.log("Musica in pausa.");
-            }
-        });
-    </script>
-
-</body>
-</html>
+        /* Regole specifiche per schermi piccoli (Smartphone) */
+        @media (max-width: 600px
