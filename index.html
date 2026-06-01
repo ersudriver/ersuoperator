@@ -4,218 +4,231 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portale Operatori</title>
-
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Reset e Stili Base */
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Josefin Sans', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
             background-color: #a4bb5b;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(44,96,61,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(44,96,61,0.08) 0%, transparent 50%),
+                repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(44,96,61,0.03) 40px, rgba(44,96,61,0.03) 41px);
             color: #2c603d;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
         }
 
-        .header-img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        footer {
-            background-color: #2c603d; 
+        header {
+            background: linear-gradient(135deg, #1e4a2a 0%, #2c603d 40%, #3a7a4e 100%);
             color: #a4bb5b;
-            padding: 20px;
+            padding: 2.5rem 2rem;
             text-align: center;
-            width: 100%;
+            position: relative;
+            overflow: hidden;
         }
 
-        .footer-links {
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #a4bb5b, #d4e68a, #a4bb5b);
+        }
+
+        header h1 {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 4.5rem;
+            font-weight: 700;
+            margin-bottom: 4rem;
+            animation: fadeSlide 1s ease-out;
+            letter-spacing: 2px;
+        }
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(-30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .buttons {
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
+            gap: 2.5rem;
             flex-wrap: wrap;
-            gap: 10px;
         }
 
-        .footer-links a {
-            color: #a4bb5b;
-            text-decoration: none;
-            font-size: 16px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        /* Scritta Italic Sotto il Footer */
-        .scroll-hint {
-            text-align: center;
-            font-style: italic;
-            font-size: 14px;
-            margin-top: 15px;
-            color: #2c603d;
-            width: 100%;
-            min-height: 20px; /* Mantiene lo spazio anche durante il cambio testo */
-        }
-
-        /* Griglia */
-        .main-content {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 30px 20px;
-            padding: 20px 20px 40px 20px;
-            justify-items: center;
-            align-items: start;
-            width: 100%;
-        }
-
-        .grid-item {
-            width: 100%;
-            max-width: 120px;
-            text-decoration: none;
+        .btn {
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: transform 0.2s;
+            gap: 1rem;
+            background: rgba(164,187,91,0.1);
+            backdrop-filter: blur(4px);
+            border: 2px solid rgba(164,187,91,0.4);
+            border-radius: 1.5rem;
+            padding: 2rem 2.5rem;
+            color: #a4bb5b;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.3s, color 0.3s, border-color 0.3s, transform 0.3s;
+            width: 300px;
         }
 
-        .grid-item:active {
-            transform: scale(0.9);
+        .btn:hover {
+            background: #a4bb5b;
+            color: #2c603d;
+            border-color: #a4bb5b;
+            transform: translateY(-6px);
         }
 
-        .grid-item img {
+        .btn svg {
+            width: 56px;
+            height: 56px;
+            transition: transform 0.3s;
+        }
+
+        .btn:hover svg {
+            transform: scale(1.15);
+        }
+
+        .section-divider {
+            text-align: center;
+            padding: 3rem 2rem 1rem;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 2rem;
+            font-weight: 600;
+            color: #2c603d;
+            opacity: 0.8;
+        }
+
+
+
+        .stemmi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            max-width: 1100px;
+            margin: 0 auto 3rem;
+            padding: 0 2rem;
+        }
+
+        .stemma-btn {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(6px);
+            border: none;
+            border-radius: 1.5rem;
+            padding: 1.5rem 1rem;
+            cursor: pointer;
+            text-align: center;
+            color: #2c603d;
+            text-decoration: none;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+            box-shadow: 0 4px 15px rgba(44,96,61,0.1);
+        }
+
+        .stemma-btn:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 12px 30px rgba(44,96,61,0.2);
+            background: rgba(255,255,255,0.25);
+        }
+
+        button.stemma-btn:hover {
+            background: rgba(200,40,40,0.25);
+            box-shadow: 0 12px 30px rgba(200,40,40,0.15);
+        }
+
+        .stemma-btn img {
             width: 100%;
             height: auto;
             display: block;
-            margin-bottom: 8px;
-            filter: drop-shadow(0px 4px 6px rgba(44, 96, 61, 0.4));
-            border-radius: 10px;
+            margin-bottom: 0.8rem;
+            transition: transform 0.3s;
         }
 
-        .grid-item span {
-            color: #2c603d;
-            font-weight: 600;
-            font-size: 14px;
+        .stemma-btn:hover img {
+            transform: scale(1.08);
+        }
+
+        footer {
             text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            padding: 2rem;
+            color: #2c603d;
+            font-size: 0.9rem;
+            opacity: 0.6;
+            border-top: 1px solid rgba(44,96,61,0.15);
+            margin-top: 1rem;
         }
 
-        @media (max-width: 480px) {
-            .main-content {
-                gap: 25px 15px;
-                padding: 10px 10px 30px 10px;
-            }
-            .grid-item span {
-                font-size: 12px;
-            }
+        @media (max-width: 900px) {
+            .stemmi-grid { grid-template-columns: repeat(2, 1fr); }
+            header h1 { font-size: 3rem; }
+            .btn { width: 260px; }
+        }
+
+        @media (max-width: 500px) {
+            .stemmi-grid { grid-template-columns: 1fr; }
+            header h1 { font-size: 2.2rem; }
+            .btn { width: 100%; }
         }
     </style>
 </head>
 <body>
-
-    <img src="hder.png" alt="Header" class="header-img">
-
-    <footer>
-        <div class="footer-links">
-            <a href="https://ersudriver.github.io/ersuoperator/coordinatori">Coordinatori</a>
-            <a href="https://ersudriver.github.io/ersuoperator/meccanici">Meccanici</a>
-            <a href="https://ersudriver.github.io/ersuoperator/rubrica_aziendale_v3">Rubrica</a>
+    <header>
+        <h1>Portale Operatori</h1>
+        <div class="buttons">
+            <a href="https://ersudriver.github.io/ersuoperator/COR" class="btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+                numeri coordinatori
+            </a>
+            <a href="https://ersudriver.github.io/ersuoperator/MEC" class="btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                numeri meccanici
+            </a>
+            <a href="https://ersudriver.github.io/ersuoperator/NUM" class="btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="2" width="8" height="8" rx="1"/>
+                    <rect x="14" y="2" width="8" height="8" rx="1"/>
+                    <rect x="2" y="14" width="8" height="8" rx="1"/>
+                    <rect x="14" y="14" width="8" height="8" rx="1"/>
+                </svg>
+                altri numeri
+            </a>
         </div>
-    </footer>
+    </header>
 
-    <div id="testo-dinamico" class="scroll-hint">
-        Buongiorno!
+    <div class="section-divider">Cartine dei Comuni</div>
+    <p style="text-align:center; color:#2c603d; font-family:'Josefin Sans',sans-serif; font-size:1.1rem; line-height:2; margin:0.5rem 0 3rem; opacity:0.75;">disponibili: Camaiore, Massarosa, Montignoso, Pietrasanta</p>
+
+    <div class="stemmi-grid">
+        <button class="stemma-btn"><img src="stemmi/seravezza.png" alt="Seravezza">Seravezza</button>
+        <button class="stemma-btn"><img src="stemmi/stazzema.png" alt="Stazzema">Stazzema</button>
+        <a href="https://drive.google.com/drive/folders/1PMXmsSXfSTzlY-qTlGKgC5AEAp4cE6DM" class="stemma-btn" target="_blank"><img src="stemmi/pietrasanta.png" alt="Pietrasanta">Pietrasanta</a>
+        <a href="https://drive.google.com/drive/u/0/folders/1r5QDvhz84Pn3EYgovvnQAvMo9kwJN0Z_" class="stemma-btn" target="_blank"><img src="stemmi/camaiore.png" alt="Camaiore">Camaiore</a>
+        <button class="stemma-btn"><img src="stemmi/forte dei marmi.png" alt="Forte dei Marmi">Forte dei Marmi</button>
+        <a href="https://drive.google.com/drive/folders/1wpR4UX9MRdE1KE5xmvxzRI6-ZnjtYXbO" class="stemma-btn" target="_blank"><img src="stemmi/massarosa.png" alt="Massarosa">Massarosa</a>
+        <a href="https://drive.google.com/drive/u/0/folders/17ZPAcVHmZygO3AwKNfkPIEgZfSrXhiv1" class="stemma-btn" target="_blank"><img src="stemmi/montignoso.png" alt="Montignoso">Montignoso</a>
+        <button class="stemma-btn"></button>
     </div>
 
-    <main class="main-content">
-        <div class="grid-item">
-            <a href="https://drive.google.com/drive/u/0/folders/1r5QDvhz84Pn3EYgovvnQAvMo9kwJN0Z_" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
-                <img src="https://lh3.googleusercontent.com/u/0/d/1u8DJy-fTNzJy-rj4c0ZPQ96O04lJFuM5" alt="Camaiore">
-                <span>Camaiore</span>
-            </a>
-        </div>
-
-        <div class="grid-item">
-            <a href="https://ersudriver.github.io/ersuoperator/#" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
-                <img src="https://lh3.googleusercontent.com/u/0/d/1GboRI6Pg7jiNemo6xuionAqx428WSBPD" alt="Forte dei Marmi">
-                <span>Forte dei Marmi</span>
-            </a>
-        </div>
-
-        <div class="grid-item">
-            <a href="https://drive.google.com/drive/folders/1wpR4UX9MRdE1KE5xmvxzRI6-ZnjtYXbO" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
-                <img src="https://lh3.googleusercontent.com/u/0/d/1jTYvAfWFWcKzUjIRzg-SdX4_LirvXZJj" alt="Massarosa">
-                <span>Massarosa</span>
-            </a>
-        </div>
-
-        <div class="grid-item">
-            <a href="https://drive.google.com/drive/u/0/folders/17ZPAcVHmZygO3AwKNfkPIEgZfSrXhiv1" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
-                <img src="https://lh3.googleusercontent.com/u/0/d/13PqI21mDUtZPgGV0G1xjmF9Sqe7jMxBg" alt="Montignoso">
-                <span>Montignoso</span>
-            </a>
-        </div>
-
-        <div class="grid-item">
-            <a href="https://drive.google.com/drive/folders/1PMXmsSXfSTzlY-qTlGKgC5AEAp4cE6DM" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
-                <img src="https://lh3.googleusercontent.com/u/0/d/1OMjPVxYVriXyCojcqfnpN4OWzl3rq2uo" alt="Pietrasanta">
-                <span>Pietrasanta</span>
-            </a>
-        </div>
-
-        <div class="grid-item">
-            <a href="https://ersudriver.github.io/ersuoperator/#" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
-                <img src="https://lh3.googleusercontent.com/u/0/d/105jQB4codXSQo5FL67fP2oqmKyB9F1T-" alt="Seravezza">
-                <span>Seravezza</span>
-            </a>
-        </div>
-
-        <div class="grid-item">
-            <a href="https://ersudriver.github.io/ersuoperator/#" style="text-decoration:none; display:flex; flex-direction:column; align-items:center;">
-                <img src="https://lh3.googleusercontent.com/u/0/d/1IZspdZJFbkV4uh4E-P2qwZ1d5sO4DY8V" alt="Stazzema">
-                <span>Stazzema</span>
-            </a>
-        </div>
-
-        <div class="grid-item">
-            <a href="https://ersudriver.github.io/ersuoperator/basement_temp">
-                <img src="https://lh3.googleusercontent.com/u/0/d/1JwzdYtZO2r5OkYjCVyVyQdRds69B9r5M" alt="vuoto">
-            </a>
-        </div>
-    </main>
-
-    <script>
-        const frasi = [
-            "le cartine su google drive sono a cura dei coordinatori",
-            "in \"Rubrica\" puoi trovare numeri di telefono e codici vari",
-            "scorri la pagina per vedere tutti i comuni",
-            "sono disponibili: Camaiore, Pietrasanta, Massarosa e Montignoso",
-            "Buongiorno!"
-        ];
-
-        const contenitore = document.getElementById('testo-dinamico');
-
-        function cambiaFrase() {
-            // Sceglie un indice a caso dall'elenco
-            const indiceCasuale = Math.floor(Math.random() * frasi.length);
-            // Inserisce il testo nell'elemento HTML
-            contenitore.textContent = frasi[indiceCasuale];
-        }
-
-        // Esegue il cambio ogni 5000 millisecondi (5 secondi)
-        setInterval(cambiaFrase, 5000);
-    </script>
-
+    <footer>&copy; 2026 Portale Operatori</footer>
 </body>
 </html>
