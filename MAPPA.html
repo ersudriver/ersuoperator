@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mappa Comuni</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #a4bb5b;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(44,96,61,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(44,96,61,0.08) 0%, transparent 50%),
+                repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(44,96,61,0.03) 40px, rgba(44,96,61,0.03) 41px);
+            color: #2c603d;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e4a2a 0%, #2c603d 40%, #3a7a4e 100%);
+            color: #a4bb5b;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #a4bb5b, #d4e68a, #a4bb5b);
+        }
+
+        header h1 {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 4.5rem;
+            font-weight: 700;
+            margin-bottom: 4rem;
+            animation: fadeSlide 1s ease-out;
+            letter-spacing: 2px;
+        }
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(-30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(164,187,91,0.1);
+            backdrop-filter: blur(4px);
+            border: 2px solid rgba(164,187,91,0.4);
+            border-radius: 1.5rem;
+            padding: 2rem 2.5rem;
+            color: #a4bb5b;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.3s, color 0.3s, border-color 0.3s, transform 0.3s;
+            width: 300px;
+        }
+
+        .btn:hover {
+            background: #a4bb5b;
+            color: #2c603d;
+            border-color: #a4bb5b;
+            transform: translateY(-6px);
+        }
+
+        .btn svg {
+            width: 56px;
+            height: 56px;
+            transition: transform 0.3s;
+        }
+
+        .btn:hover svg {
+            transform: scale(1.15);
+        }
+
+        .section-divider {
+            text-align: center;
+            padding: 3rem 2rem 1.5rem;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 2rem;
+            font-weight: 600;
+            color: #2c603d;
+            opacity: 0.8;
+        }
+
+        .map-wrapper {
+            max-width: 1100px;
+            margin: 0 auto 2rem;
+            padding: 0 2rem;
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            height: 550px;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 15px rgba(44,96,61,0.1);
+            z-index: 0;
+            position: relative;
+        }
+
+        .leaflet-tile-pane {
+            filter: brightness(0.85) contrast(0.85);
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(164, 187, 91, 0.2);
+            pointer-events: none;
+            border-radius: 1.5rem;
+            z-index: 1000;
+        }
+
+        .leaflet-control-zoom { display: none !important; }
+        .leaflet-control-attribution { display: none !important; }
+
+        .stemma-marker {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            width: 100px;
+            position: relative;
+        }
+
+        .leaflet-marker-icon:hover {
+            z-index: 10000 !important;
+        }
+
+        .stemma-marker img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            transition: transform 0.3s;
+        }
+
+        .stemma-marker span {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #a4bb5b;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            background: #2c603d;
+            padding: 4px 12px;
+            border-radius: 0.5rem;
+            pointer-events: none;
+        }
+
+        .stemma-marker:hover span {
+            opacity: 1;
+        }
+
+        .stemma-marker:hover img {
+            transform: scale(1.2);
+        }
+
+        .home-link {
+            text-align: center;
+            width: 100%;
+            margin: 1rem 0 3rem;
+        }
+
+        .link-home {
+            display: inline-block;
+            color: #2c603d;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border: 2px solid #2c603d;
+            padding: 12px 30px;
+            border-radius: 1rem;
+            transition: background 0.3s, color 0.3s, transform 0.3s;
+        }
+
+        .link-home:hover {
+            background-color: #2c603d;
+            color: #a4bb5b;
+            transform: translateY(-3px);
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #2c603d;
+            font-size: 0.9rem;
+            opacity: 0.6;
+            border-top: 1px solid rgba(44,96,61,0.15);
+        }
+
+        @media (max-width: 900px) {
+            header h1 { font-size: 3.5rem; }
+            .btn { width: 100%; }
+            #map { height: 400px; }
+        }
+
+        @media (max-width: 500px) {
+            body { overflow-x: hidden; }
+            header { padding: 1.5rem 1rem; }
+            header h1 { font-size: 2.8rem; margin-bottom: 2rem; }
+            .map-wrapper { padding: 0 1rem; }
+            #map { height: 350px; }
+            .btn {
+                width: auto;
+                flex: 1;
+                padding: 1rem 1.2rem;
+                font-size: 0.9rem;
+                min-width: 0;
+            }
+            .btn svg { width: 36px; height: 36px; }
+            .buttons { gap: 0.8rem; }
+            .stemma-marker { width: 76px; }
+            .stemma-marker img { width: 56px; height: 56px; }
+            .stemma-marker span { font-size: 0.8rem; padding: 2px 8px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Portale Operatori</h1>
+        <div class="buttons">
+            <a href="https://ersudriver.github.io/ersuoperator/COR" class="btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+                numeri coordinatori
+            </a>
+            <a href="https://ersudriver.github.io/ersuoperator/MEC" class="btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                numeri meccanici
+            </a>
+            <a href="https://ersudriver.github.io/ersuoperator/NUM" class="btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="2" width="8" height="8" rx="1"/>
+                    <rect x="14" y="2" width="8" height="8" rx="1"/>
+                    <rect x="2" y="14" width="8" height="8" rx="1"/>
+                    <rect x="14" y="14" width="8" height="8" rx="1"/>
+                </svg>
+                altri numeri
+            </a>
+        </div>
+    </header>
+
+    <div class="section-divider">Mappa dei Comuni</div>
+
+    <div class="map-wrapper">
+        <div id="map"></div>
+        <div class="map-overlay"></div>
+    </div>
+
+    <div class="home-link">
+        <a href="index.html" class="link-home">torna alla homepage</a>
+    </div>
+
+    <footer>&copy; 2026 Portale Operatori</footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map', {
+            center: [43.94, 10.24],
+            zoom: 11,
+            zoomControl: false,
+            dragging: false,
+            scrollWheelZoom: false,
+            touchZoom: false,
+            doubleClickZoom: false,
+            boxZoom: false,
+            keyboard: false,
+            attributionControl: false
+        });
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+            maxZoom: 18
+        }).addTo(map);
+
+        const comuni = [
+            { name: 'Seravezza',    lat: 44.00, lng: 10.23, img: 'stemmi/seravezza.png',        link: null },
+            { name: 'Stazzema',     lat: 43.99, lng: 10.31, img: 'stemmi/stazzema.png',         link: null },
+            { name: 'Pietrasanta',  lat: 43.96, lng: 10.23, img: 'stemmi/pietrasanta.png',      link: 'https://drive.google.com/drive/folders/1PMXmsSXfSTzlY-qTlGKgC5AEAp4cE6DM' },
+            { name: 'Camaiore',     lat: 43.94, lng: 10.30, img: 'stemmi/camaiore.png',         link: 'https://drive.google.com/drive/u/0/folders/1r5QDvhz84Pn3EYgovvnQAvMo9kwJN0Z_' },
+            { name: 'Forte dei Marmi', lat: 43.96, lng: 10.17, img: 'stemmi/forte dei marmi.png', link: null },
+            { name: 'Massarosa',    lat: 43.87, lng: 10.34, img: 'stemmi/massarosa.png',        link: 'https://drive.google.com/drive/folders/1wpR4UX9MRdE1KE5xmvxzRI6-ZnjtYXbO' },
+            { name: 'Montignoso',   lat: 44.02, lng: 10.18, img: 'stemmi/montignoso.png',       link: 'https://drive.google.com/drive/u/0/folders/17ZPAcVHmZygO3AwKNfkPIEgZfSrXhiv1' }
+        ];
+
+        comuni.forEach(c => {
+            const tag = c.link ? 'a' : 'div';
+            const wrapper = document.createElement(tag);
+            wrapper.className = 'stemma-marker';
+            if (c.link) wrapper.href = c.link;
+            if (c.link) wrapper.target = '_blank';
+
+            const img = document.createElement('img');
+            img.src = c.img;
+            img.alt = c.name;
+            wrapper.appendChild(img);
+
+            const label = document.createElement('span');
+            label.textContent = c.name;
+            wrapper.appendChild(label);
+
+            const icon = L.divIcon({ html: wrapper.outerHTML, className: '', iconSize: [80, 80], iconAnchor: [40, 40] });
+            L.marker([c.lat, c.lng], { icon }).addTo(map);
+        });
+    </script>
+</body>
+</html>
