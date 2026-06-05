@@ -156,6 +156,41 @@
             transform: translateY(-3px);
         }
 
+        .malattia-box {
+            width: 100%;
+            max-width: 550px;
+            margin: 0 auto 1.5rem;
+            padding: 0 2rem;
+        }
+
+        .malattia-box table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #a94c42;
+            opacity: 1;
+            border: 3px solid #c0392b;
+            border-radius: 1rem;
+            overflow: hidden;
+            font-family: 'Josefin Sans', sans-serif;
+        }
+
+        .malattia-box td {
+            padding: 14px 20px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .malattia-box td:last-child {
+            text-align: right;
+            font-size: 1.1rem;
+        }
+
+        .malattia-box td a {
+            color: #fff;
+            text-decoration: none;
+        }
+
         input {
             width: 100%;
             padding: 12px;
@@ -246,7 +281,7 @@
 
     <div class="container">
         <div class="top-nav">
-            <a href="lista_contatti" class="list-link">vedi la lista &gt;</a>
+            <a href="NUM_LIST" class="list-link">vedi la lista &gt;</a>
         </div>
 
         <h2>Rubrica Aziendale</h2>
@@ -254,12 +289,21 @@
         <a href="rubrica_aziendale.vcf" class="btn-vcf">scarica tutti i contatti</a>
 
         <p class="search-instruction">
-            oppure scrivi un nome/cognome per vedere un numero di telefono <br>
-            o un nome di un comune per i codici di cancelli e serrature
+            oppure puoi CERCARE singolarmente una PERSONA<br>
+            o un COMUNE per numeri di telefono / codici di cancelli e serrature
         </p>
 
         <input type="text" id="searchInput" placeholder="prova a digitare qualcosa..." onkeyup="searchData()">
         <div id="results"></div>
+    </div>
+
+    <div class="malattia-box">
+        <table>
+            <tr>
+                <td>comunica malattia</td>
+                <td><a href="tel:+390584282223">0584 282223</a></td>
+            </tr>
+        </table>
     </div>
 
     <div class="home-link">
