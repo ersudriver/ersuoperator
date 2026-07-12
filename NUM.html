@@ -291,7 +291,14 @@
         <h1>Portale Operatori</h1>
     </header>
 
-    <div class="section-divider">Ricerca Contatti</div>
+    <div class="malattia-box" style="margin-top:1.5rem;">
+        <table>
+            <tr>
+                <td>Comunicazione Malattia</td>
+                <td><a href="tel:+390584282223" class="btn-chiama">Chiama</a></td>
+            </tr>
+        </table>
+    </div>
 
     <div class="container">
         <div class="top-nav">
@@ -300,24 +307,25 @@
 
         <h2>Rubrica Aziendale</h2>
 
-        <a href="rubrica_aziendale.vcf" class="btn-vcf">scarica tutti i contatti</a>
+        <input type="text" id="searchInput" placeholder="prova a digitare qualcosa..." onkeyup="searchData()">
 
         <p class="search-instruction">
-            oppure puoi CERCARE singolarmente una PERSONA<br>
-            o un COMUNE per numeri di telefono / codici di cancelli e serrature
+            Puoi digitare nella barra di ricerca un nome qualsiasi per ottenere il relativo contatto.<br>
+            Tocca sul numero per comporlo.
         </p>
 
-        <input type="text" id="searchInput" placeholder="prova a digitare qualcosa..." onkeyup="searchData()">
-        <div id="results"></div>
-    </div>
+        <p class="search-instruction" style="margin-bottom:0.5rem;">
+            Puoi creare una scorciatoia sul tuo dispositivo dalle impostazioni del browser per accedere direttamente a questa pagina ed evitare di salvare ogni numero, oppure...
+        </p>
 
-    <div class="malattia-box">
-        <table>
-            <tr>
-                <td>Comunica Malattia</td>
-                <td><a href="tel:+390584282223" class="btn-chiama">Chiama</a></td>
-            </tr>
-        </table>
+        <a href="rubrica_aziendale.vcf" class="btn-vcf" style="margin-top:0.5rem;">scarica tutti i contatti</a>
+
+        <p class="search-instruction" style="margin-top:0;">
+            la rubrica contiene anche i codici di cancelli e lucchetti per alcuni Comuni.<br>
+            Se queste informazioni dovessero risultare errate o incomplete, siete pregati di comunicarmelo <a href="https://wa.me/393456435592" target="_blank" style="color:#2c603d; font-weight:700;">qui</a>
+        </p>
+
+        <div id="results"></div>
     </div>
 
     <div class="home-link">
