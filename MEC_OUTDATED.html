@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meccanici</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Josefin Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #a4bb5b;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(44,96,61,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(44,96,61,0.08) 0%, transparent 50%),
+                repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(44,96,61,0.03) 40px, rgba(44,96,61,0.03) 41px);
+            color: #2c603d;
+        }
+
+        header {
+            width: 100%;
+            background: linear-gradient(135deg, #1e4a2a 0%, #2c603d 40%, #3a7a4e 100%);
+            color: #a4bb5b;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #a4bb5b, #d4e68a, #a4bb5b);
+        }
+
+        header h1 {
+            font-size: 4.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            animation: fadeSlide 1s ease-out;
+        }
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(-30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-divider {
+            text-align: center;
+            padding: 3rem 2rem 1.5rem;
+            font-size: 2rem;
+            font-weight: 600;
+            color: #2c603d;
+            opacity: 0.8;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            max-width: 800px;
+            padding: 0 2rem;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(6px);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(44,96,61,0.1);
+        }
+
+        thead {
+            background-color: #2c603d;
+            color: #a4bb5b;
+        }
+
+        th {
+            padding: 15px 20px;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        td {
+            padding: 14px 20px;
+            border-bottom: 1px solid rgba(44,96,61,0.15);
+            color: #2c603d;
+            font-weight: 400;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: rgba(44,96,61,0.06);
+        }
+
+        tbody tr:hover {
+            background-color: rgba(44,96,61,0.12);
+        }
+
+        td a {
+            color: #2c603d;
+            text-decoration: underline;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        td a:hover {
+            opacity: 0.7;
+        }
+
+        .home-link {
+            text-align: center;
+            width: 100%;
+            margin: 1rem 0 3rem;
+        }
+
+        .link-home {
+            display: inline-block;
+            color: #2c603d;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border: 2px solid #2c603d;
+            padding: 12px 30px;
+            border-radius: 1rem;
+            transition: background 0.3s, color 0.3s, transform 0.3s;
+        }
+
+        .link-home:hover {
+            background-color: #2c603d;
+            color: #a4bb5b;
+            transform: translateY(-3px);
+        }
+
+        footer {
+            width: 100%;
+            text-align: center;
+            padding: 2rem;
+            color: #2c603d;
+            font-size: 0.9rem;
+            opacity: 0.6;
+            border-top: 1px solid rgba(44,96,61,0.15);
+        }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 2.5rem; }
+            th, td { padding: 10px 12px; font-size: 14px; }
+            .section-divider { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Portale Operatori</h1>
+    </header>
+
+    <div class="section-divider">Contatti Meccanici</div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Telefono</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cosci Mario</td>
+                    <td><a href="tel:+393469928798">3469928798</a></td>
+                </tr>
+                <tr>
+                    <td>Fontana Fabio</td>
+                    <td><a href="tel:+393401362633">3401362633</a></td>
+                </tr>
+                <tr>
+                    <td>Baldi Mauro</td>
+                    <td><a href="tel:+393428587373">3428587373</a></td>
+                </tr>
+                <tr>
+                    <td>Doveri Daniele</td>
+                    <td><a href="tel:+393487092482">3487092482</a></td>
+                </tr>
+                <tr>
+                    <td>Monaco Alessandro</td>
+                    <td><a href="tel:+393427797137">3427797137</a></td>
+                </tr>
+                <tr>
+                    <td>Strambi Natalino</td>
+                    <td><a href="tel:+393384398096">3384398096</a></td>
+                </tr>
+                <tr>
+                    <td>Piffari Gabriele</td>
+                    <td><a href="tel:+393471437740">3471437740</a></td>
+                </tr>
+                <tr>
+                    <td>Sichi Massimiliano</td>
+                    <td><a href="tel:+393483064559">3483064559</a></td>
+                </tr>
+                <tr>
+                    <td>Fazzi Nicoló</td>
+                    <td><a href="tel:+393450319533">3450319533</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="home-link">
+        <a href="index.html" class="link-home">torna alla homepage</a>
+    </div>
+
+    <footer>&copy; 2026 Portale Operatori</footer>
+</body>
+</html>
