@@ -111,6 +111,9 @@
         .btn.scatta { background: #c0392b; border-color: #c0392b; color: #ffffff; }
         .btn.scatta:hover { background: #96281b; border-color: #96281b; color: #ffffff; }
 
+        .hint-camera { font-weight: 700; color: #c0392b; margin-bottom: 0.6rem; }
+        .hint-camera[hidden] { display: none; }
+
         video {
             width: 100%;
             max-width: 480px;
@@ -209,6 +212,8 @@
             <input type="number" step="any" id="lonInput" placeholder="longitudine">
             <button type="button" class="btn" onclick="impostaCoordinateManuali()">Imposta coordinate</button>
         </div>
+
+        <p class="hint-camera" id="hintCamera" hidden>tieni il soggetto al centro dell'immagine</p>
 
         <video id="video" autoplay playsinline muted hidden></video>
 
@@ -314,6 +319,7 @@
                 video.hidden = false;
                 document.getElementById('etichettaCamera').textContent = 'SCATTA';
                 document.getElementById('btnCamera').classList.add('scatta');
+                document.getElementById('hintCamera').hidden = false;
                 stato.textContent = 'Fotocamera attiva: inquadra e premi SCATTA.';
             } catch (e) {
                 stato.textContent = 'Permesso fotocamera negato o fotocamera non disponibile.';
@@ -329,6 +335,7 @@
             video.srcObject = null;
             document.getElementById('etichettaCamera').textContent = 'FOTOCAMERA';
             document.getElementById('btnCamera').classList.remove('scatta');
+            document.getElementById('hintCamera').hidden = true;
         }
 
         function scatta() {
@@ -536,30 +543,26 @@
             const maxTextW = W - P - 16 - tx;
             const c = document.getElementById('commento').value.trim() || '(nessun commento)';
             const coordinate = lat !== null ? `${lat.toFixed(6)}, ${lon.toFixed(6)}` : 'non disponibili';
+            const dataOra = new Date().toLocaleString('it-IT');
 
             ctx.textAlign = 'left';
             ctx.fillStyle = '#d4e68a';
             ctx.font = '700 30px "Josefin Sans", sans-serif';
-            ctx.fillText('PORTALE OPERATORI - SEGNALAZIONE', tx, infoY + 60);
+            ctx.fillText(`SEGNALAZIONE - ${dataOra}`, tx, infoY + 55);
 
             ctx.fillStyle = '#ffffff';
             ctx.font = '600 27px "Josefin Sans", sans-serif';
-            ctx.fillText(`GPS: ${coordinate}`, tx, infoY + 130);
+            ctx.fillText(`GPS: ${coordinate}`, tx, infoY + 105);
 
             ctx.fillStyle = '#d4e68a';
             ctx.font = '700 26px "Josefin Sans", sans-serif';
-            ctx.fillText('COMMENTO:', tx, infoY + 205);
+            ctx.fillText('COMMENTO:', tx, infoY + 150);
 
             ctx.fillStyle = '#ffffff';
             ctx.font = '400 24px "Josefin Sans", sans-serif';
-            const righe = righeTesto(ctx, c, maxTextW).slice(0, 3);
-            righe.forEach((riga, i) => {
-                ctx.fillText(riga, tx, infoY + 255 + i * 45);
+            righeTesto(ctx, c, maxTextW).slice(0, 3).forEach((riga, i) => {
+                ctx.fillText(riga, tx, infoY + 188 + i * 32);
             });
-
-            ctx.fillStyle = '#a4bb5b';
-            ctx.font = '400 20px "Josefin Sans", sans-serif';
-            ctx.fillText(new Date().toLocaleString('it-IT'), tx, infoY + 255 + righe.length * 45 + 36);
 
             outputCanvas = out;
             anteprima.width = W;
