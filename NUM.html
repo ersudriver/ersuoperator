@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ricerca Contatti</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -12,6 +12,12 @@
             padding: 0;
             box-sizing: border-box;
         }
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+            touch-action: pan-y;
+        }
+
 
         body {
             font-family: 'Josefin Sans', sans-serif;
@@ -214,14 +220,20 @@
             border-bottom: none;
         }
 
+        .risultato-testo {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
         .name {
             font-weight: 600;
             color: #2c603d;
         }
 
         .ruolo {
-            display: inline-block;
-            margin-left: 8px;
+            display: block;
+            width: fit-content;
             padding: 2px 8px;
             border-radius: 0.5rem;
             background: rgba(44,96,61,0.12);
@@ -417,7 +429,10 @@
                     const badge = item.ruolo ? `<span class="ruolo">${item.ruolo}</span>` : '';
                     resultsDiv.innerHTML += `
                         <div class="result-item">
-                            <span class="name">${item.nome}${badge}</span>
+                            <div class="risultato-testo">
+                                <span class="name">${item.nome}</span>
+                                ${badge}
+                            </div>
                             <a href="tel:${cleanNumber}" class="number-link">${item.numero}</a>
                         </div>`;
                 });
