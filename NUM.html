@@ -75,7 +75,7 @@
             padding: 2rem;
             width: 100%;
             max-width: 550px;
-            margin: 0 auto 2rem;
+            margin: 2rem auto 2rem;
             box-shadow: 0 4px 15px rgba(44,96,61,0.1);
             text-align: center;
         }
@@ -90,24 +90,27 @@
 
         .role-buttons {
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
-            gap: 1rem;
+            gap: 0.4rem;
             margin-bottom: 1.5rem;
         }
 
         .btn-ruolo {
             display: flex;
-            flex: 1;
+            flex: 0 0 116px;
+            width: 116px;
             flex-direction: column;
             align-items: center;
-            gap: 0.6rem;
+            text-decoration: none;
+            gap: 0.4rem;
             background: rgba(44,96,61,0.08);
             border: 2px solid #2c603d;
-            border-radius: 1.5rem;
-            padding: 1rem 0.5rem;
+            border-radius: 1rem;
+            padding: 0.7rem 0.3rem;
             color: #2c603d;
             font-family: 'Josefin Sans', sans-serif;
-            font-size: 1rem;
+            font-size: 0.75rem;
             font-weight: 600;
             cursor: pointer;
             transition: background 0.3s, color 0.3s, transform 0.3s;
@@ -119,9 +122,21 @@
             transform: translateY(-4px);
         }
 
+        .btn-ruolo-malattie {
+            background: #a94c42;
+            border-color: #c0392b;
+            color: #fff;
+        }
+
+        .btn-ruolo-malattie:hover {
+            background: #8b0000;
+            border-color: #8b0000;
+            color: #fff;
+        }
+
         .btn-ruolo svg {
-            width: 36px;
-            height: 36px;
+            width: 26px;
+            height: 26px;
             transition: transform 0.3s;
         }
 
@@ -160,54 +175,6 @@
             background-color: #2c603d;
             color: #a4bb5b;
             transform: translateY(-3px);
-        }
-
-        .malattia-box {
-            width: 100%;
-            max-width: 550px;
-            margin: 0 auto 1.5rem;
-            padding: 0 2rem;
-        }
-
-        .malattia-box table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #a94c42;
-            opacity: 1;
-            border: 3px solid #c0392b;
-            border-radius: 1rem;
-            overflow: hidden;
-            font-family: 'Josefin Sans', sans-serif;
-            table-layout: fixed;
-        }
-
-        .malattia-box td {
-            padding: 14px 20px;
-            color: #fff;
-            font-weight: 600;
-            font-size: 1rem;
-            white-space: nowrap;
-        }
-
-        .malattia-box td:last-child {
-            text-align: right;
-        }
-
-        .btn-chiama {
-            display: inline-block;
-            background: #8b0000;
-            color: #fff;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1rem;
-            padding: 8px 22px;
-            border-radius: 0.8rem;
-            transition: transform 0.3s, opacity 0.3s;
-        }
-
-        .btn-chiama:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
         }
 
         input {
@@ -298,25 +265,16 @@
             html, body { overflow-x: hidden; width: 100%; }
             header h1 { font-size: 2.5rem; }
             .section-divider { font-size: 1.5rem; }
-            .container { margin: 0 1rem 2rem; }
-            .btn-ruolo { font-size: 0.85rem; padding: 0.8rem 0.4rem; }
-            .btn-ruolo svg { width: 30px; height: 30px; }
+            .container { margin: 2rem 1rem 2rem; }
+            .btn-ruolo { flex-basis: 100px; width: 100px; font-size: 0.66rem; padding: 0.6rem 0.2rem; }
+            .btn-ruolo svg { width: 22px; height: 22px; }
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Portale Operatori</h1>
+        <h1><a href="index.html" style="color:inherit; text-decoration:none;">Portale Operatori</a></h1>
     </header>
-
-    <div class="malattia-box" style="margin-top:1.5rem;">
-        <table>
-            <tr>
-                <td>Comunicazione Malattia</td>
-                <td><a href="tel:+390584282223" class="btn-chiama"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;display:block;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></a></td>
-            </tr>
-        </table>
-    </div>
 
     <div class="container">
         <h2>Rubrica Aziendale</h2>
@@ -336,6 +294,36 @@
                 </svg>
                 MECCANICI
             </button>
+            <button type="button" class="btn-ruolo" onclick="mostraRuolo('uff.personale')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="7" width="20" height="14" rx="2"/>
+                    <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+                UFF.PERSONALE
+            </button>
+            <button type="button" class="btn-ruolo" onclick="mostraRuolo('magazzino')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 21V9l9-6 9 6v12"/>
+                    <path d="M3 21h18"/>
+                    <rect x="9" y="13" width="6" height="8"/>
+                </svg>
+                MAGAZZINO
+            </button>
+            <button type="button" class="btn-ruolo" onclick="mostraRuolo('risorse umane')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                RISORSE UMANE
+            </button>
+            <a href="tel:+390584282223" class="btn-ruolo btn-ruolo-malattie">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                MALATTIE
+            </a>
         </div>
 
         <input type="text" id="searchInput" placeholder="prova a scrivere un nome, un cognome, o un comune..." onkeyup="searchData()">
@@ -354,7 +342,7 @@
 
     <script>
         let dataCache = [];
-        const ruoli = ['coordinatore', 'meccanico'];
+        const ruoli = ['coordinatore', 'meccanico', 'uff.personale', 'magazzino', 'risorse umane'];
         const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS67eexfd9Plogb9viPBDF3GnSsaBAHn54ghW_qmWhlu3V5p5GsmYYG9f1lSFUldXxhM90AHhBZJGpB/pub?output=csv';
 
         function parseCsvRow(row) {
@@ -380,6 +368,10 @@
             }
             columns.push(value);
             return columns;
+        }
+
+        function normalizzaRuolo(valore) {
+            return valore.toLowerCase().replace(/[\s.]/g, '');
         }
 
         async function loadData() {
@@ -410,10 +402,13 @@
             if (query.length < 2) return;
 
             // Se la ricerca assomiglia a un ruolo, filtra sulla colonna C del foglio
-            const ruoloCercato = query.length >= 3 ? ruoli.find(r => r.startsWith(query)) : null;
+            const queryRuolo = normalizzaRuolo(query);
+            const ruoloCercato = query.length >= 3
+                ? ruoli.find(r => normalizzaRuolo(r).startsWith(queryRuolo))
+                : null;
 
             const filtered = ruoloCercato
-                ? dataCache.filter(item => item.ruolo.toLowerCase().includes(ruoloCercato))
+                ? dataCache.filter(item => normalizzaRuolo(item.ruolo).includes(queryRuolo))
                 : dataCache.filter(item => item.nome.toLowerCase().includes(query));
 
             if (filtered.length > 0) {
