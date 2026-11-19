@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ricerca Contatti</title>
+    <title>Segnalazione Foto</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
             max-width: 100%;
             overflow-x: hidden;
@@ -22,15 +20,12 @@
         body {
             font-family: 'Josefin Sans', sans-serif;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            color: #2c603d;
             background-color: #a4bb5b;
             background-image:
                 radial-gradient(circle at 20% 50%, rgba(44,96,61,0.08) 0%, transparent 50%),
                 radial-gradient(circle at 80% 50%, rgba(44,96,61,0.08) 0%, transparent 50%),
                 repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(44,96,61,0.03) 40px, rgba(44,96,61,0.03) 41px);
-            color: #2c603d;
         }
 
         header {
@@ -46,124 +41,180 @@
         header::after {
             content: '';
             position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            bottom: 0; left: 0; right: 0;
             height: 6px;
             background: linear-gradient(90deg, #a4bb5b, #d4e68a, #a4bb5b);
         }
 
-        header h1 {
-            font-size: 4.5rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            animation: fadeSlide 1s ease-out;
-        }
-
-        @keyframes fadeSlide {
-            from { opacity: 0; transform: translateY(-30px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .section-divider {
-            text-align: center;
-            padding: 3rem 2rem 1.5rem;
-            font-size: 2rem;
-            font-weight: 600;
-            color: #2c603d;
-            opacity: 0.8;
-        }
+        header h1 { font-size: 3rem; font-weight: 700; letter-spacing: 2px; }
+        header h1 a { color: inherit; text-decoration: none; }
 
         .container {
-            background: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.18);
             backdrop-filter: blur(6px);
             border-radius: 1.5rem;
             padding: 2rem;
             width: 100%;
-            max-width: 550px;
-            margin: 2rem auto 2rem;
-            box-shadow: 0 4px 15px rgba(44,96,61,0.1);
+            max-width: 760px;
+            margin: 2rem auto;
+            box-shadow: 0 4px 15px rgba(44,96,61,0.12);
             text-align: center;
         }
 
         h2 {
-            color: #2c603d;
-            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            font-size: 1.6rem;
+        }
+
+        .stato {
+            font-size: 0.95rem;
+            font-weight: 600;
+            min-height: 1.4rem;
             margin-bottom: 1rem;
         }
 
-        .role-buttons {
+        .buttons {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             justify-content: center;
-            gap: 0.4rem;
+            gap: 0.7rem;
             margin-bottom: 1.5rem;
         }
 
-        .btn-ruolo {
-            display: flex;
-            flex: 0 0 116px;
-            width: 116px;
-            flex-direction: column;
+        .btn {
+            display: inline-flex;
             align-items: center;
-            text-decoration: none;
-            gap: 0.4rem;
+            justify-content: center;
+            gap: 0.5rem;
             background: rgba(44,96,61,0.08);
             border: 2px solid #2c603d;
             border-radius: 1rem;
-            padding: 0.7rem 0.3rem;
+            padding: 0.7rem 1rem;
             color: #2c603d;
             font-family: 'Josefin Sans', sans-serif;
-            font-size: 0.75rem;
+            font-size: 0.95rem;
             font-weight: 600;
+            text-decoration: none;
             cursor: pointer;
             transition: background 0.3s, color 0.3s, transform 0.3s;
         }
 
-        .btn-ruolo:hover {
-            background: #2c603d;
-            color: #a4bb5b;
-            transform: translateY(-4px);
-        }
+        .btn:hover { background: #2c603d; color: #a4bb5b; transform: translateY(-3px); }
+        .btn svg { width: 20px; height: 20px; }
+        .btn[hidden] { display: none; }
 
-        .btn-ruolo-malattie {
-            background: #a94c42;
-            border-color: #c0392b;
-            color: #fff;
-        }
+        .btn-primary { background: #2c603d; color: #a4bb5b; }
+        .btn-primary:hover { background: #1e4a2a; color: #d4e68a; }
 
-        .btn-ruolo-malattie:hover {
-            background: #8b0000;
-            border-color: #8b0000;
-            color: #fff;
-        }
+        .btn.scatta { background: #c0392b; border-color: #c0392b; color: #ffffff; }
+        .btn.scatta:hover { background: #96281b; border-color: #96281b; color: #ffffff; }
 
-        .btn-ruolo svg {
-            width: 26px;
-            height: 26px;
-            transition: transform 0.3s;
-        }
+        .hint-camera { font-weight: 700; color: #c0392b; margin-bottom: 0.6rem; }
+        .hint-camera[hidden] { display: none; }
 
-        .btn-ruolo:hover svg {
-            transform: scale(1.15);
-        }
-
-        .search-instruction {
-            font-size: 12px;
-            font-style: italic;
-            line-height: 1.4;
-            margin-bottom: 1rem;
-            color: #2c603d;
-            text-align: center;
-        }
-
-        .home-link {
-            text-align: center;
+        .camera-box {
+            position: relative;
             width: 100%;
-            margin: 1rem 0 3rem;
+            max-width: 480px;
+            margin: 0 auto 1rem;
         }
+
+        .camera-box[hidden] { display: none; }
+
+        video {
+            width: 100%;
+            border: 3px solid #2c603d;
+            border-radius: 1rem;
+            background: #1e4a2a;
+            display: block;
+        }
+
+        .guida-centro {
+            position: absolute;
+            inset: 0;
+            border-radius: 1rem;
+            pointer-events: none;
+            background: radial-gradient(circle at center, transparent 70px, rgba(0,0,0,0.18) 71px);
+        }
+
+        .guida-centro::before,
+        .guida-centro::after {
+            content: '';
+            position: absolute;
+            background: rgba(255,255,255,0.75);
+        }
+
+        .guida-centro::before {
+            left: 50%; top: 0; bottom: 0;
+            width: 2px;
+            transform: translateX(-50%);
+        }
+
+        .guida-centro::after {
+            top: 50%; left: 0; right: 0;
+            height: 2px;
+            transform: translateY(-50%);
+        }
+
+        .guida-centro span {
+            position: absolute;
+            left: 50%; top: 50%;
+            width: 140px; height: 140px;
+            transform: translate(-50%, -50%);
+            border: 3px solid rgba(255,255,255,0.9);
+            border-radius: 50%;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
+        }
+
+        #anteprima {
+            width: 100%;
+            height: auto;
+            border: 3px solid #2c603d;
+            border-radius: 1rem;
+            display: block;
+            margin: 0 auto 1rem;
+            background: rgba(44,96,61,0.08);
+        }
+
+        #anteprima[hidden] { display: none; }
+
+        textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            margin-bottom: 1rem;
+            border: 2px solid #2c603d;
+            border-radius: 0.8rem;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 1rem;
+            color: #2c603d;
+            background: rgba(255,255,255,0.25);
+            resize: none;
+        }
+
+        .coord-manuali {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+        }
+
+        .coord-manuali input {
+            width: 150px;
+            padding: 8px;
+            border: 2px solid #2c603d;
+            border-radius: 0.6rem;
+            font-family: 'Josefin Sans', sans-serif;
+            color: #2c603d;
+            background: rgba(255,255,255,0.25);
+        }
+
+        .coord-manuali[hidden] { display: none; }
+
+        .home-link { text-align: center; margin: 0 auto 3rem; }
 
         .link-home {
             display: inline-block;
@@ -177,109 +228,14 @@
             transition: background 0.3s, color 0.3s, transform 0.3s;
         }
 
-        .link-home:hover {
-            background-color: #2c603d;
-            color: #a4bb5b;
-            transform: translateY(-3px);
-        }
+        .link-home:hover { background: #2c603d; color: #a4bb5b; transform: translateY(-3px); }
 
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 1.5rem;
-            border: 2px solid #2c603d;
-            border-radius: 0.8rem;
-            box-sizing: border-box;
-            font-size: 16px;
-            font-family: 'Josefin Sans', sans-serif;
-            background: rgba(255,255,255,0.2);
-            color: #2c603d;
-            outline: none;
-            transition: box-shadow 0.3s;
-        }
-
-        input:focus {
-            box-shadow: 0 0 0 3px rgba(44,96,61,0.2);
-        }
-
-        input::placeholder {
-            color: #2c603d;
-            opacity: 0.6;
-        }
-
-        .result-item {
-            padding: 12px 10px;
-            border-bottom: 1px solid rgba(44,96,61,0.15);
-            text-align: left;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .result-item:last-child {
-            border-bottom: none;
-        }
-
-        .risultato-testo {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .name {
-            font-weight: 600;
-            color: #2c603d;
-        }
-
-        .ruolo {
-            display: block;
-            width: fit-content;
-            padding: 2px 8px;
-            border-radius: 0.5rem;
-            background: rgba(44,96,61,0.12);
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: capitalize;
-        }
-
-        .number-link {
-            color: #2c603d;
-            font-weight: 700;
-            text-decoration: none;
-            border: 2px solid #2c603d;
-            padding: 6px 12px;
-            border-radius: 0.6rem;
-            transition: background 0.3s, color 0.3s;
-        }
-
-        .number-link:hover {
-            background-color: #2c603d;
-            color: #a4bb5b;
-        }
-
-        .no-results {
-            color: #2c603d;
-            margin-top: 1rem;
-            font-style: italic;
-        }
-
-        footer {
-            width: 100%;
-            text-align: center;
-            padding: 2rem;
-            color: #2c603d;
-            font-size: 0.9rem;
-            opacity: 0.6;
-            border-top: 1px solid rgba(44,96,61,0.15);
-        }
+        footer { text-align: center; padding: 1.5rem; opacity: 0.6; font-size: 0.9rem; }
 
         @media (max-width: 600px) {
-            html, body { overflow-x: hidden; width: 100%; }
-            header h1 { font-size: 2.5rem; }
-            .section-divider { font-size: 1.5rem; }
-            .container { margin: 2rem 1rem 2rem; }
-            .btn-ruolo { flex-basis: 100px; width: 100px; font-size: 0.66rem; padding: 0.6rem 0.2rem; }
-            .btn-ruolo svg { width: 22px; height: 22px; }
+            header h1 { font-size: 2rem; }
+            .container { width: calc(100% - 2rem); margin: 1.5rem auto; padding: 1.2rem; }
+            .btn { font-size: 0.8rem; padding: 0.55rem 0.6rem; }
         }
     </style>
 </head>
@@ -289,61 +245,41 @@
     </header>
 
     <div class="container">
-        <h2>Rubrica Aziendale</h2>
+        <h2>INOLTRA SEGNALAZIONE</h2>
 
-        <div class="role-buttons">
-            <button type="button" class="btn-ruolo" onclick="mostraRuolo('coordinatore')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                </svg>
-                COORDINATORI
-            </button>
-            <button type="button" class="btn-ruolo" onclick="mostraRuolo('meccanico')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                </svg>
-                MECCANICI
-            </button>
-            <button type="button" class="btn-ruolo" onclick="mostraRuolo('uff.personale')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="7" width="20" height="14" rx="2"/>
-                    <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                </svg>
-                UFF.PERSONALE
-            </button>
-            <button type="button" class="btn-ruolo" onclick="mostraRuolo('magazzino')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 21V9l9-6 9 6v12"/>
-                    <path d="M3 21h18"/>
-                    <rect x="9" y="13" width="6" height="8"/>
-                </svg>
-                MAGAZZINO
-            </button>
-            <button type="button" class="btn-ruolo" onclick="mostraRuolo('risorse umane')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-                RISORSE UMANE
-            </button>
-            <a href="tel:+390584282223" class="btn-ruolo btn-ruolo-malattie">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                </svg>
-                MALATTIE
-            </a>
+        <p class="stato" id="stato">Posizione: richiesta in corso...</p>
+
+        <div class="coord-manuali" id="coordManuali" hidden>
+            <input type="number" step="any" id="latInput" placeholder="latitudine">
+            <input type="number" step="any" id="lonInput" placeholder="longitudine">
+            <button type="button" class="btn" onclick="impostaCoordinateManuali()">Imposta coordinate</button>
         </div>
 
-        <input type="text" id="searchInput" placeholder="prova a scrivere un nome, un cognome, o un comune..." onkeyup="searchData()">
-        <div id="results"></div>
+        <p class="hint-camera" id="hintCamera" hidden>tieni il soggetto al centro dell'immagine</p>
 
-        <p class="search-instruction" style="margin-top:1rem;">
-            Tocca sul numero per comporlo.
-        </p>
+        <div class="camera-box" id="cameraBox" hidden>
+            <video id="video" autoplay playsinline muted></video>
+            <div class="guida-centro"><span></span></div>
+        </div>
+
+        <div class="buttons">
+            <button type="button" class="btn" id="btnCamera" onclick="gestisciFotocamera()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <span id="etichettaCamera">FOTOCAMERA</span>
+            </button>
+            <button type="button" class="btn" id="btnPosizione" onclick="richiediPosizione(true)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span id="etichettaPosizione">POSIZIONE</span>
+            </button>
+        </div>
+
+        <canvas id="anteprima" width="1200" height="1500" hidden></canvas>
+
+        <textarea id="commento" placeholder="Puoi aggiungere un commento (specificare il problema, il nome della via/viale/piazza in cui ti trovi, altro...)" oninput="generaFrame()"></textarea>
+
+        <div class="buttons">
+            <button type="button" class="btn btn-primary" onclick="condividi()">CONDIVIDI</button>
+        </div>
     </div>
 
     <div class="home-link">
@@ -353,101 +289,355 @@
     <footer>&copy; 2026 Portale Operatori</footer>
 
     <script>
-        let dataCache = [];
-        const ruoli = ['coordinatore', 'meccanico', 'uff.personale', 'magazzino', 'risorse umane'];
-        const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS67eexfd9Plogb9viPBDF3GnSsaBAHn54ghW_qmWhlu3V5p5GsmYYG9f1lSFUldXxhM90AHhBZJGpB/pub?output=csv';
+        let lat = null;
+        let lon = null;
+        let stream = null;
+        let fotoOriginale = null;
+        let outputCanvas = null;
+        let fotoBlob = null;
+        let mappaCache = null;
+        let mappaCacheKey = '';
+        const MAP_SIZE = 410;
 
-        function parseCsvRow(row) {
-            const columns = [];
-            let value = '';
-            let inQuotes = false;
+        const stato = document.getElementById('stato');
+        const video = document.getElementById('video');
+        const anteprima = document.getElementById('anteprima');
 
-            for (let i = 0; i < row.length; i++) {
-                const char = row[i];
-                if (char === '"') {
-                    if (inQuotes && row[i + 1] === '"') {
-                        value += '"';
-                        i++;
-                    } else {
-                        inQuotes = !inQuotes;
+        function messaggio() {
+            const posizione = lat !== null
+                ? `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`
+                : 'non disponibile';
+            const commento = document.getElementById('commento').value.trim() || '(nessun commento)';
+            return `⚠️ SEGNALAZIONE\n📌 POSIZIONE: ${posizione}\n💬 ${commento}`;
+        }
+
+        function richiediPosizione(manuale = false) {
+            if (manuale) document.getElementById('etichettaPosizione').textContent = 'AGGIORNA';
+            stato.textContent = 'Posizione: richiesta in corso...';
+            if (!navigator.geolocation) {
+                errorePosizione();
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    lat = pos.coords.latitude;
+                    lon = pos.coords.longitude;
+                    stato.textContent = `Posizione: ${lat.toFixed(6)}, ${lon.toFixed(6)} (precisione ${Math.round(pos.coords.accuracy)} m)`;
+                    document.getElementById('coordManuali').hidden = true;
+                    mappaCache = null;
+                    generaFrame();
+                },
+                errorePosizione,
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+            );
+        }
+
+        function errorePosizione() {
+            stato.textContent = 'Posizione non disponibile: inseriscila manualmente qui sotto.';
+            document.getElementById('coordManuali').hidden = false;
+        }
+
+        function impostaCoordinateManuali() {
+            const nLat = parseFloat(document.getElementById('latInput').value);
+            const nLon = parseFloat(document.getElementById('lonInput').value);
+            if (isNaN(nLat) || isNaN(nLon)) return;
+            lat = nLat;
+            lon = nLon;
+            stato.textContent = `Posizione impostata: ${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+            document.getElementById('coordManuali').hidden = true;
+            mappaCache = null;
+            generaFrame();
+        }
+
+        function gestisciFotocamera() {
+            if (stream && video.srcObject) scatta();
+            else avviaCamera();
+        }
+
+        async function avviaCamera() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                stato.textContent = 'Fotocamera non supportata su questo dispositivo o browser.';
+                return;
+            }
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+                video.srcObject = stream;
+                document.getElementById('cameraBox').hidden = false;
+                document.getElementById('etichettaCamera').textContent = 'SCATTA';
+                document.getElementById('btnCamera').classList.add('scatta');
+                document.getElementById('hintCamera').hidden = false;
+                stato.textContent = 'Fotocamera attiva: inquadra e premi SCATTA.';
+            } catch (e) {
+                stato.textContent = 'Permesso fotocamera negato o fotocamera non disponibile.';
+            }
+        }
+
+        function fermaCamera() {
+            if (stream) {
+                stream.getTracks().forEach(t => t.stop());
+                stream = null;
+            }
+            document.getElementById('cameraBox').hidden = true;
+            video.srcObject = null;
+            document.getElementById('etichettaCamera').textContent = 'FOTOCAMERA';
+            document.getElementById('btnCamera').classList.remove('scatta');
+            document.getElementById('hintCamera').hidden = true;
+        }
+
+        function scatta() {
+            if (!video.videoWidth) return;
+            const c = document.createElement('canvas');
+            c.width = video.videoWidth;
+            c.height = video.videoHeight;
+            c.getContext('2d').drawImage(video, 0, 0);
+            fotoOriginale = c;
+            fermaCamera();
+            generaFrame();
+        }
+
+        function caricaImmagine(src, crossOrigin) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                if (crossOrigin) img.crossOrigin = 'anonymous';
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = src;
+            });
+        }
+
+        function disegnaMappaSemplice(ctx, conPosizione) {
+            const S = MAP_SIZE;
+            ctx.fillStyle = '#e8efd2';
+            ctx.fillRect(0, 0, S, S);
+
+            ctx.fillStyle = '#cfe0a8';
+            ctx.fillRect(0, 0, S * 0.3, S * 0.28);
+            ctx.fillRect(S * 0.67, S * 0.66, S * 0.33, S * 0.34);
+
+            ctx.lineWidth = 12;
+            ctx.strokeStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.moveTo(0, S * 0.37); ctx.lineTo(S, S * 0.37);
+            ctx.moveTo(0, S * 0.74); ctx.lineTo(S, S * 0.74);
+            ctx.moveTo(S * 0.31, 0); ctx.lineTo(S * 0.31, S);
+            ctx.moveTo(S * 0.73, 0); ctx.lineTo(S * 0.73, S);
+            ctx.stroke();
+
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'rgba(44,96,61,0.28)';
+            ctx.beginPath();
+            ctx.moveTo(0, S * 0.37); ctx.lineTo(S, S * 0.37);
+            ctx.moveTo(0, S * 0.74); ctx.lineTo(S, S * 0.74);
+            ctx.moveTo(S * 0.31, 0); ctx.lineTo(S * 0.31, S);
+            ctx.moveTo(S * 0.73, 0); ctx.lineTo(S * 0.73, S);
+            ctx.stroke();
+
+            ctx.fillStyle = '#2c603d';
+            ctx.font = '600 16px "Josefin Sans", sans-serif';
+            ctx.fillText('MAPPA', 12, 28);
+            if (!conPosizione) {
+                ctx.font = '600 15px "Josefin Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('POSIZIONE NON DISPONIBILE', S / 2, S - 16);
+                ctx.textAlign = 'left';
+            }
+        }
+
+        async function creaMappa() {
+            const chiave = `${lat},${lon}`;
+            if (mappaCache && mappaCacheKey === chiave) return mappaCache;
+
+            const m = document.createElement('canvas');
+            m.width = MAP_SIZE;
+            m.height = MAP_SIZE;
+            const ctx = m.getContext('2d');
+            const centro = MAP_SIZE / 2;
+
+            let successo = false;
+
+            if (lat !== null) {
+                try {
+                    const z = 16;
+                    const n = Math.pow(2, z);
+                    const xf = (lon + 180) / 360 * n;
+                    const rad = lat * Math.PI / 180;
+                    const yf = (1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2 * n;
+
+                    // Il centro della mappa quadrata coincide con la posizione dell'utente
+                    const origineX = xf * 256 - centro;
+                    const origineY = yf * 256 - centro;
+                    const txCentro = Math.floor(xf);
+                    const tyCentro = Math.floor(yf);
+
+                    const tiles = [];
+                    for (let dx = -1; dx <= 1; dx++) {
+                        for (let dy = -1; dy <= 1; dy++) {
+                            const tx = ((txCentro + dx) % n + n) % n;
+                            const ty = tyCentro + dy;
+                            if (ty < 0 || ty >= n) continue;
+                            tiles.push({ tx, ty, x: (txCentro + dx) * 256 - origineX, y: (tyCentro + dy) * 256 - origineY });
+                        }
                     }
-                } else if (char === ',' && !inQuotes) {
-                    columns.push(value);
-                    value = '';
-                } else {
-                    value += char;
+
+                    const server = [
+                        t => `https://tile.openstreetmap.org/${z}/${t.tx}/${t.ty}.png`,
+                        t => `https://a.basemaps.cartocdn.com/light_all/${z}/${t.tx}/${t.ty}.png`
+                    ];
+
+                    for (const url of server) {
+                        const immagini = await Promise.all(tiles.map(t =>
+                            caricaImmagine(url(t), true)
+                                .then(img => ({ img, x: t.x, y: t.y }))
+                                .catch(() => null)
+                        ));
+                        if (immagini.filter(Boolean).length >= Math.ceil(tiles.length / 2)) {
+                            immagini.forEach(t => {
+                                if (t) ctx.drawImage(t.img, t.x, t.y);
+                            });
+                            successo = true;
+                            break;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Tile mappa non caricati:', e);
                 }
             }
-            columns.push(value);
-            return columns;
-        }
 
-        function normalizzaRuolo(valore) {
-            return valore.toLowerCase().replace(/[\s.]/g, '');
-        }
-
-        async function loadData() {
-            try {
-                const response = await fetch(sheetUrl);
-                const text = await response.text();
-                const rows = text.split('\n').slice(1);
-                dataCache = rows
-                    .filter(row => row.trim() !== '')
-                    .map(row => {
-                        const columns = parseCsvRow(row.replace(/\r$/, ''));
-                        return {
-                            nome: columns[0]?.trim() || '',
-                            numero: columns[1]?.trim() || '',
-                            ruolo: columns[2]?.trim() || ''
-                        };
-                    });
-            } catch (error) {
-                console.error("Errore nel caricamento dati:", error);
+            if (!successo) {
+                disegnaMappaSemplice(ctx, lat !== null);
             }
+
+            // Marker sempre al centro: è il punto in cui si trova l'utente
+            ctx.beginPath();
+            ctx.arc(centro, centro, 18, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(centro, centro, 12, 0, Math.PI * 2);
+            ctx.fillStyle = '#c0392b';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(centro, centro, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            mappaCache = m;
+            mappaCacheKey = chiave;
+            return m;
         }
 
-        function searchData() {
-            const query = document.getElementById('searchInput').value.trim().toLowerCase();
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '';
+        function righeTesto(ctx, testo, maxLarghezza) {
+            const parole = testo.split(/\s+/);
+            const righe = [];
+            let riga = '';
+            parole.forEach(parola => {
+                const prova = riga ? riga + ' ' + parola : parola;
+                if (ctx.measureText(prova).width > maxLarghezza && riga) {
+                    righe.push(riga);
+                    riga = parola;
+                } else {
+                    riga = prova;
+                }
+            });
+            if (riga) righe.push(riga);
+            return righe;
+        }
 
-            if (query.length < 2) return;
-
-            // Se la ricerca assomiglia a un ruolo, filtra sulla colonna C del foglio
-            const queryRuolo = normalizzaRuolo(query);
-            const ruoloCercato = query.length >= 3
-                ? ruoli.find(r => normalizzaRuolo(r).startsWith(queryRuolo))
-                : null;
-
-            const filtered = ruoloCercato
-                ? dataCache.filter(item => normalizzaRuolo(item.ruolo).includes(queryRuolo))
-                : dataCache.filter(item => item.nome.toLowerCase().includes(query));
-
-            if (filtered.length > 0) {
-                filtered.forEach(item => {
-                    const cleanNumber = item.numero ? item.numero.replace(/\s+/g, '') : '';
-                    const badge = item.ruolo ? `<span class="ruolo">${item.ruolo}</span>` : '';
-                    resultsDiv.innerHTML += `
-                        <div class="result-item">
-                            <div class="risultato-testo">
-                                <span class="name">${item.nome}</span>
-                                ${badge}
-                            </div>
-                            <a href="tel:${cleanNumber}" class="number-link">${item.numero}</a>
-                        </div>`;
-                });
-            } else {
-                resultsDiv.innerHTML = '<p class="no-results">Nessun contatto trovato</p>';
+        async function generaFrame() {
+            if (!fotoOriginale) {
+                anteprima.hidden = true;
+                fotoBlob = null;
+                return;
             }
+
+            const P = 24;
+            const W = 1200;
+            const H = Math.round(W * 5 / 4);
+            const INFO = 450;
+            const drawW = W - 2 * P;
+            const drawH = H - 2 * P - INFO;
+
+            const out = document.createElement('canvas');
+            out.width = W;
+            out.height = H;
+            const ctx = out.getContext('2d');
+
+            ctx.fillStyle = '#2c603d';
+            ctx.fillRect(0, 0, W, H);
+
+            // Ritaglio la foto per coprire l'area senza deformarla
+            const scala = Math.max(drawW / fotoOriginale.width, drawH / fotoOriginale.height);
+            const sw = drawW / scala;
+            const sh = drawH / scala;
+            const sx = (fotoOriginale.width - sw) / 2;
+            const sy = (fotoOriginale.height - sh) / 2;
+            ctx.drawImage(fotoOriginale, sx, sy, sw, sh, P, P, drawW, drawH);
+
+            const infoY = P + drawH;
+            ctx.fillStyle = '#1e4a2a';
+            ctx.fillRect(P, infoY, drawW, INFO);
+
+            const mappa = await creaMappa();
+            const mx = P + 20;
+            const my = infoY + 20;
+            ctx.drawImage(mappa, mx, my, MAP_SIZE, MAP_SIZE);
+            ctx.strokeStyle = '#a4bb5b';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(mx, my, MAP_SIZE, MAP_SIZE);
+
+            const tx = mx + MAP_SIZE + 28;
+            const maxTextW = W - P - 16 - tx;
+            const c = document.getElementById('commento').value.trim() || '(nessun commento)';
+            const coordinate = lat !== null ? `${lat.toFixed(6)}, ${lon.toFixed(6)}` : 'non disponibili';
+            const dataOra = new Date().toLocaleString('it-IT');
+
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#d4e68a';
+            ctx.font = '700 30px "Josefin Sans", sans-serif';
+            ctx.fillText(`SEGNALAZIONE - ${dataOra}`, tx, infoY + 55);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '600 27px "Josefin Sans", sans-serif';
+            ctx.fillText(`GPS: ${coordinate}`, tx, infoY + 105);
+
+            ctx.fillStyle = '#d4e68a';
+            ctx.font = '700 26px "Josefin Sans", sans-serif';
+            ctx.fillText('COMMENTO:', tx, infoY + 150);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '400 24px "Josefin Sans", sans-serif';
+            righeTesto(ctx, c, maxTextW).slice(0, 3).forEach((riga, i) => {
+                ctx.fillText(riga, tx, infoY + 188 + i * 32);
+            });
+
+            outputCanvas = out;
+            anteprima.width = W;
+            anteprima.height = H;
+            anteprima.hidden = false;
+            anteprima.getContext('2d').drawImage(out, 0, 0);
+
+            out.toBlob(blob => {
+                fotoBlob = blob;
+            }, 'image/jpeg', 0.92);
         }
 
-        function mostraRuolo(ruolo) {
-            document.getElementById('searchInput').value = ruolo;
-            searchData();
-            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        async function condividi() {
+            if (!fotoBlob) return;
+            const file = new File([fotoBlob], `segnalazione_${Date.now()}.jpg`, { type: 'image/jpeg' });
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({ title: 'Segnalazione', text: messaggio(), files: [file] });
+                    return;
+                } catch (e) {
+                    if (e.name === 'AbortError') return;
+                }
+            }
+            try { await navigator.clipboard.writeText(messaggio()); } catch (e) { /* clipboard non disponibile */ }
+            alert('Condivisione file non supportata da questo browser. Il testo della segnalazione con il link alla posizione è stato copiato: apri WhatsApp e incollalo, condividendo la foto dallo smartphone.');
         }
 
-        loadData();
+        richiediPosizione();
+        generaFrame();
     </script>
 </body>
 </html>
