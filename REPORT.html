@@ -136,36 +136,13 @@
             inset: 0;
             border-radius: 1rem;
             pointer-events: none;
-            background: radial-gradient(circle at center, transparent 70px, rgba(0,0,0,0.18) 71px);
-        }
-
-        .guida-centro::before,
-        .guida-centro::after {
-            content: '';
-            position: absolute;
-            background: rgba(255,255,255,0.75);
-        }
-
-        .guida-centro::before {
-            left: 50%; top: 0; bottom: 0;
-            width: 2px;
-            transform: translateX(-50%);
-        }
-
-        .guida-centro::after {
-            top: 50%; left: 0; right: 0;
-            height: 2px;
-            transform: translateY(-50%);
-        }
-
-        .guida-centro span {
-            position: absolute;
-            left: 50%; top: 50%;
-            width: 140px; height: 140px;
-            transform: translate(-50%, -50%);
-            border: 3px solid rgba(255,255,255,0.9);
-            border-radius: 50%;
-            box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
+            overflow: hidden;
+            opacity: 0.15;
+            background:
+                linear-gradient(to right, transparent calc(33.333% - 1px), #ffffff calc(33.333% - 1px), #ffffff calc(33.333% + 1px), transparent calc(33.333% + 1px)),
+                linear-gradient(to right, transparent calc(66.666% - 1px), #ffffff calc(66.666% - 1px), #ffffff calc(66.666% + 1px), transparent calc(66.666% + 1px)),
+                linear-gradient(to bottom, transparent calc(33.333% - 1px), #ffffff calc(33.333% - 1px), #ffffff calc(33.333% + 1px), transparent calc(33.333% + 1px)),
+                linear-gradient(to bottom, transparent calc(66.666% - 1px), #ffffff calc(66.666% - 1px), #ffffff calc(66.666% + 1px), transparent calc(66.666% + 1px));
         }
 
         #anteprima {
@@ -259,7 +236,7 @@
 
         <div class="camera-box" id="cameraBox" hidden>
             <video id="video" autoplay playsinline muted></video>
-            <div class="guida-centro"><span></span></div>
+            <div class="guida-centro"></div>
         </div>
 
         <div class="buttons">
@@ -308,7 +285,7 @@
                 ? `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`
                 : 'non disponibile';
             const commento = document.getElementById('commento').value.trim() || '(nessun commento)';
-            return `⚠️ SEGNALAZIONE\n📌 POSIZIONE: ${posizione}\n💬 ${commento}`;
+            return `⚠️ SEGNALAZIONE\n📌 POSIZIONE: ${posizione}\n💬 ${commento}\n🔗 https://ersudriver.github.io/ersuoperator/REPORT`;
         }
 
         function richiediPosizione(manuale = false) {
