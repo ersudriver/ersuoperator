@@ -64,7 +64,7 @@
             justify-content: center;
             gap: 2.5rem;
             flex-wrap: wrap;
-            max-width: 460px;
+            max-width: 720px;
             margin: 0 auto;
         }
 
@@ -84,7 +84,7 @@
             font-weight: 600;
             text-decoration: none;
             transition: background 0.3s, color 0.3s, border-color 0.3s, transform 0.3s;
-            width: 100%;
+            width: calc(50% - 1.25rem);
         }
 
         .btn:hover {
@@ -220,7 +220,7 @@
 </head>
 <body>
     <header>
-        <h1>Portale Operatori</h1>
+        <h1><a href="index.html" style="color:inherit; text-decoration:none;">Portale Operatori</a></h1>
         <div class="buttons">
             <a href="https://ersudriver.github.io/ersuoperator/NUM" class="btn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -230,6 +230,13 @@
                     <rect x="14" y="14" width="8" height="8" rx="1"/>
                 </svg>
                 rubrica aziendale
+            </a>
+            <a href="https://ersudriver.github.io/ersuoperator/REPORT" class="btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                </svg>
+                invia segnalazione
             </a>
         </div>
     </header>
