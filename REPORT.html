@@ -62,13 +62,6 @@
             font-size: 1.6rem;
         }
 
-        .hint {
-            font-size: 0.9rem;
-            line-height: 1.5;
-            opacity: 0.85;
-            margin-bottom: 1.5rem;
-        }
-
         .stato {
             font-size: 0.95rem;
             font-weight: 600;
@@ -196,8 +189,7 @@
     </header>
 
     <div class="container">
-        <h2>Segnalazione Foto</h2>
-        <p class="hint">Scatta una foto: verrà incorniciata con coordinate GPS, anteprima della mappa e il tuo commento. Poi condividila direttamente dallo smartphone.</p>
+        <h2>INOLTRA SEGNALAZIONE</h2>
 
         <p class="stato" id="stato">Posizione: richiesta in corso...</p>
 
@@ -210,27 +202,20 @@
         <video id="video" autoplay playsinline muted hidden></video>
 
         <div class="buttons">
-            <button type="button" class="btn" id="btnCamera" onclick="avviaCamera()">
+            <button type="button" class="btn" id="btnCamera" onclick="gestisciFotocamera()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                Avvia fotocamera
+                <span id="etichettaCamera">FOTOCAMERA</span>
             </button>
-            <button type="button" class="btn btn-primary" id="btnScatta" onclick="scatta()" hidden>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
-                Scatta foto
-            </button>
-            <button type="button" class="btn" onclick="richiediPosizione()">
+            <button type="button" class="btn" id="btnPosizione" onclick="richiediPosizione(true)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                Aggiorna posizione
+                <span id="etichettaPosizione">POSIZIONE</span>
             </button>
+            <button type="button" class="btn btn-primary" onclick="condividi()">CONDIVIDI</button>
         </div>
 
         <canvas id="anteprima" width="1200" height="700"></canvas>
 
         <textarea id="commento" placeholder="Scrivi qui un commento (es. cosa hai trovato, a che ora, note utili)..." oninput="generaFrame()"></textarea>
-
-        <div class="buttons">
-            <button type="button" class="btn btn-primary" onclick="condividi()">Condividi</button>
-        </div>
     </div>
 
     <div class="home-link">
@@ -260,7 +245,8 @@
             return `#SEGNALAZIONE${link ? '\nPOSIZIONE: ' + link : ''}`;
         }
 
-        function richiediPosizione() {
+        function richiediPosizione(manuale = false) {
+            if (manuale) document.getElementById('etichettaPosizione').textContent = 'AGGIORNA';
             stato.textContent = 'Posizione: richiesta in corso...';
             if (!navigator.geolocation) {
                 errorePosizione();
@@ -297,6 +283,11 @@
             generaFrame();
         }
 
+        function gestisciFotocamera() {
+            if (stream && video.srcObject) scatta();
+            else avviaCamera();
+        }
+
         async function avviaCamera() {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 stato.textContent = 'Fotocamera non supportata su questo dispositivo o browser.';
@@ -306,9 +297,8 @@
                 stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
                 video.srcObject = stream;
                 video.hidden = false;
-                document.getElementById('btnCamera').hidden = true;
-                document.getElementById('btnScatta').hidden = false;
-                stato.textContent = 'Fotocamera attiva: inquadra e premi "Scatta foto".';
+                document.getElementById('etichettaCamera').textContent = 'SCATTA';
+                stato.textContent = 'Fotocamera attiva: inquadra e premi SCATTA.';
             } catch (e) {
                 stato.textContent = 'Permesso fotocamera negato o fotocamera non disponibile.';
             }
@@ -321,8 +311,7 @@
             }
             video.hidden = true;
             video.srcObject = null;
-            document.getElementById('btnCamera').hidden = false;
-            document.getElementById('btnScatta').hidden = true;
+            document.getElementById('etichettaCamera').textContent = 'FOTOCAMERA';
         }
 
         function scatta() {
@@ -392,26 +381,29 @@
             m.height = 190;
             const ctx = m.getContext('2d');
 
-            let x0 = 0, y0 = 0, xf = 0, yf = 0, successo = false;
+            let successo = false;
 
             if (lat !== null) {
                 try {
                     const z = 16;
                     const n = Math.pow(2, z);
-                    xf = (lon + 180) / 360 * n;
+                    const xf = (lon + 180) / 360 * n;
                     const rad = lat * Math.PI / 180;
-                    yf = (1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2 * n;
-                    const cols = 3, rows = 2;
-                    x0 = Math.floor(xf - cols / 2);
-                    y0 = Math.floor(yf - rows / 2);
+                    const yf = (1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2 * n;
+
+                    // Il centro della mappa (160, 95) coincide con la posizione dell'utente
+                    const origineX = xf * 256 - 160;
+                    const origineY = yf * 256 - 95;
+                    const txCentro = Math.floor(xf);
+                    const tyCentro = Math.floor(yf);
 
                     const tiles = [];
-                    for (let dx = 0; dx < cols; dx++) {
-                        for (let dy = 0; dy < rows; dy++) {
-                            const tx = ((x0 + dx) % n + n) % n;
-                            const ty = y0 + dy;
+                    for (let dx = -1; dx <= 1; dx++) {
+                        for (let dy = -1; dy <= 1; dy++) {
+                            const tx = ((txCentro + dx) % n + n) % n;
+                            const ty = tyCentro + dy;
                             if (ty < 0 || ty >= n) continue;
-                            tiles.push({ x: x0 + dx, y: ty, tx, ty });
+                            tiles.push({ tx, ty, x: (txCentro + dx) * 256 - origineX, y: (tyCentro + dy) * 256 - origineY });
                         }
                     }
 
@@ -428,7 +420,7 @@
                         ));
                         if (immagini.filter(Boolean).length >= Math.ceil(tiles.length / 2)) {
                             immagini.forEach(t => {
-                                if (t) ctx.drawImage(t.img, (t.x - x0) * 256, (t.y - y0) * 256);
+                                if (t) ctx.drawImage(t.img, t.x, t.y);
                             });
                             successo = true;
                             break;
@@ -443,15 +435,19 @@
                 disegnaMappaSemplice(ctx, lat !== null);
             }
 
-            const px = successo ? (xf - x0) * 256 : 160;
-            const py = successo ? (yf - y0) * 256 : 95;
+            // Marker sempre al centro: è il punto in cui si trova l'utente
             ctx.beginPath();
-            ctx.arc(px, py, 11, 0, Math.PI * 2);
+            ctx.arc(160, 95, 15, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(160, 95, 10, 0, Math.PI * 2);
             ctx.fillStyle = '#c0392b';
             ctx.fill();
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = '#ffffff';
-            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(160, 95, 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
 
             mappaCache = m;
             mappaCacheKey = chiave;
