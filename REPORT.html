@@ -114,17 +114,59 @@
         .hint-camera { font-weight: 700; color: #c0392b; margin-bottom: 0.6rem; }
         .hint-camera[hidden] { display: none; }
 
-        video {
+        .camera-box {
+            position: relative;
             width: 100%;
             max-width: 480px;
+            margin: 0 auto 1rem;
+        }
+
+        .camera-box[hidden] { display: none; }
+
+        video {
+            width: 100%;
             border: 3px solid #2c603d;
             border-radius: 1rem;
             background: #1e4a2a;
-            margin: 0 auto 1rem;
             display: block;
         }
 
-        video[hidden] { display: none; }
+        .guida-centro {
+            position: absolute;
+            inset: 0;
+            border-radius: 1rem;
+            pointer-events: none;
+            background: radial-gradient(circle at center, transparent 70px, rgba(0,0,0,0.18) 71px);
+        }
+
+        .guida-centro::before,
+        .guida-centro::after {
+            content: '';
+            position: absolute;
+            background: rgba(255,255,255,0.75);
+        }
+
+        .guida-centro::before {
+            left: 50%; top: 0; bottom: 0;
+            width: 2px;
+            transform: translateX(-50%);
+        }
+
+        .guida-centro::after {
+            top: 50%; left: 0; right: 0;
+            height: 2px;
+            transform: translateY(-50%);
+        }
+
+        .guida-centro span {
+            position: absolute;
+            left: 50%; top: 50%;
+            width: 140px; height: 140px;
+            transform: translate(-50%, -50%);
+            border: 3px solid rgba(255,255,255,0.9);
+            border-radius: 50%;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
+        }
 
         #anteprima {
             width: 100%;
@@ -215,7 +257,10 @@
 
         <p class="hint-camera" id="hintCamera" hidden>tieni il soggetto al centro dell'immagine</p>
 
-        <video id="video" autoplay playsinline muted hidden></video>
+        <div class="camera-box" id="cameraBox" hidden>
+            <video id="video" autoplay playsinline muted></video>
+            <div class="guida-centro"><span></span></div>
+        </div>
 
         <div class="buttons">
             <button type="button" class="btn" id="btnCamera" onclick="gestisciFotocamera()">
@@ -230,7 +275,7 @@
 
         <canvas id="anteprima" width="1200" height="1500" hidden></canvas>
 
-        <textarea id="commento" placeholder="Scrivi qui un commento (es. cosa hai trovato, a che ora, note utili)..." oninput="generaFrame()"></textarea>
+        <textarea id="commento" placeholder="Puoi aggiungere un commento (specificare il problema, il nome della via/viale/piazza in cui ti trovi, altro...)" oninput="generaFrame()"></textarea>
 
         <div class="buttons">
             <button type="button" class="btn btn-primary" onclick="condividi()">CONDIVIDI</button>
@@ -259,10 +304,11 @@
         const anteprima = document.getElementById('anteprima');
 
         function messaggio() {
-            const link = lat !== null
+            const posizione = lat !== null
                 ? `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`
-                : '';
-            return `#SEGNALAZIONE${link ? '\nPOSIZIONE: ' + link : ''}`;
+                : 'non disponibile';
+            const commento = document.getElementById('commento').value.trim() || '(nessun commento)';
+            return `⚠️ SEGNALAZIONE\n📌 POSIZIONE: ${posizione}\n💬 ${commento}`;
         }
 
         function richiediPosizione(manuale = false) {
@@ -316,7 +362,7 @@
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
                 video.srcObject = stream;
-                video.hidden = false;
+                document.getElementById('cameraBox').hidden = false;
                 document.getElementById('etichettaCamera').textContent = 'SCATTA';
                 document.getElementById('btnCamera').classList.add('scatta');
                 document.getElementById('hintCamera').hidden = false;
@@ -331,7 +377,7 @@
                 stream.getTracks().forEach(t => t.stop());
                 stream = null;
             }
-            video.hidden = true;
+            document.getElementById('cameraBox').hidden = true;
             video.srcObject = null;
             document.getElementById('etichettaCamera').textContent = 'FOTOCAMERA';
             document.getElementById('btnCamera').classList.remove('scatta');
@@ -587,7 +633,7 @@
                 }
             }
             try { await navigator.clipboard.writeText(messaggio()); } catch (e) { /* clipboard non disponibile */ }
-            alert('Condivisione file non supportata da questo browser. Il testo "#SEGNALAZIONE" con il link alla posizione è stato copiato: apri WhatsApp e incollalo, condividendo la foto dallo smartphone.');
+            alert('Condivisione file non supportata da questo browser. Il testo della segnalazione con il link alla posizione è stato copiato: apri WhatsApp e incollalo, condividendo la foto dallo smartphone.');
         }
 
         richiediPosizione();
