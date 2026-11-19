@@ -115,13 +115,15 @@
         .hint-camera[hidden] { display: none; }
 
         .camera-box {
-            position: relative;
             width: 100%;
             max-width: 480px;
             margin: 0 auto 1rem;
         }
 
-        .camera-box[hidden] { display: none; }
+        .camera-vista { position: relative; }
+        .camera-vista[hidden] { display: none; }
+        .camera-frame { position: relative; }
+        .camera-buttons { margin: 0.8rem 0 0; }
 
         video {
             width: 100%;
@@ -232,31 +234,33 @@
             <button type="button" class="btn" onclick="impostaCoordinateManuali()">Imposta coordinate</button>
         </div>
 
-        <p class="hint-camera" id="hintCamera" hidden>tieni il soggetto al centro dell'immagine</p>
-
-        <div class="camera-box" id="cameraBox" hidden>
-            <video id="video" autoplay playsinline muted></video>
-            <div class="guida-centro"></div>
-        </div>
-
-        <div class="buttons">
-            <button type="button" class="btn" id="btnCamera" onclick="gestisciFotocamera()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                <span id="etichettaCamera">FOTOCAMERA</span>
-            </button>
-            <button type="button" class="btn" id="btnPosizione" onclick="richiediPosizione(true)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                <span id="etichettaPosizione">POSIZIONE</span>
-            </button>
+        <div class="camera-box" id="cameraBox">
+            <div class="camera-vista" id="cameraVista" hidden>
+                <p class="hint-camera" id="hintCamera" hidden>tieni il soggetto al centro dell'immagine</p>
+                <div class="camera-frame">
+                    <video id="video" autoplay playsinline muted></video>
+                    <div class="guida-centro"></div>
+                </div>
+            </div>
+            <div class="buttons camera-buttons">
+                <button type="button" class="btn" id="btnCamera" onclick="gestisciFotocamera()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    <span id="etichettaCamera">FOTOCAMERA</span>
+                </button>
+                <button type="button" class="btn" id="btnPosizione" onclick="richiediPosizione(true)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span id="etichettaPosizione">POSIZIONE</span>
+                </button>
+            </div>
         </div>
 
         <canvas id="anteprima" width="1200" height="1500" hidden></canvas>
 
-        <textarea id="commento" placeholder="Puoi aggiungere un commento (specificare il problema, il nome della via/viale/piazza in cui ti trovi, altro...)" oninput="generaFrame()"></textarea>
-
         <div class="buttons">
             <button type="button" class="btn btn-primary" onclick="condividi()">CONDIVIDI</button>
         </div>
+
+        <textarea id="commento" placeholder="Puoi aggiungere un commento (specificare il problema, il nome della via/viale/piazza in cui ti trovi, altro...)" oninput="generaFrame()"></textarea>
     </div>
 
     <div class="home-link">
@@ -339,7 +343,7 @@
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
                 video.srcObject = stream;
-                document.getElementById('cameraBox').hidden = false;
+                document.getElementById('cameraVista').hidden = false;
                 document.getElementById('etichettaCamera').textContent = 'SCATTA';
                 document.getElementById('btnCamera').classList.add('scatta');
                 document.getElementById('hintCamera').hidden = false;
@@ -354,7 +358,7 @@
                 stream.getTracks().forEach(t => t.stop());
                 stream = null;
             }
-            document.getElementById('cameraBox').hidden = true;
+            document.getElementById('cameraVista').hidden = true;
             video.srcObject = null;
             document.getElementById('etichettaCamera').textContent = 'FOTOCAMERA';
             document.getElementById('btnCamera').classList.remove('scatta');
