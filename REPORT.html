@@ -145,15 +145,6 @@
             resize: vertical;
         }
 
-        iframe {
-            width: 100%;
-            max-width: 480px;
-            height: 220px;
-            border: 2px solid #2c603d;
-            border-radius: 1rem;
-            margin-bottom: 1rem;
-        }
-
         .coord-manuali {
             display: flex;
             flex-wrap: wrap;
@@ -173,26 +164,6 @@
         }
 
         .coord-manuali[hidden] { display: none; }
-
-        .sezione-titolo {
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin: 1.5rem 0 0.8rem;
-            border-top: 1px solid rgba(44,96,61,0.3);
-            padding-top: 1.2rem;
-        }
-
-        .wa-list {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .wa-list .btn { font-size: 0.85rem; padding: 0.55rem 0.8rem; }
-
-        .nota { font-size: 0.8rem; line-height: 1.4; opacity: 0.8; margin-top: 0.8rem; }
 
         .home-link { text-align: center; margin: 0 auto 3rem; }
 
@@ -226,7 +197,7 @@
 
     <div class="container">
         <h2>Segnalazione Foto</h2>
-        <p class="hint">Scatta una foto: verrà incorniciata con coordinate GPS, anteprima della mappa e il tuo commento. Potrai poi inoltrarla ai coordinatori su WhatsApp.</p>
+        <p class="hint">Scatta una foto: verrà incorniciata con coordinate GPS, anteprima della mappa e il tuo commento. Poi condividila direttamente dallo smartphone.</p>
 
         <p class="stato" id="stato">Posizione: richiesta in corso...</p>
 
@@ -236,10 +207,7 @@
             <button type="button" class="btn" onclick="impostaCoordinateManuali()">Imposta coordinate</button>
         </div>
 
-        <iframe id="mappaLive" title="Anteprima mappa" loading="lazy"></iframe>
-
         <video id="video" autoplay playsinline muted hidden></video>
-        <input type="file" id="fileInput" accept="image/*" hidden>
 
         <div class="buttons">
             <button type="button" class="btn" id="btnCamera" onclick="avviaCamera()">
@@ -250,10 +218,6 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
                 Scatta foto
             </button>
-            <button type="button" class="btn" onclick="document.getElementById('fileInput').click()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                Carica foto
-            </button>
             <button type="button" class="btn" onclick="richiediPosizione()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 Aggiorna posizione
@@ -262,17 +226,11 @@
 
         <canvas id="anteprima" width="1200" height="700"></canvas>
 
-        <textarea id="commento" placeholder="Scrivi qui un commento (es. cosa hai trovato, a che ora, note per i coordinatori)..." oninput="generaFrame()"></textarea>
+        <textarea id="commento" placeholder="Scrivi qui un commento (es. cosa hai trovato, a che ora, note utili)..." oninput="generaFrame()"></textarea>
 
         <div class="buttons">
-            <button type="button" class="btn" onclick="scarica()">Scarica foto</button>
             <button type="button" class="btn btn-primary" onclick="condividi()">Condividi</button>
         </div>
-
-        <p class="nota">Su smartphone "Condividi" allega direttamente la foto (se il sistema lo supporta). I pulsanti WhatsApp qui sotto aprono la chat con il testo già pronto: in quel caso scarica la foto e allega il file manualmente.</p>
-
-        <div class="sezione-titolo">Invia ai coordinatori</div>
-        <div class="wa-list" id="waList"></div>
     </div>
 
     <div class="home-link">
@@ -282,19 +240,6 @@
     <footer>&copy; 2026 Portale Operatori</footer>
 
     <script>
-        const coordinatori = [
-            { nome: 'Paoli Gionata', tel: '3452361300' },
-            { nome: 'Pitanti Luca', tel: '3406557539' },
-            { nome: 'Quadrelli Daniele', tel: '3455927763' },
-            { nome: 'Ricci Mirko', tel: '3484837261' },
-            { nome: 'Ronchi Alessandro', tel: '3469929088' },
-            { nome: 'Salvatori Gianluca', tel: '3428586758' },
-            { nome: 'Stagi Roberto', tel: '3406557024' },
-            { nome: 'Zerini Cristian', tel: '3484838838' }
-        ];
-
-        const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS67eexfd9Plogb9viPBDF3GnSsaBAHn54ghW_qmWhlu3V5p5GsmYYG9f1lSFUldXxhM90AHhBZJGpB/pub?output=csv';
-
         let lat = null;
         let lon = null;
         let stream = null;
@@ -307,77 +252,12 @@
         const stato = document.getElementById('stato');
         const video = document.getElementById('video');
         const anteprima = document.getElementById('anteprima');
-        const mappaLive = document.getElementById('mappaLive');
-
-        function parseCsvRow(row) {
-            const colonne = [];
-            let valore = '';
-            let virgolette = false;
-            for (let i = 0; i < row.length; i++) {
-                const ch = row[i];
-                if (ch === '"') {
-                    if (virgolette && row[i + 1] === '"') { valore += '"'; i++; }
-                    else virgolette = !virgolette;
-                } else if (ch === ',' && !virgolette) {
-                    colonne.push(valore);
-                    valore = '';
-                } else {
-                    valore += ch;
-                }
-            }
-            colonne.push(valore);
-            return colonne;
-        }
-
-        async function caricaCoordinatori() {
-            try {
-                const response = await fetch(sheetUrl);
-                const testo = await response.text();
-                const righe = testo.split('\n').slice(1);
-                const trovati = righe
-                    .filter(r => r.trim() !== '')
-                    .map(r => parseCsvRow(r.replace(/\r$/, '')))
-                    .filter(c => (c[2] || '').trim().toLowerCase() === 'coordinatore')
-                    .map(c => ({
-                        nome: (c[0] || '').trim().replace(/\s+/g, ' ').replace(/\b\w/g, m => m.toUpperCase()),
-                        tel: (c[1] || '').replace(/[^\d+]/g, '')
-                    }))
-                    .filter(c => c.tel.length >= 9);
-                if (trovati.length) {
-                    coordinatori.length = 0;
-                    coordinatori.push(...trovati);
-                }
-            } catch (e) {
-                console.warn('Coordinatori dal foglio non disponibili, uso la lista integrata.', e);
-            }
-            renderWaList();
-        }
 
         function messaggio() {
-            const commento = document.getElementById('commento').value.trim() || '(nessun commento)';
-            const linkMappa = lat !== null
-                ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=18/${lat}/${lon}`
-                : 'posizione non disponibile';
-            const coordinate = lat !== null ? `${lat.toFixed(6)}, ${lon.toFixed(6)}` : 'non disponibili';
-            return `SEGNALAZIONE - Portale Operatori\nCommento: ${commento}\nCoordinate GPS: ${coordinate}\nMappa: ${linkMappa}\nData: ${new Date().toLocaleString('it-IT')}`;
-        }
-
-        function renderWaList() {
-            const testo = encodeURIComponent(messaggio());
-            document.getElementById('waList').innerHTML = coordinatori.map(c => {
-                const numero = c.tel.replace(/^\+/, '').replace(/^39/, '');
-                return `<a class="btn" target="_blank" rel="noopener" href="https://wa.me/39${numero}?text=${testo}">${c.nome}</a>`;
-            }).join('');
-        }
-
-        function aggiornaMappaLive() {
-            if (lat === null) {
-                mappaLive.style.display = 'none';
-                return;
-            }
-            mappaLive.style.display = 'block';
-            const bbox = `${lon - 0.004},${lat - 0.004},${lon + 0.004},${lat + 0.004}`;
-            mappaLive.src = `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik&marker=${lat},${lon}`;
+            const link = lat !== null
+                ? `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`
+                : '';
+            return `#SEGNALAZIONE${link ? '\nPOSIZIONE: ' + link : ''}`;
         }
 
         function richiediPosizione() {
@@ -392,9 +272,7 @@
                     lon = pos.coords.longitude;
                     stato.textContent = `Posizione: ${lat.toFixed(6)}, ${lon.toFixed(6)} (precisione ${Math.round(pos.coords.accuracy)} m)`;
                     document.getElementById('coordManuali').hidden = true;
-                    aggiornaMappaLive();
                     mappaCache = null;
-                    renderWaList();
                     generaFrame();
                 },
                 errorePosizione,
@@ -405,8 +283,6 @@
         function errorePosizione() {
             stato.textContent = 'Posizione non disponibile: inseriscila manualmente qui sotto.';
             document.getElementById('coordManuali').hidden = false;
-            aggiornaMappaLive();
-            renderWaList();
         }
 
         function impostaCoordinateManuali() {
@@ -417,15 +293,13 @@
             lon = nLon;
             stato.textContent = `Posizione impostata: ${lat.toFixed(6)}, ${lon.toFixed(6)}`;
             document.getElementById('coordManuali').hidden = true;
-            aggiornaMappaLive();
             mappaCache = null;
-            renderWaList();
             generaFrame();
         }
 
         async function avviaCamera() {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                stato.textContent = 'Fotocamera non supportata: usa "Carica foto".';
+                stato.textContent = 'Fotocamera non supportata su questo dispositivo o browser.';
                 return;
             }
             try {
@@ -436,7 +310,7 @@
                 document.getElementById('btnScatta').hidden = false;
                 stato.textContent = 'Fotocamera attiva: inquadra e premi "Scatta foto".';
             } catch (e) {
-                stato.textContent = 'Permesso fotocamera negato o non disponibile: usa "Carica foto".';
+                stato.textContent = 'Permesso fotocamera negato o fotocamera non disponibile.';
             }
         }
 
@@ -462,17 +336,6 @@
             generaFrame();
         }
 
-        document.getElementById('fileInput').addEventListener('change', e => {
-            const file = e.target.files && e.target.files[0];
-            if (!file) return;
-            const img = new Image();
-            img.onload = () => {
-                fotoOriginale = img;
-                generaFrame();
-            };
-            img.src = URL.createObjectURL(file);
-        });
-
         function caricaImmagine(src, crossOrigin) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
@@ -481,6 +344,43 @@
                 img.onerror = reject;
                 img.src = src;
             });
+        }
+
+        function disegnaMappaSemplice(ctx, conPosizione) {
+            ctx.fillStyle = '#e8efd2';
+            ctx.fillRect(0, 0, 320, 190);
+
+            ctx.fillStyle = '#cfe0a8';
+            ctx.fillRect(0, 0, 95, 55);
+            ctx.fillRect(215, 125, 105, 65);
+
+            ctx.lineWidth = 12;
+            ctx.strokeStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.moveTo(0, 70); ctx.lineTo(320, 70);
+            ctx.moveTo(0, 140); ctx.lineTo(320, 140);
+            ctx.moveTo(100, 0); ctx.lineTo(100, 190);
+            ctx.moveTo(235, 0); ctx.lineTo(235, 190);
+            ctx.stroke();
+
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'rgba(44,96,61,0.28)';
+            ctx.beginPath();
+            ctx.moveTo(0, 70); ctx.lineTo(320, 70);
+            ctx.moveTo(0, 140); ctx.lineTo(320, 140);
+            ctx.moveTo(100, 0); ctx.lineTo(100, 190);
+            ctx.moveTo(235, 0); ctx.lineTo(235, 190);
+            ctx.stroke();
+
+            ctx.fillStyle = '#2c603d';
+            ctx.font = '600 13px "Josefin Sans", sans-serif';
+            ctx.fillText('MAPPA', 10, 20);
+            if (!conPosizione) {
+                ctx.font = '600 14px "Josefin Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('POSIZIONE NON DISPONIBILE', 160, 178);
+                ctx.textAlign = 'left';
+            }
         }
 
         async function creaMappa() {
@@ -492,63 +392,66 @@
             m.height = 190;
             const ctx = m.getContext('2d');
 
+            let x0 = 0, y0 = 0, xf = 0, yf = 0, successo = false;
+
             if (lat !== null) {
                 try {
                     const z = 16;
                     const n = Math.pow(2, z);
-                    const xf = (lon + 180) / 360 * n;
+                    xf = (lon + 180) / 360 * n;
                     const rad = lat * Math.PI / 180;
-                    const yf = (1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2 * n;
+                    yf = (1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2 * n;
                     const cols = 3, rows = 2;
-                    const x0 = Math.floor(xf - cols / 2);
-                    const y0 = Math.floor(yf - rows / 2);
+                    x0 = Math.floor(xf - cols / 2);
+                    y0 = Math.floor(yf - rows / 2);
 
                     const tiles = [];
                     for (let dx = 0; dx < cols; dx++) {
                         for (let dy = 0; dy < rows; dy++) {
-                            let tx = ((x0 + dx) % n + n) % n;
-                            let ty = y0 + dy;
+                            const tx = ((x0 + dx) % n + n) % n;
+                            const ty = y0 + dy;
                             if (ty < 0 || ty >= n) continue;
                             tiles.push({ x: x0 + dx, y: ty, tx, ty });
                         }
                     }
 
-                    const immagini = await Promise.all(tiles.map(t =>
-                        caricaImmagine(`https://tile.openstreetmap.org/${z}/${t.tx}/${t.ty}.png`, true)
-                            .then(img => ({ img, x: t.x, y: t.y }))
-                            .catch(() => null)
-                    ));
+                    const server = [
+                        t => `https://tile.openstreetmap.org/${z}/${t.tx}/${t.ty}.png`,
+                        t => `https://a.basemaps.cartocdn.com/light_all/${z}/${t.tx}/${t.ty}.png`
+                    ];
 
-                    immagini.forEach(t => {
-                        if (t) ctx.drawImage(t.img, (t.x - x0) * 256, (t.y - y0) * 256);
-                    });
-
-                    const px = (xf - x0) * 256;
-                    const py = (yf - y0) * 256;
-                    ctx.beginPath();
-                    ctx.arc(px, py, 11, 0, Math.PI * 2);
-                    ctx.fillStyle = '#c0392b';
-                    ctx.fill();
-                    ctx.lineWidth = 4;
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.stroke();
+                    for (const url of server) {
+                        const immagini = await Promise.all(tiles.map(t =>
+                            caricaImmagine(url(t), true)
+                                .then(img => ({ img, x: t.x, y: t.y }))
+                                .catch(() => null)
+                        ));
+                        if (immagini.filter(Boolean).length >= Math.ceil(tiles.length / 2)) {
+                            immagini.forEach(t => {
+                                if (t) ctx.drawImage(t.img, (t.x - x0) * 256, (t.y - y0) * 256);
+                            });
+                            successo = true;
+                            break;
+                        }
+                    }
                 } catch (e) {
-                    console.warn('Mappa non caricata:', e);
+                    console.warn('Tile mappa non caricati:', e);
                 }
             }
 
-            if (!mappaCache) {
-                const grad = ctx.createLinearGradient(0, 0, 320, 190);
-                grad.addColorStop(0, '#d4e68a');
-                grad.addColorStop(1, '#7d9b45');
-                ctx.fillStyle = grad;
-                ctx.fillRect(0, 0, 320, 190);
-                ctx.fillStyle = '#2c603d';
-                ctx.font = '600 18px "Josefin Sans", sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(lat !== null ? 'POSIZIONE RILEVATA' : 'POSIZIONE NON DISPONIBILE', 160, 100);
-                ctx.textAlign = 'left';
+            if (!successo) {
+                disegnaMappaSemplice(ctx, lat !== null);
             }
+
+            const px = successo ? (xf - x0) * 256 : 160;
+            const py = successo ? (yf - y0) * 256 : 95;
+            ctx.beginPath();
+            ctx.arc(px, py, 11, 0, Math.PI * 2);
+            ctx.fillStyle = '#c0392b';
+            ctx.fill();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#ffffff';
+            ctx.stroke();
 
             mappaCache = m;
             mappaCacheKey = chiave;
@@ -580,9 +483,8 @@
                 ctx.fillStyle = '#2c603d';
                 ctx.font = '600 32px "Josefin Sans", sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('Avvia la fotocamera o carica una foto', anteprima.width / 2, anteprima.height / 2);
+                ctx.fillText('Avvia la fotocamera per scattare una foto', anteprima.width / 2, anteprima.height / 2);
                 ctx.textAlign = 'left';
-                renderWaList();
                 return;
             }
 
@@ -654,18 +556,6 @@
             out.toBlob(blob => {
                 fotoBlob = blob;
             }, 'image/jpeg', 0.92);
-
-            renderWaList();
-        }
-
-        function scarica() {
-            if (!fotoBlob) return;
-            const url = URL.createObjectURL(fotoBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `segnalazione_${Date.now()}.jpg`;
-            a.click();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         async function condividi() {
@@ -679,12 +569,11 @@
                     if (e.name === 'AbortError') return;
                 }
             }
-            scarica();
-            alert('La condivisione diretta non è disponibile qui: ho scaricato la foto. Apri WhatsApp, scegli un coordinatore e allega il file scaricato insieme al testo già pronto.');
+            try { await navigator.clipboard.writeText(messaggio()); } catch (e) { /* clipboard non disponibile */ }
+            alert('Condivisione file non supportata da questo browser. Il testo "#SEGNALAZIONE" con il link alla posizione è stato copiato: apri WhatsApp e incollalo, condividendo la foto dallo smartphone.');
         }
 
         richiediPosizione();
-        caricaCoordinatori();
         generaFrame();
     </script>
 </body>
