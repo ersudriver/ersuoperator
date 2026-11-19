@@ -77,7 +77,7 @@
 
         .buttons {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             justify-content: center;
             gap: 0.7rem;
             margin-bottom: 1.5rem;
@@ -107,6 +107,9 @@
 
         .btn-primary { background: #2c603d; color: #a4bb5b; }
         .btn-primary:hover { background: #1e4a2a; color: #d4e68a; }
+
+        .btn.scatta { background: #c0392b; border-color: #c0392b; color: #ffffff; }
+        .btn.scatta:hover { background: #96281b; border-color: #96281b; color: #ffffff; }
 
         video {
             width: 100%;
@@ -143,7 +146,7 @@
             font-size: 1rem;
             color: #2c603d;
             background: rgba(255,255,255,0.25);
-            resize: vertical;
+            resize: none;
         }
 
         .coord-manuali {
@@ -186,8 +189,8 @@
 
         @media (max-width: 600px) {
             header h1 { font-size: 2rem; }
-            .container { margin: 1.5rem 1rem; padding: 1.2rem; }
-            .btn { font-size: 0.85rem; padding: 0.6rem 0.8rem; }
+            .container { width: calc(100% - 2rem); margin: 1.5rem auto; padding: 1.2rem; }
+            .btn { font-size: 0.8rem; padding: 0.55rem 0.6rem; }
         }
     </style>
 </head>
@@ -220,7 +223,7 @@
             </button>
         </div>
 
-        <canvas id="anteprima" width="1200" height="700" hidden></canvas>
+        <canvas id="anteprima" width="1200" height="1500" hidden></canvas>
 
         <textarea id="commento" placeholder="Scrivi qui un commento (es. cosa hai trovato, a che ora, note utili)..." oninput="generaFrame()"></textarea>
 
@@ -244,6 +247,7 @@
         let fotoBlob = null;
         let mappaCache = null;
         let mappaCacheKey = '';
+        const MAP_SIZE = 410;
 
         const stato = document.getElementById('stato');
         const video = document.getElementById('video');
@@ -309,6 +313,7 @@
                 video.srcObject = stream;
                 video.hidden = false;
                 document.getElementById('etichettaCamera').textContent = 'SCATTA';
+                document.getElementById('btnCamera').classList.add('scatta');
                 stato.textContent = 'Fotocamera attiva: inquadra e premi SCATTA.';
             } catch (e) {
                 stato.textContent = 'Permesso fotocamera negato o fotocamera non disponibile.';
@@ -323,6 +328,7 @@
             video.hidden = true;
             video.srcObject = null;
             document.getElementById('etichettaCamera').textContent = 'FOTOCAMERA';
+            document.getElementById('btnCamera').classList.remove('scatta');
         }
 
         function scatta() {
@@ -347,38 +353,39 @@
         }
 
         function disegnaMappaSemplice(ctx, conPosizione) {
+            const S = MAP_SIZE;
             ctx.fillStyle = '#e8efd2';
-            ctx.fillRect(0, 0, 320, 190);
+            ctx.fillRect(0, 0, S, S);
 
             ctx.fillStyle = '#cfe0a8';
-            ctx.fillRect(0, 0, 95, 55);
-            ctx.fillRect(215, 125, 105, 65);
+            ctx.fillRect(0, 0, S * 0.3, S * 0.28);
+            ctx.fillRect(S * 0.67, S * 0.66, S * 0.33, S * 0.34);
 
             ctx.lineWidth = 12;
             ctx.strokeStyle = '#ffffff';
             ctx.beginPath();
-            ctx.moveTo(0, 70); ctx.lineTo(320, 70);
-            ctx.moveTo(0, 140); ctx.lineTo(320, 140);
-            ctx.moveTo(100, 0); ctx.lineTo(100, 190);
-            ctx.moveTo(235, 0); ctx.lineTo(235, 190);
+            ctx.moveTo(0, S * 0.37); ctx.lineTo(S, S * 0.37);
+            ctx.moveTo(0, S * 0.74); ctx.lineTo(S, S * 0.74);
+            ctx.moveTo(S * 0.31, 0); ctx.lineTo(S * 0.31, S);
+            ctx.moveTo(S * 0.73, 0); ctx.lineTo(S * 0.73, S);
             ctx.stroke();
 
             ctx.lineWidth = 2;
             ctx.strokeStyle = 'rgba(44,96,61,0.28)';
             ctx.beginPath();
-            ctx.moveTo(0, 70); ctx.lineTo(320, 70);
-            ctx.moveTo(0, 140); ctx.lineTo(320, 140);
-            ctx.moveTo(100, 0); ctx.lineTo(100, 190);
-            ctx.moveTo(235, 0); ctx.lineTo(235, 190);
+            ctx.moveTo(0, S * 0.37); ctx.lineTo(S, S * 0.37);
+            ctx.moveTo(0, S * 0.74); ctx.lineTo(S, S * 0.74);
+            ctx.moveTo(S * 0.31, 0); ctx.lineTo(S * 0.31, S);
+            ctx.moveTo(S * 0.73, 0); ctx.lineTo(S * 0.73, S);
             ctx.stroke();
 
             ctx.fillStyle = '#2c603d';
-            ctx.font = '600 13px "Josefin Sans", sans-serif';
-            ctx.fillText('MAPPA', 10, 20);
+            ctx.font = '600 16px "Josefin Sans", sans-serif';
+            ctx.fillText('MAPPA', 12, 28);
             if (!conPosizione) {
-                ctx.font = '600 14px "Josefin Sans", sans-serif';
+                ctx.font = '600 15px "Josefin Sans", sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('POSIZIONE NON DISPONIBILE', 160, 178);
+                ctx.fillText('POSIZIONE NON DISPONIBILE', S / 2, S - 16);
                 ctx.textAlign = 'left';
             }
         }
@@ -388,9 +395,10 @@
             if (mappaCache && mappaCacheKey === chiave) return mappaCache;
 
             const m = document.createElement('canvas');
-            m.width = 320;
-            m.height = 190;
+            m.width = MAP_SIZE;
+            m.height = MAP_SIZE;
             const ctx = m.getContext('2d');
+            const centro = MAP_SIZE / 2;
 
             let successo = false;
 
@@ -402,9 +410,9 @@
                     const rad = lat * Math.PI / 180;
                     const yf = (1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2 * n;
 
-                    // Il centro della mappa (160, 95) coincide con la posizione dell'utente
-                    const origineX = xf * 256 - 160;
-                    const origineY = yf * 256 - 95;
+                    // Il centro della mappa quadrata coincide con la posizione dell'utente
+                    const origineX = xf * 256 - centro;
+                    const origineY = yf * 256 - centro;
                     const txCentro = Math.floor(xf);
                     const tyCentro = Math.floor(yf);
 
@@ -448,15 +456,15 @@
 
             // Marker sempre al centro: è il punto in cui si trova l'utente
             ctx.beginPath();
-            ctx.arc(160, 95, 15, 0, Math.PI * 2);
+            ctx.arc(centro, centro, 18, 0, Math.PI * 2);
             ctx.fillStyle = '#ffffff';
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(160, 95, 10, 0, Math.PI * 2);
+            ctx.arc(centro, centro, 12, 0, Math.PI * 2);
             ctx.fillStyle = '#c0392b';
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(160, 95, 3, 0, Math.PI * 2);
+            ctx.arc(centro, centro, 4, 0, Math.PI * 2);
             ctx.fillStyle = '#ffffff';
             ctx.fill();
 
@@ -490,13 +498,11 @@
             }
 
             const P = 24;
-            const INFO = 340;
-            const MAP_W = 360;
-            const MAP_H = 214;
             const W = 1200;
+            const H = Math.round(W * 5 / 4);
+            const INFO = 450;
             const drawW = W - 2 * P;
-            const drawH = Math.round(fotoOriginale.height * drawW / fotoOriginale.width);
-            const H = P + drawH + INFO + P;
+            const drawH = H - 2 * P - INFO;
 
             const out = document.createElement('canvas');
             out.width = W;
@@ -505,21 +511,28 @@
 
             ctx.fillStyle = '#2c603d';
             ctx.fillRect(0, 0, W, H);
-            ctx.drawImage(fotoOriginale, P, P, drawW, drawH);
+
+            // Ritaglio la foto per coprire l'area senza deformarla
+            const scala = Math.max(drawW / fotoOriginale.width, drawH / fotoOriginale.height);
+            const sw = drawW / scala;
+            const sh = drawH / scala;
+            const sx = (fotoOriginale.width - sw) / 2;
+            const sy = (fotoOriginale.height - sh) / 2;
+            ctx.drawImage(fotoOriginale, sx, sy, sw, sh, P, P, drawW, drawH);
 
             const infoY = P + drawH;
             ctx.fillStyle = '#1e4a2a';
             ctx.fillRect(P, infoY, drawW, INFO);
 
             const mappa = await creaMappa();
-            const mx = P + 16;
-            const my = infoY + (INFO - MAP_H) / 2;
-            ctx.drawImage(mappa, mx, my, MAP_W, MAP_H);
+            const mx = P + 20;
+            const my = infoY + 20;
+            ctx.drawImage(mappa, mx, my, MAP_SIZE, MAP_SIZE);
             ctx.strokeStyle = '#a4bb5b';
             ctx.lineWidth = 3;
-            ctx.strokeRect(mx, my, MAP_W, MAP_H);
+            ctx.strokeRect(mx, my, MAP_SIZE, MAP_SIZE);
 
-            const tx = mx + MAP_W + 28;
+            const tx = mx + MAP_SIZE + 28;
             const maxTextW = W - P - 16 - tx;
             const c = document.getElementById('commento').value.trim() || '(nessun commento)';
             const coordinate = lat !== null ? `${lat.toFixed(6)}, ${lon.toFixed(6)}` : 'non disponibili';
@@ -527,25 +540,26 @@
             ctx.textAlign = 'left';
             ctx.fillStyle = '#d4e68a';
             ctx.font = '700 30px "Josefin Sans", sans-serif';
-            ctx.fillText('PORTALE OPERATORI - SEGNALAZIONE', tx, infoY + 52);
+            ctx.fillText('PORTALE OPERATORI - SEGNALAZIONE', tx, infoY + 60);
 
             ctx.fillStyle = '#ffffff';
             ctx.font = '600 27px "Josefin Sans", sans-serif';
-            ctx.fillText(`GPS: ${coordinate}`, tx, infoY + 108);
+            ctx.fillText(`GPS: ${coordinate}`, tx, infoY + 130);
 
             ctx.fillStyle = '#d4e68a';
             ctx.font = '700 26px "Josefin Sans", sans-serif';
-            ctx.fillText('COMMENTO:', tx, infoY + 162);
+            ctx.fillText('COMMENTO:', tx, infoY + 205);
 
             ctx.fillStyle = '#ffffff';
             ctx.font = '400 24px "Josefin Sans", sans-serif';
-            righeTesto(ctx, c, maxTextW).slice(0, 3).forEach((riga, i) => {
-                ctx.fillText(riga, tx, infoY + 206 + i * 35);
+            const righe = righeTesto(ctx, c, maxTextW).slice(0, 3);
+            righe.forEach((riga, i) => {
+                ctx.fillText(riga, tx, infoY + 255 + i * 45);
             });
 
             ctx.fillStyle = '#a4bb5b';
             ctx.font = '400 20px "Josefin Sans", sans-serif';
-            ctx.fillText(new Date().toLocaleString('it-IT'), tx, infoY + INFO - 18);
+            ctx.fillText(new Date().toLocaleString('it-IT'), tx, infoY + 255 + righe.length * 45 + 36);
 
             outputCanvas = out;
             anteprima.width = W;
