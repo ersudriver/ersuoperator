@@ -11,55 +11,103 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { max-width: 100%; overflow-x: hidden; touch-action: pan-y; }
+        html, body { width: 100%; height: 100%; max-width: 100%; overflow: hidden; }
 
         body {
-            background-color: #a4bb5b;
-            background-image:
-                radial-gradient(circle at 20% 50%, rgba(44,96,61,0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 50%, rgba(44,96,61,0.08) 0%, transparent 50%),
-                repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(44,96,61,0.03) 40px, rgba(44,96,61,0.03) 41px);
+            background: #e8efd2;
             color: #2c603d;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
         }
 
-        header {
-            width: 100%;
-            background: linear-gradient(135deg, #1e4a2a 0%, #2c603d 40%, #3a7a4e 100%);
-            color: #a4bb5b;
-            padding: 1.6rem 1rem;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
+        #mappa {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            z-index: 0;
         }
 
-        header::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            height: 6px;
-            background: linear-gradient(90deg, #a4bb5b, #d4e68a, #a4bb5b);
-        }
-
-        header h1 {
-            font-family: 'Josefin Sans', sans-serif;
-            font-size: 3.2rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-        }
-
-        header h1 a { color: inherit; text-decoration: none; }
-        header p { font-size: 0.95rem; margin-top: 0.3rem; letter-spacing: 1px; }
-
-        .app { width: 100%; max-width: 1100px; margin: 0 auto; padding: 1.2rem 1rem 3rem; }
-
-        .toolbar {
+        .toolbar-mappa {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            z-index: 1200;
             display: flex;
             flex-wrap: wrap;
-            gap: 0.7rem;
+            gap: 8px;
+            justify-content: flex-end;
+            max-width: calc(100vw - 24px);
+        }
+
+        .btn-ico {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
             justify-content: center;
-            margin-bottom: 0.8rem;
+            border: 2px solid #2c603d;
+            border-radius: 50%;
+            background: rgba(44,96,61,0.94);
+            color: #d4e68a;
+            cursor: pointer;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+            transition: background 0.25s, color 0.25s, transform 0.25s;
+        }
+
+        .btn-ico svg {
+            width: 22px;
+            height: 22px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .btn-ico:hover:not(:disabled) { background: #1e4a2a; color: #ffffff; transform: translateY(-2px); }
+        .btn-ico:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-ico.primary { background: #1e4a2a; color: #d4e68a; }
+        .btn-ico.danger { background: #c0392b; border-color: #c0392b; color: #ffffff; }
+        .btn-ico[hidden] { display: none; }
+
+        .pannello-tratte {
+            position: fixed;
+            left: 12px;
+            bottom: 46px;
+            z-index: 1200;
+            width: min(330px, calc(100vw - 24px));
+            max-height: 38vh;
+            overflow: auto;
+            background: rgba(255,255,255,0.95);
+            border: 2px solid #2c603d;
+            border-radius: 1rem;
+            padding: 0.7rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+
+        .pannello-tratte[hidden] { display: none; }
+
+        .pannello-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'Josefin Sans', sans-serif;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .pannello-head .chiudi {
+            width: 28px;
+            height: 28px;
+            border: 2px solid #2c603d;
+            border-radius: 50%;
+            background: transparent;
+            color: #2c603d;
+            font-size: 1.1rem;
+            line-height: 1;
+            cursor: pointer;
         }
 
         .btn {
@@ -86,56 +134,7 @@
         .btn-small { padding: 0.45rem 0.7rem; font-size: 0.8rem; border-radius: 0.6rem; }
         .btn-danger { background: #c0392b; border-color: #c0392b; color: #fff; }
 
-        .status {
-            text-align: center;
-            font-family: 'Josefin Sans', sans-serif;
-            font-size: 1.05rem;
-            font-weight: 600;
-            min-height: 1.6rem;
-            margin-bottom: 0.8rem;
-        }
-
-        .mappa-wrap {
-            position: relative;
-            width: 100%;
-            border: 3px solid #2c603d;
-            border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: 0 8px 22px rgba(30,74,42,0.18);
-        }
-
-        #mappa { width: 100%; height: min(62vh, 620px); min-height: 380px; }
-
-        .legenda {
-            position: absolute;
-            left: 10px;
-            bottom: 10px;
-            z-index: 600;
-            background: rgba(255,255,255,0.92);
-            border: 2px solid #2c603d;
-            border-radius: 0.6rem;
-            padding: 0.45rem 0.6rem;
-            font-family: 'Josefin Sans', sans-serif;
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: #2c603d;
-            max-width: calc(100% - 20px);
-        }
-
-        .pannello {
-            background: rgba(255,255,255,0.72);
-            border: 2px solid #2c603d;
-            border-radius: 1rem;
-            margin-top: 1rem;
-            padding: 1rem;
-        }
-
-        .pannello h2 {
-            font-family: 'Josefin Sans', sans-serif;
-            font-size: 1.3rem;
-            margin-bottom: 0.6rem;
-            letter-spacing: 1px;
-        }
+        .status { display: none; }
 
         #elencoTratte { list-style: none; display: grid; gap: 0.45rem; }
         #elencoTratte li {
@@ -267,9 +266,6 @@
         }
         .toast[hidden] { display: none; }
 
-        .footer-link { text-align: center; margin-top: 1.5rem; }
-        .footer-link a { color: #2c603d; font-weight: 700; }
-
         .pin-wrapper { background: transparent; border: none; }
         .pin {
             width: 18px; height: 18px;
@@ -285,43 +281,47 @@
         .leaflet-container { font-family: 'Josefin Sans', sans-serif; }
 
         @media (max-width: 600px) {
-            header h1 { font-size: 2.4rem; }
-            .app { padding: 0.9rem 0.6rem 2.5rem; }
-            .btn { font-size: 0.85rem; padding: 0.65rem 0.8rem; }
-            #mappa { min-height: 420px; }
+            .toolbar-mappa { top: 8px; right: 8px; gap: 6px; }
+            .btn-ico { width: 42px; height: 42px; }
+            .btn-ico svg { width: 19px; height: 19px; }
+            .pannello-tratte { left: 8px; bottom: 40px; width: calc(100vw - 16px); }
             .finestra { padding: 0.9rem; }
         }
     </style>
 </head>
 <body>
 
-<header>
-    <h1><a href="index.html">Portale Operatori</a></h1>
-    <p>EDITOR PERCORSI</p>
-</header>
+<div id="mappa"></div>
 
-<div class="app">
-    <div class="toolbar" id="toolbarEditor">
-        <button type="button" class="btn" id="btnNuovaTratta">NUOVA TRATTA</button>
-        <button type="button" class="btn" id="btnChiudiTratta">CHIUDI TRATTA</button>
-        <button type="button" class="btn btn-primary" id="btnSalva">SALVA PERCORSO</button>
-        <button type="button" class="btn" id="btnViewer">PERCORSI SALVATI</button>
-        <button type="button" class="btn btn-danger" id="btnTorna" hidden>TORNA ALL'EDITOR</button>
+<div class="toolbar-mappa" id="toolbarEditor">
+    <button type="button" class="btn-ico" id="btnNuovaTratta" title="Nuova tratta" aria-label="Nuova tratta">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <button type="button" class="btn-ico" id="btnChiudiTratta" title="Chiudi tratta" aria-label="Chiudi tratta">
+        <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+    </button>
+    <button type="button" class="btn-ico primary" id="btnSalva" title="Salva percorso" aria-label="Salva percorso">
+        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+    </button>
+    <button type="button" class="btn-ico" id="btnViewer" title="Percorsi salvati" aria-label="Percorsi salvati">
+        <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    </button>
+    <button type="button" class="btn-ico" id="btnTratte" title="Tratte" aria-label="Tratte">
+        <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+    </button>
+    <button type="button" class="btn-ico danger" id="btnTorna" title="Torna all'editor" aria-label="Torna all'editor" hidden>
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+</div>
+
+<span id="status" hidden></span>
+
+<div class="pannello-tratte" id="pannelloTratte" hidden>
+    <div class="pannello-head">
+        <span>TRATTE</span>
+        <button type="button" class="chiudi" id="btnChiudiPannello" aria-label="Chiudi elenco tratte">×</button>
     </div>
-
-    <div class="status" id="status">Tocca la mappa per aggiungere il primo punto.</div>
-
-    <div class="mappa-wrap">
-        <div id="mappa"></div>
-        <div class="legenda" id="legenda">Tocco = nuovo punto &nbsp;•&nbsp; Trascina = sposta punto &nbsp;•&nbsp; I punti vicini si collegano</div>
-    </div>
-
-    <div class="pannello" id="pannelloTratte">
-        <h2>TRATTE DEL PERCORSO</h2>
-        <ul id="elencoTratte"></ul>
-    </div>
-
-    <div class="footer-link"><a href="index.html">torna alla homepage</a></div>
+    <ul id="elencoTratte"></ul>
 </div>
 
 <div class="overlay" id="overlayModal" hidden>
@@ -445,10 +445,9 @@
             tapTolerance: 12
         });
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-            subdomains: 'abcd',
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            attribution: '&copy; OpenStreetMap &copy; CARTO'
+            attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
         layerEditor = L.layerGroup().addTo(map);
@@ -474,6 +473,7 @@
         });
 
         resetEditor(false);
+        setTimeout(() => map.invalidateSize(), 0);
     }
 
     function creaMarker(punto, colore) {
@@ -613,10 +613,8 @@
         segmenti.push(corrente);
         disegnaEditor();
         renderTratte();
-        if (mostraMessaggio) {
-            status('Tocca la mappa per aggiungere il primo punto.');
-            toast('Nuovo percorso pronto.');
-        }
+        document.getElementById('pannelloTratte').hidden = true;
+        if (mostraMessaggio) status('Tocca la mappa per aggiungere il primo punto.');
     }
 
     function entraEditor() {
@@ -630,7 +628,6 @@
         document.getElementById('btnChiudiTratta').disabled = false;
         document.getElementById('btnSalva').disabled = false;
         document.getElementById('btnTorna').hidden = true;
-        document.getElementById('pannelloTratte').hidden = false;
     }
 
     function entraViewer(route) {
@@ -1019,7 +1016,6 @@
         }
 
         const server = [
-            t => `https://a.basemaps.cartocdn.com/light_all/${z}/${t.tx}/${t.ty}.png`,
             t => `https://tile.openstreetmap.org/${z}/${t.tx}/${t.ty}.png`
         ];
         let tileOk = false;
@@ -1075,7 +1071,7 @@
         ctx.fillStyle = 'rgba(255,255,255,0.8)';
         ctx.font = '600 22px "Josefin Sans", sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText('© OpenStreetMap contributors · © CARTO', 18, MAP_H - 16);
+        ctx.fillText('© OpenStreetMap contributors', 18, MAP_H - 16);
 
         ctx.fillStyle = '#1e4a2a';
         ctx.fillRect(0, MAP_H, W, BANNER);
@@ -1116,6 +1112,13 @@
     });
     document.getElementById('btnChiudiViewer').addEventListener('click', () => {
         document.getElementById('overlayViewer').hidden = true;
+    });
+    document.getElementById('btnTratte').addEventListener('click', () => {
+        const pannello = document.getElementById('pannelloTratte');
+        pannello.hidden = !pannello.hidden;
+    });
+    document.getElementById('btnChiudiPannello').addEventListener('click', () => {
+        document.getElementById('pannelloTratte').hidden = true;
     });
     document.getElementById('btnEsportaBackup').addEventListener('click', esportaBackup);
     document.getElementById('btnImportaBackup').addEventListener('click', () => document.getElementById('fileImport').click());
