@@ -120,6 +120,19 @@
             opacity: 0.8;
         }
 
+        .section-divider-small {
+            padding: 1.5rem 2rem 0.8rem;
+            font-size: 1.15rem;
+            cursor: pointer;
+            list-style: none;
+            user-select: none;
+        }
+
+        .section-divider-small::-webkit-details-marker { display: none; }
+        .section-divider-small::after { content: ' ▾'; font-size: 0.85em; }
+        details[open] .section-divider-small::after { content: ' ▴'; }
+        details:not([open]) > .stemmi-grid-small { display: none; }
+
 
 
         .stemmi-grid {
@@ -206,6 +219,7 @@
             body { overflow-x: hidden; }
             .stemmi-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
             .stemmi-grid.stemmi-grid-small { padding: 0 1rem; }
+            .section-divider-small { padding: 1.2rem 1rem 0.6rem; font-size: 1rem; }
             header { padding: 1.5rem 1rem; }
             header h1 { font-size: 2.8rem; margin-bottom: 2rem; }
             .stemmi-grid { padding: 0 1rem; }
@@ -257,7 +271,14 @@
         <a href="https://drive.google.com/drive/folders/1PMXmsSXfSTzlY-qTlGKgC5AEAp4cE6DM" class="stemma-btn" target="_blank"><img src="stemmi/pietrasanta.png" alt="Pietrasanta">Pietrasanta</a>
     </div>
 
-    <div class="section-divider" style="padding-top:0.5rem;">NON DISPONIBILI</div>
+    <details>
+        <summary class="section-divider section-divider-small">NON DISPONIBILI</summary>
+        <div class="stemmi-grid stemmi-grid-small">
+            <a href="https://drive.google.com/drive/folders/1NoLYJqEYqdIuVMeVHjzRdjOwI9Md5YsF?usp=drive_link" class="stemma-btn stemma-btn-small" target="_blank"><img src="stemmi/forte dei marmi.png" alt="Forte dei Marmi">Forte dei Marmi</a>
+            <button type="button" class="stemma-btn stemma-btn-small"><img src="stemmi/seravezza.png" alt="Seravezza">Seravezza</button>
+            <button type="button" class="stemma-btn stemma-btn-small"><img src="stemmi/stazzema.png" alt="Stazzema">Stazzema</button>
+        </div>
+    </details>
 
     <footer>&copy; 2026 Portale Operatori</footer>
 </body>
