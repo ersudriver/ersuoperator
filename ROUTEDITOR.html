@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Editor Percorsi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { max-width: 100%; overflow-x: hidden; touch-action: pan-y; }
+
+        body {
+            background-color: #a4bb5b;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(44,96,61,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(44,96,61,0.08) 0%, transparent 50%),
+                repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(44,96,61,0.03) 40px, rgba(44,96,61,0.03) 41px);
+            color: #2c603d;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            background: linear-gradient(135deg, #1e4a2a 0%, #2c603d 40%, #3a7a4e 100%);
+            color: #a4bb5b;
+            padding: 1.6rem 1rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #a4bb5b, #d4e68a, #a4bb5b);
+        }
+
+        header h1 {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 3.2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        header h1 a { color: inherit; text-decoration: none; }
+        header p { font-size: 0.95rem; margin-top: 0.3rem; letter-spacing: 1px; }
+
+        .app { width: 100%; max-width: 1100px; margin: 0 auto; padding: 1.2rem 1rem 3rem; }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.7rem;
+            justify-content: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.1rem;
+            border: 2px solid #2c603d;
+            border-radius: 0.9rem;
+            background: #2c603d;
+            color: #a4bb5b;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: background 0.25s, color 0.25s, transform 0.25s;
+        }
+
+        .btn:hover:not(:disabled) { background: #1e4a2a; color: #d4e68a; transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .btn-primary { background: #1e4a2a; color: #d4e68a; }
+        .btn-small { padding: 0.45rem 0.7rem; font-size: 0.8rem; border-radius: 0.6rem; }
+        .btn-danger { background: #c0392b; border-color: #c0392b; color: #fff; }
+
+        .status {
+            text-align: center;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            min-height: 1.6rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .mappa-wrap {
+            position: relative;
+            width: 100%;
+            border: 3px solid #2c603d;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 8px 22px rgba(30,74,42,0.18);
+        }
+
+        #mappa { width: 100%; height: min(62vh, 620px); min-height: 380px; }
+
+        .legenda {
+            position: absolute;
+            left: 10px;
+            bottom: 10px;
+            z-index: 600;
+            background: rgba(255,255,255,0.92);
+            border: 2px solid #2c603d;
+            border-radius: 0.6rem;
+            padding: 0.45rem 0.6rem;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #2c603d;
+            max-width: calc(100% - 20px);
+        }
+
+        .pannello {
+            background: rgba(255,255,255,0.72);
+            border: 2px solid #2c603d;
+            border-radius: 1rem;
+            margin-top: 1rem;
+            padding: 1rem;
+        }
+
+        .pannello h2 {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 0.6rem;
+            letter-spacing: 1px;
+        }
+
+        #elencoTratte { list-style: none; display: grid; gap: 0.45rem; }
+        #elencoTratte li {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.6rem;
+            align-items: center;
+            background: rgba(164,187,91,0.18);
+            border-radius: 0.6rem;
+            padding: 0.5rem 0.7rem;
+            font-size: 0.92rem;
+        }
+        #elencoTratte .nome-tratta { font-weight: 700; }
+        #elencoTratte .meta-tratta { font-size: 0.8rem; opacity: 0.85; text-align: right; }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(20,45,28,0.62);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .overlay[hidden] { display: none; }
+
+        .finestra {
+            background: #eef3df;
+            border: 3px solid #2c603d;
+            border-radius: 1.2rem;
+            width: min(680px, 100%);
+            max-height: 88vh;
+            overflow: auto;
+            padding: 1.2rem;
+            box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+        }
+
+        .finestra h2 {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 1.7rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .finestra .suggerimento {
+            font-size: 0.9rem;
+            font-style: italic;
+            min-height: 1.2rem;
+            margin-bottom: 0.7rem;
+        }
+
+        label { display: block; font-family: 'Josefin Sans', sans-serif; font-weight: 700; margin: 0.7rem 0 0.25rem; }
+        input, select {
+            width: 100%;
+            padding: 0.65rem;
+            border: 2px solid #2c603d;
+            border-radius: 0.6rem;
+            background: #fff;
+            color: #2c603d;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        input:focus, select:focus { outline: 2px solid #a4bb5b; }
+
+        .modal-buttons { display: flex; gap: 0.6rem; justify-content: flex-end; margin-top: 1.1rem; }
+
+        .testata-viewer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+        }
+        .testata-viewer .azioni { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+        .gruppo { margin-bottom: 1.1rem; }
+        .gruppo-titolo {
+            font-family: 'Josefin Sans', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            border-bottom: 2px solid rgba(44,96,61,0.35);
+            padding-bottom: 0.2rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+        .sotto-titolo {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin: 0.6rem 0 0.35rem;
+            opacity: 0.8;
+        }
+        .route-card {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(164,187,91,0.2);
+            border-radius: 0.7rem;
+            padding: 0.6rem 0.75rem;
+            margin-bottom: 0.4rem;
+        }
+        .route-card .route-info { cursor: pointer; font-weight: 700; flex: 1 1 180px; }
+        .route-card .route-info small { display: block; font-weight: 400; opacity: 0.8; }
+        .route-card .route-azioni { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+        .vuoto { text-align: center; padding: 1.5rem; font-style: italic; }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 1.2rem;
+            transform: translateX(-50%);
+            z-index: 3000;
+            background: #1e4a2a;
+            color: #d4e68a;
+            border: 2px solid #a4bb5b;
+            border-radius: 0.8rem;
+            padding: 0.7rem 1.1rem;
+            font-family: 'Josefin Sans', sans-serif;
+            font-weight: 600;
+            max-width: calc(100% - 2rem);
+            text-align: center;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+        }
+        .toast[hidden] { display: none; }
+
+        .footer-link { text-align: center; margin-top: 1.5rem; }
+        .footer-link a { color: #2c603d; font-weight: 700; }
+
+        .pin-wrapper { background: transparent; border: none; }
+        .pin {
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+        }
+        .leaflet-tooltip {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .leaflet-container { font-family: 'Josefin Sans', sans-serif; }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 2.4rem; }
+            .app { padding: 0.9rem 0.6rem 2.5rem; }
+            .btn { font-size: 0.85rem; padding: 0.65rem 0.8rem; }
+            #mappa { min-height: 420px; }
+            .finestra { padding: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1><a href="index.html">Portale Operatori</a></h1>
+    <p>EDITOR PERCORSI</p>
+</header>
+
+<div class="app">
+    <div class="toolbar" id="toolbarEditor">
+        <button type="button" class="btn" id="btnNuovaTratta">NUOVA TRATTA</button>
+        <button type="button" class="btn" id="btnChiudiTratta">CHIUDI TRATTA</button>
+        <button type="button" class="btn btn-primary" id="btnSalva">SALVA PERCORSO</button>
+        <button type="button" class="btn" id="btnViewer">PERCORSI SALVATI</button>
+        <button type="button" class="btn btn-danger" id="btnTorna" hidden>TORNA ALL'EDITOR</button>
+    </div>
+
+    <div class="status" id="status">Tocca la mappa per aggiungere il primo punto.</div>
+
+    <div class="mappa-wrap">
+        <div id="mappa"></div>
+        <div class="legenda" id="legenda">Tocco = nuovo punto &nbsp;•&nbsp; Trascina = sposta punto &nbsp;•&nbsp; I punti vicini si collegano</div>
+    </div>
+
+    <div class="pannello" id="pannelloTratte">
+        <h2>TRATTE DEL PERCORSO</h2>
+        <ul id="elencoTratte"></ul>
+    </div>
+
+    <div class="footer-link"><a href="index.html">torna alla homepage</a></div>
+</div>
+
+<div class="overlay" id="overlayModal" hidden>
+    <div class="finestra">
+        <h2 id="modalTitolo"></h2>
+        <p class="suggerimento" id="modalSuggerimento"></p>
+        <label for="modalNome">NOME</label>
+        <input type="text" id="modalNome" autocomplete="off">
+        <div id="modalCategorie">
+            <label for="selComune">COMUNE</label>
+            <select id="selComune"></select>
+            <label for="selTerritorio">TERRITORIO</label>
+            <select id="selTerritorio"></select>
+        </div>
+        <div class="modal-buttons">
+            <button type="button" class="btn" id="modalAnnulla">ANNULLA</button>
+            <button type="button" class="btn btn-primary" id="modalConferma">CONFERMA</button>
+        </div>
+    </div>
+</div>
+
+<div class="overlay" id="overlayViewer" hidden>
+    <div class="finestra">
+        <div class="testata-viewer">
+            <h2>PERCORSI SALVATI</h2>
+            <div class="azioni">
+                <button type="button" class="btn btn-small" id="btnEsportaBackup">BACKUP JSON</button>
+                <button type="button" class="btn btn-small" id="btnImportaBackup">IMPORTA JSON</button>
+                <button type="button" class="btn btn-small" id="btnChiudiViewer">CHIUDI</button>
+            </div>
+        </div>
+        <div id="elencoPercorsi"></div>
+    </div>
+</div>
+
+<input type="file" id="fileImport" accept="application/json,.json" hidden>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const COLORI = ['#c0392b', '#2c603d', '#e67e22', '#2980b9', '#8e44ad', '#16a085', '#d35400', '#7f8c8d'];
+    const COMUNI = {
+        'camaiore': ['lido', 'centro+collina', 'capezzano'],
+        'massarosa': ['centro+sterpeti', 'stiava+conca'],
+        'pietrasanta': ['camp', 'capriglia', 'marina', 'suburbio', 'strettoia'],
+        'stazzema': [],
+        'forte dei marmi': [],
+        'montignoso': [],
+        'seravezza': []
+    };
+    const SNAP_PUNTO = 18;
+    const SNAP_LINEA = 12;
+    const CHIAVE_STORAGE = 'routeditor.percorsi.v1';
+
+    let map;
+    let layerEditor, layerViewer;
+    let punti = [];
+    let segmenti = [];
+    let corrente = null;
+    let markerById = new Map();
+    let lineeById = new Map();
+    let modo = 'editor';
+    let percorsi = caricaPercorsi();
+    let callbackModal = null;
+    let toastTimer = null;
+
+    function uid(pref) {
+        return pref + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+
+    function escapeHtml(t) {
+        return String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function escapeXml(t) {
+        return escapeHtml(t);
+    }
+
+    function coordsTesto(p) {
+        return `${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`;
+    }
+
+    function toast(messaggio) {
+        const el = document.getElementById('toast');
+        el.textContent = messaggio;
+        el.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { el.hidden = true; }, 3200);
+    }
+
+    function status(messaggio) {
+        document.getElementById('status').textContent = messaggio;
+    }
+
+    function getPunto(id) {
+        return punti.find(p => p.id === id) || null;
+    }
+
+    function caricaPercorsi() {
+        try {
+            const raw = localStorage.getItem(CHIAVE_STORAGE);
+            const dati = raw ? JSON.parse(raw) : [];
+            return Array.isArray(dati) ? dati : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function salvaPercorsi() {
+        localStorage.setItem(CHIAVE_STORAGE, JSON.stringify(percorsi));
+    }
+
+    function iniziaMappa() {
+        map = L.map('mappa', {
+            center: [43.87, 10.24],
+            zoom: 14,
+            zoomControl: true,
+            attributionControl: true,
+            doubleClickZoom: false,
+            tap: true,
+            tapTolerance: 12
+        });
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+            subdomains: 'abcd',
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap &copy; CARTO'
+        }).addTo(map);
+
+        layerEditor = L.layerGroup().addTo(map);
+        layerViewer = L.layerGroup();
+
+        map.on('click', e => {
+            if (modo === 'viewer') {
+                toast('Sei nel visualizzatore: torna all\'editor per disegnare.');
+                return;
+            }
+            if (!corrente) {
+                toast('Premi NUOVA TRATTA per iniziare un altro segmento.');
+                return;
+            }
+            const risolto = risolviPunto(e.latlng);
+            if (risolto.inseritoIn !== corrente.id) {
+                if (corrente.punti[corrente.punti.length - 1] !== risolto.id) {
+                    corrente.punti.push(risolto.id);
+                }
+            }
+            disegnaEditor();
+            renderTratte();
+        });
+
+        resetEditor(false);
+    }
+
+    function creaMarker(punto, colore) {
+        const icona = L.divIcon({
+            className: 'pin-wrapper',
+            html: `<div class="pin" style="background:${colore}"></div>`,
+            iconSize: [18, 18],
+            iconAnchor: [9, 9]
+        });
+        const marker = L.marker([punto.lat, punto.lng], {
+            icon: icona,
+            draggable: true,
+            riseOnHover: true
+        }).addTo(layerEditor);
+        marker.bindTooltip(coordsTesto(punto), { direction: 'top', offset: [0, -10] });
+
+        marker.on('drag', () => {
+            const ll = marker.getLatLng();
+            punto.lat = ll.lat;
+            punto.lng = ll.lng;
+            marker.setTooltipContent(coordsTesto(punto));
+            aggiornaLinee();
+            renderTratte();
+        });
+
+        markerById.set(punto.id, marker);
+        return marker;
+    }
+
+    function disegnaEditor() {
+        if (!layerEditor) return;
+        layerEditor.clearLayers();
+        markerById.clear();
+        lineeById.clear();
+
+        segmenti.forEach((seg, i) => {
+            const colore = COLORI[i % COLORI.length];
+            const lista = seg.punti.map(getPunto).filter(Boolean);
+            if (lista.length >= 2) {
+                const linea = L.polyline(lista.map(p => [p.lat, p.lng]), {
+                    color: colore,
+                    weight: 5,
+                    opacity: 0.95,
+                    dashArray: seg === corrente ? '9 8' : null
+                }).addTo(layerEditor);
+                lineeById.set(seg.id, linea);
+            }
+            lista.forEach(p => creaMarker(p, colore));
+        });
+    }
+
+    function aggiornaLinee() {
+        lineeById.forEach((linea, id) => {
+            const seg = segmenti.find(s => s.id === id);
+            if (!seg) return;
+            linea.setLatLngs(seg.punti.map(getPunto).filter(Boolean).map(p => [p.lat, p.lng]));
+        });
+    }
+
+    function renderTratte() {
+        const ul = document.getElementById('elencoTratte');
+        ul.innerHTML = '';
+        if (!segmenti.length) {
+            ul.innerHTML = '<li><span class="nome-tratta">Nessuna tratta</span></li>';
+            return;
+        }
+        segmenti.forEach((seg, i) => {
+            const li = document.createElement('li');
+            const nome = seg.nome || (seg === corrente ? `Tratta in corso ${i + 1}` : `Tratta ${i + 1}`);
+            const ultimo = seg.punti.length ? getPunto(seg.punti[seg.punti.length - 1]) : null;
+            li.innerHTML = `<span class="nome-tratta" style="color:${COLORI[i % COLORI.length]}">${escapeHtml(nome)}</span>` +
+                `<span class="meta-tratta">${seg.punti.length} punti${ultimo ? '<br>' + coordsTesto(ultimo) : ''}</span>`;
+            ul.appendChild(li);
+        });
+    }
+
+    function proiezione(p, a, b) {
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const len2 = dx * dx + dy * dy;
+        let t = len2 === 0 ? 0 : ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2;
+        t = Math.max(0, Math.min(1, t));
+        const px = a.x + t * dx, py = a.y + t * dy;
+        return { d: Math.hypot(p.x - px, p.y - py), t };
+    }
+
+    function creaPunto(latlng) {
+        const p = { id: uid('p'), lat: latlng.lat, lng: latlng.lng };
+        punti.push(p);
+        return p;
+    }
+
+    function risolviPunto(latlng) {
+        const clickPt = map.latLngToContainerPoint(latlng);
+
+        let migliore = null;
+        let dist = SNAP_PUNTO;
+        punti.forEach(p => {
+            const d = clickPt.distanceTo(map.latLngToContainerPoint([p.lat, p.lng]));
+            if (d < dist) { dist = d; migliore = p; }
+        });
+        if (migliore) return { id: migliore.id, inseritoIn: null };
+
+        let segTrovato = null, idxTrovato = -1, best = SNAP_LINEA, latTrovata = null, lngTrovata = null;
+        segmenti.forEach(seg => {
+            for (let i = 0; i < seg.punti.length - 1; i++) {
+                const a = getPunto(seg.punti[i]);
+                const b = getPunto(seg.punti[i + 1]);
+                if (!a || !b) continue;
+                const pa = map.latLngToContainerPoint([a.lat, a.lng]);
+                const pb = map.latLngToContainerPoint([b.lat, b.lng]);
+                const r = proiezione(clickPt, pa, pb);
+                if (r.d < best) {
+                    best = r.d;
+                    segTrovato = seg;
+                    idxTrovato = i;
+                    latTrovata = a.lat + (b.lat - a.lat) * r.t;
+                    lngTrovata = a.lng + (b.lng - a.lng) * r.t;
+                }
+            }
+        });
+
+        if (segTrovato) {
+            const p = creaPunto({ lat: latTrovata, lng: lngTrovata });
+            segTrovato.punti.splice(idxTrovato + 1, 0, p.id);
+            return { id: p.id, inseritoIn: segTrovato.id };
+        }
+
+        const p = creaPunto(latlng);
+        return { id: p.id, inseritoIn: null };
+    }
+
+    function resetEditor(mostraMessaggio = true) {
+        entraEditor();
+        punti = [];
+        segmenti = [];
+        corrente = { id: uid('t'), nome: '', punti: [] };
+        segmenti.push(corrente);
+        disegnaEditor();
+        renderTratte();
+        if (mostraMessaggio) {
+            status('Tocca la mappa per aggiungere il primo punto.');
+            toast('Nuovo percorso pronto.');
+        }
+    }
+
+    function entraEditor() {
+        if (modo === 'viewer') {
+            if (map.hasLayer(layerViewer)) map.removeLayer(layerViewer);
+            layerViewer.clearLayers();
+            if (!map.hasLayer(layerEditor)) map.addLayer(layerEditor);
+            modo = 'editor';
+        }
+        document.getElementById('btnNuovaTratta').disabled = false;
+        document.getElementById('btnChiudiTratta').disabled = false;
+        document.getElementById('btnSalva').disabled = false;
+        document.getElementById('btnTorna').hidden = true;
+        document.getElementById('pannelloTratte').hidden = false;
+    }
+
+    function entraViewer(route) {
+        if (map.hasLayer(layerEditor)) map.removeLayer(layerEditor);
+        if (!map.hasLayer(layerViewer)) map.addLayer(layerViewer);
+        layerViewer.clearLayers();
+        modo = 'viewer';
+
+        route.tratte.forEach((seg, i) => {
+            const colore = COLORI[i % COLORI.length];
+            const lista = seg.punti.map(id => route.punti.find(p => p.id === id)).filter(Boolean);
+            if (lista.length >= 2) {
+                L.polyline(lista.map(p => [p.lat, p.lng]), {
+                    color: colore, weight: 6, opacity: 0.95
+                }).addTo(layerViewer);
+            }
+            lista.forEach(p => {
+                L.marker([p.lat, p.lng], {
+                    icon: L.divIcon({
+                        className: 'pin-wrapper',
+                        html: `<div class="pin" style="background:${colore}"></div>`,
+                        iconSize: [18, 18], iconAnchor: [9, 9]
+                    })
+                }).bindTooltip(coordsTesto(p), { direction: 'top' }).addTo(layerViewer);
+            });
+        });
+
+        const bounds = L.latLngBounds(route.punti.map(p => [p.lat, p.lng]));
+        if (route.punti.length) map.fitBounds(bounds, { padding: [45, 45], maxZoom: 17 });
+
+        document.getElementById('btnNuovaTratta').disabled = true;
+        document.getElementById('btnChiudiTratta').disabled = true;
+        document.getElementById('btnSalva').disabled = true;
+        document.getElementById('btnTorna').hidden = false;
+        document.getElementById('pannelloTratte').hidden = true;
+        status(`Visualizzazione: ${route.nome}`);
+    }
+
+    function nuovaTratta() {
+        if (corrente && corrente.punti.length >= 2) {
+            chiudiTratta();
+            return;
+        }
+        if (corrente && corrente.punti.length === 1) {
+            const id = corrente.punti[0];
+            segmenti = segmenti.filter(s => s !== corrente);
+            if (!segmenti.some(s => s.punti.includes(id))) {
+                punti = punti.filter(p => p.id !== id);
+            }
+        }
+        corrente = { id: uid('t'), nome: '', punti: [] };
+        segmenti.push(corrente);
+        disegnaEditor();
+        renderTratte();
+        status('Tocca il punto di partenza della nuova tratta (si collegherà se vicino).');
+    }
+
+    async function suggerisciNome(seg) {
+        const lista = seg.punti.map(getPunto).filter(Boolean);
+        if (!lista.length) return '';
+        const p = lista[Math.floor(lista.length / 2)];
+        try {
+            const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${p.lat}&lon=${p.lng}&zoom=17&addressdetails=1&accept-language=it`;
+            const res = await fetch(url, { headers: { 'Accept-Language': 'it' } });
+            const j = await res.json();
+            const a = j.address || {};
+            return a.road || a.pedestrian || a.footway || a.path || a.square ||
+                   a.residential || a.place || (j.display_name || '').split(',')[0] || '';
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function apriModal(cfg) {
+        document.getElementById('modalTitolo').textContent = cfg.titolo;
+        document.getElementById('modalSuggerimento').textContent = cfg.suggerimento || '';
+        document.getElementById('modalNome').value = cfg.nome || '';
+        document.getElementById('modalCategorie').hidden = !cfg.categorie;
+        if (cfg.categorie) {
+            popolaComuni();
+            document.getElementById('selComune').value = cfg.comune || Object.keys(COMUNI)[0];
+            popolaTerritori();
+            if (cfg.territorio) document.getElementById('selTerritorio').value = cfg.territorio;
+        }
+        callbackModal = cfg.onConferma;
+        document.getElementById('overlayModal').hidden = false;
+        setTimeout(() => document.getElementById('modalNome').focus(), 40);
+    }
+
+    function chiudiModal() {
+        document.getElementById('overlayModal').hidden = true;
+        callbackModal = null;
+    }
+
+    function popolaComuni() {
+        const sel = document.getElementById('selComune');
+        sel.innerHTML = '';
+        Object.keys(COMUNI).sort((a, b) => a.localeCompare(b, 'it')).forEach(c => {
+            const o = document.createElement('option');
+            o.value = c;
+            o.textContent = c.toUpperCase();
+            sel.appendChild(o);
+        });
+    }
+
+    function popolaTerritori() {
+        const comune = document.getElementById('selComune').value;
+        const sel = document.getElementById('selTerritorio');
+        sel.innerHTML = '';
+        const lista = COMUNI[comune] || [];
+        if (!lista.length) {
+            const o = document.createElement('option');
+            o.value = '';
+            o.textContent = 'NESSUNA SOTTO-CATEGORIA';
+            sel.appendChild(o);
+            return;
+        }
+        lista.forEach(t => {
+            const o = document.createElement('option');
+            o.value = t;
+            o.textContent = t.toUpperCase();
+            sel.appendChild(o);
+        });
+    }
+
+    function chiudiTratta(dopo = null) {
+        if (!corrente || corrente.punti.length < 2) {
+            toast('Aggiungi almeno due punti prima di chiudere la tratta.');
+            return;
+        }
+        const seg = corrente;
+        apriModal({
+            titolo: 'NOME DELLA TRATTA',
+            suggerimento: 'Cerco un suggerimento dal tracciato…',
+            nome: '',
+            onConferma: dati => {
+                seg.nome = dati.nome.trim() || `Tratta ${segmenti.filter(s => s !== seg).length + 1}`;
+                corrente = null;
+                disegnaEditor();
+                renderTratte();
+                status('Tratta chiusa. Premi NUOVA TRATTA per iniziare un altro segmento.');
+                if (dopo) dopo();
+            }
+        });
+        suggerisciNome(seg).then(nome => {
+            if (document.getElementById('modalTitolo').textContent !== 'NOME DELLA TRATTA') return;
+            if (document.getElementById('overlayModal').hidden) return;
+            const box = document.getElementById('modalSuggerimento');
+            box.textContent = nome ? `Suggerimento: ${nome}` : 'Nessun suggerimento disponibile: scrivi tu il nome.';
+            if (nome && !document.getElementById('modalNome').value.trim()) {
+                document.getElementById('modalNome').value = nome;
+            }
+        });
+    }
+
+    function salvaPercorso() {
+        const chiuse = segmenti.filter(s => s !== corrente && s.punti.length >= 2);
+        if (!chiuse.length) {
+            toast('Chiudi almeno una tratta con due o più punti prima di salvare.');
+            return;
+        }
+        const continua = () => apriModal({
+            titolo: 'SALVA PERCORSO',
+            nome: '',
+            categorie: true,
+            onConferma: dati => {
+                const tratteFinali = segmenti.filter(s => s !== corrente && s.punti.length >= 2);
+                if (!tratteFinali.length) { toast('Nessuna tratta da salvare.'); return; }
+                const route = {
+                    id: uid('r'),
+                    nome: dati.nome.trim() || 'Percorso senza nome',
+                    comune: dati.comune,
+                    territorio: dati.territorio || '',
+                    creato: new Date().toISOString(),
+                    punti: punti.map(p => ({ ...p })),
+                    tratte: tratteFinali.map(s => ({ id: s.id, nome: s.nome || 'Tratta', punti: [...s.punti] }))
+                };
+                percorsi.push(route);
+                salvaPercorsi();
+                renderViewer();
+                resetEditor();
+                toast('Percorso salvato.');
+            }
+        });
+
+        if (corrente && corrente.punti.length >= 2) chiudiTratta(continua);
+        else continua();
+    }
+
+    function downloadBlob(blob, nome) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = nome;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+
+    function nomeFile(nome, est) {
+        return nome.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.' + est;
+    }
+
+    function esportaGPX(route) {
+        let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+        xml += '<gpx version="1.1" creator="Portale Operatori - RouteEditor" xmlns="http://www.topografix.com/GPX/1/1">\n';
+        xml += `  <metadata><name>${escapeXml(route.nome)}</name></metadata>\n`;
+        xml += '  <trk>\n';
+        xml += `    <name>${escapeXml(route.nome)}</name>\n`;
+        route.tratte.forEach(seg => {
+            xml += '    <trkseg>\n';
+            xml += `      <name>${escapeXml(seg.nome || 'Tratta')}</name>\n`;
+            seg.punti.forEach(id => {
+                const p = route.punti.find(x => x.id === id);
+                if (p) xml += `      <trkpt lat="${p.lat}" lon="${p.lng}"></trkpt>\n`;
+            });
+            xml += '    </trkseg>\n';
+        });
+        xml += '  </trk>\n</gpx>\n';
+        downloadBlob(new Blob([xml], { type: 'application/gpx+xml' }), nomeFile(route.nome, 'gpx'));
+        toast('GPX esportato.');
+    }
+
+    function esportaJSON(route) {
+        const dati = { versione: 1, percorsi: [route] };
+        downloadBlob(new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' }), nomeFile(route.nome, 'json'));
+        toast('JSON del percorso esportato.');
+    }
+
+    function esportaBackup() {
+        const dati = { versione: 1, percorsi };
+        downloadBlob(new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' }), 'backup-percorsi.json');
+        toast('Backup JSON esportato.');
+    }
+
+    function importaBackup(file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+            try {
+                const dati = JSON.parse(reader.result);
+                const lista = Array.isArray(dati) ? dati : dati.percorsi;
+                if (!Array.isArray(lista)) throw new Error('Formato non valido');
+                let aggiunti = 0;
+                lista.forEach(r => {
+                    if (!r || !r.id || !Array.isArray(r.punti) || !Array.isArray(r.tratte)) return;
+                    if (percorsi.some(x => x.id === r.id)) return;
+                    percorsi.push(r);
+                    aggiunti++;
+                });
+                salvaPercorsi();
+                renderViewer();
+                toast(aggiunti ? `${aggiunti} percorsi importati.` : 'Nessun nuovo percorso importato.');
+            } catch (e) {
+                toast('File JSON non valido.');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function renderViewer() {
+        const box = document.getElementById('elencoPercorsi');
+        box.innerHTML = '';
+        if (!percorsi.length) {
+            box.innerHTML = '<p class="vuoto">Nessun percorso salvato.</p>';
+            return;
+        }
+
+        const gruppi = {};
+        percorsi.forEach(r => {
+            const comune = r.comune || 'altro';
+            const territorio = r.territorio || 'generale';
+            gruppi[comune] = gruppi[comune] || {};
+            gruppi[comune][territorio] = gruppi[comune][territorio] || [];
+            gruppi[comune][territorio].push(r);
+        });
+
+        Object.keys(gruppi).sort((a, b) => a.localeCompare(b, 'it')).forEach(comune => {
+            const divG = document.createElement('div');
+            divG.className = 'gruppo';
+            divG.innerHTML = `<div class="gruppo-titolo">${escapeHtml(comune)}</div>`;
+            Object.keys(gruppi[comune]).sort((a, b) => a.localeCompare(b, 'it')).forEach(territorio => {
+                const divT = document.createElement('div');
+                divT.innerHTML = `<div class="sotto-titolo">${escapeHtml(territorio)}</div>`;
+                gruppi[comune][territorio].forEach(r => {
+                    const nPunti = r.punti.length;
+                    const nTratte = r.tratte.length;
+                    const card = document.createElement('div');
+                    card.className = 'route-card';
+                    card.innerHTML =
+                        `<div class="route-info" data-azione="mostra" data-id="${r.id}">${escapeHtml(r.nome)}` +
+                        `<small>${nTratte} tratte · ${nPunti} punti</small></div>` +
+                        `<div class="route-azioni">` +
+                        `<button type="button" class="btn btn-small" data-azione="mostra" data-id="${r.id}">MOSTRA</button>` +
+                        `<button type="button" class="btn btn-small" data-azione="gpx" data-id="${r.id}">GPX</button>` +
+                        `<button type="button" class="btn btn-small" data-azione="png" data-id="${r.id}">PNG</button>` +
+                        `<button type="button" class="btn btn-small" data-azione="json" data-id="${r.id}">JSON</button>` +
+                        `</div>`;
+                    divT.appendChild(card);
+                });
+                divG.appendChild(divT);
+            });
+            box.appendChild(divG);
+        });
+    }
+
+    function latLngToWorld(lat, lng, z) {
+        const n = 256 * Math.pow(2, z);
+        const x = (lng + 180) / 360 * n;
+        const r = lat * Math.PI / 180;
+        const y = (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * n;
+        return { x, y };
+    }
+
+    function caricaImmagine(src) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = src;
+        });
+    }
+
+    async function caricaTiles(tiles, urlFn) {
+        const risultati = [];
+        for (let i = 0; i < tiles.length; i += 6) {
+            const batch = tiles.slice(i, i + 6);
+            const ris = await Promise.all(batch.map(t =>
+                caricaImmagine(urlFn(t)).then(img => ({ ...t, img })).catch(() => null)
+            ));
+            risultati.push(...ris.filter(Boolean));
+        }
+        return risultati;
+    }
+
+    function adattaFont(ctx, testo, maxW, sizeIniziale, peso) {
+        let size = sizeIniziale;
+        do {
+            ctx.font = `${peso} ${size}px "Josefin Sans", sans-serif`;
+            if (ctx.measureText(testo).width <= maxW) break;
+            size -= 2;
+        } while (size > 26);
+        return size;
+    }
+
+    async function esportaPNG(route) {
+        const W = 1536, H = 2048, BANNER = 240, MAP_H = H - BANNER, PAD = 110;
+        if (!route.punti.length) { toast('Il percorso non ha punti.'); return; }
+
+        const lats = route.punti.map(p => p.lat), lngs = route.punti.map(p => p.lng);
+        let north = Math.max(...lats), south = Math.min(...lats);
+        let west = Math.min(...lngs), east = Math.max(...lngs);
+        if (north - south < 0.0008) { north += 0.0004; south -= 0.0004; }
+        if (east - west < 0.0008) { east += 0.0004; west -= 0.0004; }
+
+        let z = 18;
+        for (; z >= 2; z--) {
+            const a = latLngToWorld(north, west, z);
+            const b = latLngToWorld(south, east, z);
+            if ((b.x - a.x) <= W - 2 * PAD && (b.y - a.y) <= MAP_H - 2 * PAD) break;
+        }
+        z = Math.max(2, z);
+
+        const nw = latLngToWorld(north, west, z);
+        const se = latLngToWorld(south, east, z);
+        const originX = (nw.x + se.x) / 2 - W / 2;
+        const originY = (nw.y + se.y) / 2 - MAP_H / 2;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = W;
+        canvas.height = H;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#e8efd2';
+        ctx.fillRect(0, 0, W, MAP_H);
+
+        const nTile = Math.pow(2, z);
+        const tx0 = Math.floor(originX / 256), tx1 = Math.floor((originX + W) / 256);
+        const ty0 = Math.floor(originY / 256), ty1 = Math.floor((originY + MAP_H) / 256);
+        const tiles = [];
+        for (let ty = ty0; ty <= ty1; ty++) {
+            for (let tx = tx0; tx <= tx1; tx++) {
+                if (ty < 0 || ty >= nTile) continue;
+                tiles.push({ tx: ((tx % nTile) + nTile) % nTile, ty, px: tx * 256 - originX, py: ty * 256 - originY });
+            }
+        }
+
+        const server = [
+            t => `https://a.basemaps.cartocdn.com/light_all/${z}/${t.tx}/${t.ty}.png`,
+            t => `https://tile.openstreetmap.org/${z}/${t.tx}/${t.ty}.png`
+        ];
+        let tileOk = false;
+        for (const urlFn of server) {
+            const imgs = await caricaTiles(tiles, urlFn);
+            if (imgs.length >= Math.max(1, Math.ceil(tiles.length * 0.35))) {
+                imgs.forEach(t => ctx.drawImage(t.img, t.px, t.py));
+                tileOk = true;
+                break;
+            }
+        }
+
+        if (!tileOk) {
+            ctx.fillStyle = '#cfe0a8';
+            for (let i = 0; i < 8; i++) {
+                ctx.fillRect(0, i * MAP_H / 8, W, 2);
+                ctx.fillRect(i * W / 8, 0, 2, MAP_H);
+            }
+        }
+
+        const ptCanvas = p => {
+            const w = latLngToWorld(p.lat, p.lng, z);
+            return { x: w.x - originX, y: w.y - originY };
+        };
+
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        route.tratte.forEach((seg, i) => {
+            const colore = COLORI[i % COLORI.length];
+            const lista = seg.punti.map(id => route.punti.find(p => p.id === id)).filter(Boolean).map(ptCanvas);
+            if (lista.length >= 2) {
+                ctx.beginPath();
+                ctx.moveTo(lista[0].x, lista[0].y);
+                lista.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+                ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+                ctx.lineWidth = 14;
+                ctx.stroke();
+                ctx.strokeStyle = colore;
+                ctx.lineWidth = 7;
+                ctx.stroke();
+            }
+            lista.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.lineWidth = 3.5;
+                ctx.strokeStyle = colore;
+                ctx.stroke();
+            });
+        });
+
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.font = '600 22px "Josefin Sans", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('© OpenStreetMap contributors · © CARTO', 18, MAP_H - 16);
+
+        ctx.fillStyle = '#1e4a2a';
+        ctx.fillRect(0, MAP_H, W, BANNER);
+        ctx.fillStyle = '#a4bb5b';
+        ctx.fillRect(0, MAP_H, W, 6);
+
+        await (document.fonts ? document.fonts.ready : Promise.resolve());
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#d4e68a';
+        adattaFont(ctx, route.nome, W - 100, 82, '700');
+        ctx.fillText(route.nome, W / 2, MAP_H + 108);
+
+        ctx.fillStyle = '#ffffff';
+        const sotto = route.territorio ? `${route.comune} / ${route.territorio}` : route.comune;
+        adattaFont(ctx, sotto, W - 100, 54, '600');
+        ctx.fillText(sotto, W / 2, MAP_H + 182);
+
+        await new Promise(resolve => canvas.toBlob(blob => {
+            downloadBlob(blob, nomeFile(route.nome, 'png'));
+            resolve();
+        }, 'image/png'));
+        toast('PNG 1536×2048 esportato.');
+    }
+
+    document.getElementById('btnNuovaTratta').addEventListener('click', nuovaTratta);
+    document.getElementById('btnChiudiTratta').addEventListener('click', () => chiudiTratta());
+    document.getElementById('btnSalva').addEventListener('click', salvaPercorso);
+    document.getElementById('btnTorna').addEventListener('click', () => {
+        entraEditor();
+        disegnaEditor();
+        status('Tocca la mappa per aggiungere il primo punto.');
+    });
+
+    document.getElementById('btnViewer').addEventListener('click', () => {
+        renderViewer();
+        document.getElementById('overlayViewer').hidden = false;
+    });
+    document.getElementById('btnChiudiViewer').addEventListener('click', () => {
+        document.getElementById('overlayViewer').hidden = true;
+    });
+    document.getElementById('btnEsportaBackup').addEventListener('click', esportaBackup);
+    document.getElementById('btnImportaBackup').addEventListener('click', () => document.getElementById('fileImport').click());
+    document.getElementById('fileImport').addEventListener('change', e => {
+        if (e.target.files[0]) importaBackup(e.target.files[0]);
+        e.target.value = '';
+    });
+
+    document.getElementById('elencoPercorsi').addEventListener('click', e => {
+        const btn = e.target.closest('[data-azione]');
+        if (!btn) return;
+        const route = percorsi.find(r => r.id === btn.dataset.id);
+        if (!route) return;
+        const azione = btn.dataset.azione;
+        if (azione === 'mostra') {
+            entraViewer(route);
+            document.getElementById('overlayViewer').hidden = true;
+        } else if (azione === 'gpx') esportaGPX(route);
+        else if (azione === 'png') esportaPNG(route);
+        else if (azione === 'json') esportaJSON(route);
+    });
+
+    document.getElementById('selComune').addEventListener('change', popolaTerritori);
+    document.getElementById('modalAnnulla').addEventListener('click', chiudiModal);
+    document.getElementById('modalConferma').addEventListener('click', () => {
+        if (!callbackModal) return;
+        const dati = {
+            nome: document.getElementById('modalNome').value,
+            comune: document.getElementById('selComune').value,
+            territorio: document.getElementById('selTerritorio').value
+        };
+        callbackModal(dati);
+        chiudiModal();
+    });
+    document.getElementById('overlayModal').addEventListener('click', e => {
+        if (e.target === e.currentTarget) chiudiModal();
+    });
+
+    iniziaMappa();
+</script>
+</body>
+</html>
