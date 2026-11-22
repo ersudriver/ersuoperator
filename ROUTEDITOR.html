@@ -9,6 +9,7 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { width: 100%; height: 100%; max-width: 100%; overflow: hidden; }
@@ -16,17 +17,65 @@
         body {
             background: #e8efd2;
             color: #2c603d;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Josefin Sans', sans-serif;
         }
 
-        #mappa {
-            position: fixed;
-            inset: 0;
-            width: 100vw;
-            height: 100vh;
-            height: 100dvh;
-            z-index: 0;
+        #mappa { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; z-index: 0; }
+
+        .search-bar {
+            position: relative;
+            flex: 0 1 300px;
+            min-width: 150px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 4px 0 10px;
+            border: 2px solid #2c603d;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.97);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.28);
         }
+        .search-bar > svg { width: 20px; height: 20px; flex-shrink: 0; }
+        .search-bar input {
+            flex: 1;
+            min-width: 0;
+            border: none;
+            background: transparent;
+            color: #2c603d;
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .search-bar input::placeholder { color: rgba(44,96,61,0.6); }
+        .search-results {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            max-height: 260px;
+            overflow: auto;
+            background: #fff;
+            border: 2px solid #2c603d;
+            border-radius: 0.8rem;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+        }
+        .search-results[hidden] { display: none; }
+        .search-results button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.55rem 0.7rem;
+            border: none;
+            border-bottom: 1px solid rgba(44,96,61,0.15);
+            background: transparent;
+            color: #2c603d;
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .search-results button:last-child { border-bottom: none; }
+        .search-results button:hover { background: rgba(164,187,91,0.25); }
 
         .toolbar-mappa {
             position: fixed;
@@ -34,9 +83,10 @@
             right: 12px;
             z-index: 1200;
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             gap: 8px;
             justify-content: flex-end;
+            align-items: center;
             max-width: calc(100vw - 24px);
         }
 
@@ -54,22 +104,15 @@
             box-shadow: 0 3px 12px rgba(0,0,0,0.3);
             transition: background 0.25s, color 0.25s, transform 0.25s;
         }
-
-        .btn-ico svg {
-            width: 22px;
-            height: 22px;
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
+        .btn-ico svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
         .btn-ico:hover:not(:disabled) { background: #1e4a2a; color: #ffffff; transform: translateY(-2px); }
         .btn-ico:disabled { opacity: 0.4; cursor: not-allowed; }
         .btn-ico.primary { background: #1e4a2a; color: #d4e68a; }
         .btn-ico.danger { background: #c0392b; border-color: #c0392b; color: #ffffff; }
         .btn-ico[hidden] { display: none; }
+        .toolbar-mappa > .btn-ico, .search-bar > .btn-ico { flex: 0 0 48px; }
+        .btn-ico.mini { width: 36px; height: 36px; border-radius: 0.65rem; }
+        .btn-ico.mini svg { width: 17px; height: 17px; }
 
         .pannello-tratte {
             position: fixed;
@@ -85,9 +128,7 @@
             padding: 0.7rem;
             box-shadow: 0 6px 20px rgba(0,0,0,0.25);
         }
-
         .pannello-tratte[hidden] { display: none; }
-
         .pannello-head {
             display: flex;
             align-items: center;
@@ -97,8 +138,7 @@
             letter-spacing: 1px;
             margin-bottom: 0.5rem;
         }
-
-        .pannello-head .chiudi {
+        .pannello-head .chiudi, .row-x {
             width: 28px;
             height: 28px;
             border: 2px solid #2c603d;
@@ -108,31 +148,27 @@
             font-size: 1.1rem;
             line-height: 1;
             cursor: pointer;
-        }
-
-        .btn {
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            padding: 0.8rem 1.1rem;
-            border: 2px solid #2c603d;
-            border-radius: 0.9rem;
-            background: #2c603d;
-            color: #a4bb5b;
-            font-family: 'Josefin Sans', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            transition: background 0.25s, color 0.25s, transform 0.25s;
+            flex-shrink: 0;
         }
-
-        .btn:hover:not(:disabled) { background: #1e4a2a; color: #d4e68a; transform: translateY(-2px); }
-        .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-        .btn-primary { background: #1e4a2a; color: #d4e68a; }
-        .btn-small { padding: 0.45rem 0.7rem; font-size: 0.8rem; border-radius: 0.6rem; }
-        .btn-danger { background: #c0392b; border-color: #c0392b; color: #fff; }
+        .row-x { width: 24px; height: 24px; font-size: 0.95rem; border-color: #c0392b; color: #c0392b; }
+        .row-scambia {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #2c603d;
+            border-radius: 50%;
+            background: transparent;
+            color: #2c603d;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .row-scambia svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .row-scambia.selezionato { background: #2c603d; color: #ffffff; }
 
         .status { display: none; }
 
@@ -148,7 +184,7 @@
             font-size: 0.92rem;
         }
         #elencoTratte .nome-tratta { font-weight: 700; }
-        #elencoTratte .meta-tratta { font-size: 0.8rem; opacity: 0.85; text-align: right; }
+        #elencoTratte .meta-tratta { font-size: 0.8rem; opacity: 0.85; text-align: right; margin-left: auto; }
 
         .overlay {
             position: fixed;
@@ -161,7 +197,6 @@
             padding: 1rem;
         }
         .overlay[hidden] { display: none; }
-
         .finestra {
             background: #eef3df;
             border: 3px solid #2c603d;
@@ -172,22 +207,11 @@
             padding: 1.2rem;
             box-shadow: 0 14px 40px rgba(0,0,0,0.35);
         }
-
-        .finestra h2 {
-            font-family: 'Josefin Sans', sans-serif;
-            font-size: 1.7rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .finestra .suggerimento {
-            font-size: 0.9rem;
-            font-style: italic;
-            min-height: 1.2rem;
-            margin-bottom: 0.7rem;
-        }
-
+        .finestra h2 { font-family: 'Josefin Sans', sans-serif; font-size: 1.6rem; margin-bottom: 0.5rem; }
+        .finestra .suggerimento { font-size: 0.9rem; font-style: italic; min-height: 1.2rem; margin-bottom: 0.7rem; }
+        .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
         label { display: block; font-family: 'Josefin Sans', sans-serif; font-weight: 700; margin: 0.7rem 0 0.25rem; }
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 0.65rem;
             border: 2px solid #2c603d;
@@ -196,10 +220,30 @@
             color: #2c603d;
             font-family: inherit;
             font-size: 1rem;
+            resize: vertical;
         }
-        input:focus, select:focus { outline: 2px solid #a4bb5b; }
-
+        input:focus, select:focus, textarea:focus { outline: 2px solid #a4bb5b; }
         .modal-buttons { display: flex; gap: 0.6rem; justify-content: flex-end; margin-top: 1.1rem; }
+
+        .nota-img-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+        .nota-img-item { position: relative; width: 96px; height: 96px; border: 2px solid #2c603d; border-radius: 0.5rem; overflow: hidden; }
+        .nota-img-item img { width: 100%; height: 100%; object-fit: cover; }
+        .nota-img-item button {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 22px;
+            height: 22px;
+            border: none;
+            border-radius: 50%;
+            background: #c0392b;
+            color: #fff;
+            font-size: 0.9rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .nota-add { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.6rem; }
+        .nota-add span { opacity: 0.75; font-size: 0.85rem; }
 
         .testata-viewer {
             display: flex;
@@ -210,7 +254,6 @@
             margin-bottom: 0.8rem;
         }
         .testata-viewer .azioni { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-
         .gruppo { margin-bottom: 1.1rem; }
         .gruppo-titolo {
             font-family: 'Josefin Sans', sans-serif;
@@ -244,7 +287,6 @@
         .route-card .route-info { cursor: pointer; font-weight: 700; flex: 1 1 180px; }
         .route-card .route-info small { display: block; font-weight: 400; opacity: 0.8; }
         .route-card .route-azioni { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-
         .vuoto { text-align: center; padding: 1.5rem; font-style: italic; }
 
         .toast {
@@ -268,22 +310,140 @@
 
         .pin-wrapper { background: transparent; border: none; }
         .pin {
-            width: 18px; height: 18px;
+            position: relative;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             border: 3px solid #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+            box-shadow: 0 2px 7px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
         }
-        .leaflet-tooltip {
-            font-family: 'Josefin Sans', sans-serif;
+        .pin.con-nota::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            bottom: -9px;
+            width: 24px;
+            height: 24px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpolygon points='6,1.5 10.5,10.5 1.5,10.5' fill='%23f1c40f' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
+        }
+        .pin.senza-numero {
+            width: 14px;
+            height: 14px;
+            border: none;
+            font-size: 0;
+        }
+        .pin.senza-numero.con-nota::after { right: -13px; bottom: -12px; }
+        .leaflet-tooltip.punto-tooltip {
+            background: rgba(255,255,255,0.96);
+            border: 1px solid #2c603d;
+            border-radius: 0.45rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            padding: 3px 8px;
+            font-size: 11px;
+            color: #2c603d;
+        }
+        .leaflet-tooltip.punto-tooltip::before { display: none; }
+        .leaflet-tooltip.tratta-tooltip {
+            background: rgba(30,74,42,0.94);
+            border: 1px solid #a4bb5b;
+            border-radius: 0.4rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            color: #ffffff;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
+            padding: 3px 9px;
+        }
+        .leaflet-tooltip.tratta-tooltip::before { display: none; }
+        @keyframes dashTrattaCorrente {
+            from { stroke-dashoffset: 0; }
+            to { stroke-dashoffset: -34px; }
+        }
+        .leaflet-interactive.tratta-corrente {
+            animation: dashTrattaCorrente 0.9s linear infinite;
         }
         .leaflet-container { font-family: 'Josefin Sans', sans-serif; }
+
+        .stile-opzioni { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; margin-top: 0.6rem; }
+        .stile-opzione {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem;
+            border: 2px solid #2c603d;
+            border-radius: 0.6rem;
+            background: #ffffff;
+            color: #2c603d;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .stile-opzione.selezionato { background: rgba(164,187,91,0.4); box-shadow: inset 0 0 0 2px #2c603d; }
+        .stile-opzione .anteprima { position: relative; display: block; width: 84px; height: 22px; flex-shrink: 0; }
+        .stile-opzione .anteprima i {
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            height: 7px;
+            border-radius: 4px;
+            background: var(--anteprima-colore, #2c603d);
+        }
+        .stile-opzione .anteprima i:first-child { top: 2px; }
+        .stile-opzione .anteprima i:last-child { bottom: 2px; }
+        .stile-opzione[data-stile="normale"] .anteprima i:last-child { display: none; }
+        .stile-opzione[data-stile="latoA"] .anteprima i:last-child,
+        .stile-opzione[data-stile="latoB"] .anteprima i:first-child {
+            background: repeating-linear-gradient(90deg, var(--anteprima-colore, #2c603d) 0 7px, transparent 7px 12px);
+        }
+
+        .pin.scacchi {
+            background: repeating-conic-gradient(#111 0% 25%, #fff 0% 50%) 50% / 16px 16px;
+            border-color: #2c603d;
+        }
+
+        .loupe {
+            position: fixed;
+            width: 132px;
+            height: 132px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid var(--loupe-color, #2c603d);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+            z-index: 1500;
+            pointer-events: none;
+            background: #e8efd2;
+        }
+        .loupe[hidden] { display: none; }
+        #loupeMappa { width: 100%; height: 100%; position: relative; z-index: 0; }
+        .loupe::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 12px;
+            height: 12px;
+            transform: translate(-50%, -50%);
+            background: var(--loupe-color, #2c603d);
+            border: 2px solid var(--loupe-color, #2c603d);
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.9);
+            pointer-events: none;
+            z-index: 10000;
+        }
 
         @media (max-width: 600px) {
             .toolbar-mappa { top: 8px; right: 8px; gap: 6px; }
             .btn-ico { width: 42px; height: 42px; }
+            .toolbar-mappa > .btn-ico, .search-bar > .btn-ico { flex: 0 0 42px; }
             .btn-ico svg { width: 19px; height: 19px; }
+            .search-bar { flex: 1 1 160px; min-width: 120px; height: 42px; }
             .pannello-tratte { left: 8px; bottom: 40px; width: calc(100vw - 16px); }
             .finestra { padding: 0.9rem; }
         }
@@ -294,20 +454,24 @@
 <div id="mappa"></div>
 
 <div class="toolbar-mappa" id="toolbarEditor">
-    <button type="button" class="btn-ico" id="btnNuovaTratta" title="Nuova tratta" aria-label="Nuova tratta">
-        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    <div class="search-bar" id="searchBar">
+        <input type="text" id="searchInput" placeholder="Cerca un indirizzo" autocomplete="off" aria-label="Cerca un indirizzo">
+        <button type="button" class="btn-ico" id="btnCerca" title="Cerca un indirizzo" aria-label="Cerca un indirizzo">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        </button>
+        <div class="search-results" id="searchResults" hidden></div>
+    </div>
+    <button type="button" class="btn-ico" id="btnTratte" title="Elenco tratte" aria-label="Elenco tratte">
+        <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
     </button>
-    <button type="button" class="btn-ico" id="btnChiudiTratta" title="Chiudi tratta" aria-label="Chiudi tratta">
-        <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
-    </button>
-    <button type="button" class="btn-ico primary" id="btnSalva" title="Salva percorso" aria-label="Salva percorso">
-        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+    <button type="button" class="btn-ico primary" id="btnSalva" title="Conferma e salva il percorso" aria-label="Conferma e salva il percorso">
+        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>
     </button>
     <button type="button" class="btn-ico" id="btnViewer" title="Percorsi salvati" aria-label="Percorsi salvati">
         <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
     </button>
-    <button type="button" class="btn-ico" id="btnTratte" title="Tratte" aria-label="Tratte">
-        <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+    <button type="button" class="btn-ico" id="btnModifica" title="Modifica il percorso visualizzato" aria-label="Modifica il percorso visualizzato" hidden>
+        <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
     </button>
     <button type="button" class="btn-ico danger" id="btnTorna" title="Torna all'editor" aria-label="Torna all'editor" hidden>
         <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -326,7 +490,12 @@
 
 <div class="overlay" id="overlayModal" hidden>
     <div class="finestra">
-        <h2 id="modalTitolo"></h2>
+        <div class="modal-head">
+            <h2 id="modalTitolo"></h2>
+            <button type="button" class="btn-ico mini" id="modalChiudi" title="Chiudi" aria-label="Chiudi">
+                <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
         <p class="suggerimento" id="modalSuggerimento"></p>
         <label for="modalNome">NOME</label>
         <input type="text" id="modalNome" autocomplete="off">
@@ -337,8 +506,71 @@
             <select id="selTerritorio"></select>
         </div>
         <div class="modal-buttons">
-            <button type="button" class="btn" id="modalAnnulla">ANNULLA</button>
-            <button type="button" class="btn btn-primary" id="modalConferma">CONFERMA</button>
+            <button type="button" class="btn-ico mini" id="modalAnnulla" title="Annulla" aria-label="Annulla">
+                <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+            <button type="button" class="btn-ico primary mini" id="modalConferma" title="Conferma" aria-label="Conferma">
+                <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="overlay" id="overlayNota" hidden>
+    <div class="finestra">
+        <div class="modal-head">
+            <h2>NOTA PUNTO <span id="notaNumero"></span></h2>
+            <button type="button" class="btn-ico mini" id="notaChiudi" title="Chiudi" aria-label="Chiudi">
+                <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <label for="notaTesto">TESTO</label>
+        <textarea id="notaTesto" rows="4" placeholder="Scrivi qui la nota..."></textarea>
+        <label>IMMAGINI</label>
+        <div class="nota-img-list" id="notaImgList"></div>
+        <div class="nota-add">
+            <input type="file" id="notaFile" accept="image/*" multiple hidden>
+            <button type="button" class="btn-ico mini" id="notaAggiungiFile" title="Allega immagini" aria-label="Allega immagini">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <span>Solo file immagine</span>
+        </div>
+        <div class="modal-buttons">
+            <button type="button" class="btn-ico danger mini" id="notaElimina" title="Elimina nota" aria-label="Elimina nota">
+                <svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v5M14 11v5"/></svg>
+            </button>
+            <button type="button" class="btn-ico mini" id="notaAnnulla" title="Annulla" aria-label="Annulla">
+                <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+            <button type="button" class="btn-ico primary mini" id="notaSalva" title="Salva nota" aria-label="Salva nota">
+                <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="overlay" id="overlayStile" hidden>
+    <div class="finestra">
+        <div class="modal-head">
+            <h2>ASPETTO TRATTA <span id="stileNome"></span></h2>
+            <button type="button" class="btn-ico mini" id="stileChiudi" title="Chiudi" aria-label="Chiudi">
+                <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <p class="suggerimento">Scegli come disegnare la linea di questa tratta.</p>
+        <div class="stile-opzioni">
+            <button type="button" class="stile-opzione" data-stile="normale">
+                <span class="anteprima"><i></i><i></i></span><span>NORMALE</span>
+            </button>
+            <button type="button" class="stile-opzione" data-stile="doppio">
+                <span class="anteprima"><i></i><i></i></span><span>DOPPIO SENSO</span>
+            </button>
+            <button type="button" class="stile-opzione" data-stile="latoA">
+                <span class="anteprima"><i></i><i></i></span><span>LATO A</span>
+            </button>
+            <button type="button" class="stile-opzione" data-stile="latoB">
+                <span class="anteprima"><i></i><i></i></span><span>LATO B</span>
+            </button>
         </div>
     </div>
 </div>
@@ -348,9 +580,15 @@
         <div class="testata-viewer">
             <h2>PERCORSI SALVATI</h2>
             <div class="azioni">
-                <button type="button" class="btn btn-small" id="btnEsportaBackup">BACKUP JSON</button>
-                <button type="button" class="btn btn-small" id="btnImportaBackup">IMPORTA JSON</button>
-                <button type="button" class="btn btn-small" id="btnChiudiViewer">CHIUDI</button>
+                <button type="button" class="btn-ico mini" id="btnEsportaBackup" title="Backup JSON" aria-label="Backup JSON">
+                    <svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>
+                </button>
+                <button type="button" class="btn-ico mini" id="btnImportaBackup" title="Importa JSON" aria-label="Importa JSON">
+                    <svg viewBox="0 0 24 24"><path d="M12 15V3M7 8l5-5 5 5M4 21h16"/></svg>
+                </button>
+                <button type="button" class="btn-ico mini" id="btnChiudiViewer" title="Chiudi" aria-label="Chiudi">
+                    <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
             </div>
         </div>
         <div id="elencoPercorsi"></div>
@@ -359,6 +597,8 @@
 
 <input type="file" id="fileImport" accept="application/json,.json" hidden>
 <div class="toast" id="toast" hidden></div>
+
+<div class="loupe" id="loupe" hidden><div id="loupeMappa"></div></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -376,17 +616,27 @@
     const SNAP_LINEA = 12;
     const CHIAVE_STORAGE = 'routeditor.percorsi.v1';
 
-    let map;
-    let layerEditor, layerViewer;
+    let map, layerEditor, layerViewer, layerSearch;
     let punti = [];
     let segmenti = [];
     let corrente = null;
     let markerById = new Map();
     let lineeById = new Map();
+    let lineeViewer = [];
     let modo = 'editor';
     let percorsi = caricaPercorsi();
     let callbackModal = null;
     let toastTimer = null;
+    let clickTimer = null;
+    let routeInModifica = null;
+    let routeAperta = null;
+    let notaPunto = null;
+    let noteImages = [];
+    let loupeMap = null;
+    let searchMarker = null;
+    let searchTimer = null;
+    let scambioNomeId = null;
+    let segStile = null;
 
     function uid(pref) {
         return pref + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -396,12 +646,48 @@
         return String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     }
 
-    function escapeXml(t) {
-        return escapeHtml(t);
-    }
-
     function coordsTesto(p) {
         return `${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`;
+    }
+
+    function puntoDiRoute(route, pid) {
+        return route.punti.find(p => p.id === pid) || null;
+    }
+
+    function numeroPerRoute(route, pid) {
+        for (const seg of route.tratte) {
+            const m = seg.punti.find(x => x.pid === pid);
+            if (!m) continue;
+            const p = puntoDiRoute(route, pid);
+            return (p && p.senzaNumero) ? '•' : (m.numero || '000');
+        }
+        return '000';
+    }
+
+    function normalizzaRoute(r) {
+        if (!r || typeof r !== 'object') return null;
+        const lista = Array.isArray(r.punti) ? r.punti : [];
+        const numeriVecchi = {};
+        lista.forEach((p, i) => { numeriVecchi[p.id] = p.numero || String(i + 1).padStart(3, '0'); });
+        r.punti = lista.map(p => ({
+            id: p.id,
+            lat: p.lat,
+            lng: p.lng,
+            note: p.note || null,
+            immagini: Array.isArray(p.immagini) ? [...p.immagini] : [],
+            senzaNumero: !!p.senzaNumero
+        }));
+        r.tratte = Array.isArray(r.tratte) ? r.tratte : [];
+        r.tratte.forEach(seg => {
+            seg.colore = seg.colore || null;
+            seg.stile = seg.stile || 'normale';
+            seg.punti = (Array.isArray(seg.punti) ? seg.punti : []).map((m, i) => {
+                if (typeof m === 'string') return { pid: m, numero: numeriVecchi[m] || String(i + 1).padStart(3, '0') };
+                return { pid: m.pid, numero: m.numero || String(i + 1).padStart(3, '0') };
+            }).filter(m => m.pid && r.punti.some(p => p.id === m.pid));
+        });
+        if (!r.creato) r.creato = new Date().toISOString();
+        return r;
     }
 
     function toast(messaggio) {
@@ -409,7 +695,7 @@
         el.textContent = messaggio;
         el.hidden = false;
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => { el.hidden = true; }, 3200);
+        toastTimer = setTimeout(() => { el.hidden = true; }, 3400);
     }
 
     function status(messaggio) {
@@ -420,24 +706,256 @@
         return punti.find(p => p.id === id) || null;
     }
 
+    function getMem(seg, pid) {
+        return seg.punti.find(m => m.pid === pid) || null;
+    }
+
+    function rinumeriaTutti() {
+        let n = 1;
+        segmenti.forEach(seg => {
+            seg.punti.forEach(m => {
+                const p = getPunto(m.pid);
+                if (p && p.senzaNumero) {
+                    m.numero = '';
+                    return;
+                }
+                m.numero = String(n++).padStart(3, '0');
+            });
+        });
+    }
+
+    function coloreTratta(seg, i) {
+        return (seg && seg.colore) || COLORI[((i == null ? 0 : i) % COLORI.length + COLORI.length) % COLORI.length];
+    }
+
+    function prossimoColore() {
+        const usati = new Set(segmenti.map(s => s.colore).filter(Boolean));
+        return COLORI.find(c => !usati.has(c)) || COLORI[segmenti.length % COLORI.length];
+    }
+
+    function numeriDelPunto(pid) {
+        const lista = [];
+        segmenti.forEach(seg => {
+            const m = getMem(seg, pid);
+            if (m && m.numero) lista.push(m.numero);
+        });
+        return [...new Set(lista)].sort();
+    }
+
     function caricaPercorsi() {
         try {
             const raw = localStorage.getItem(CHIAVE_STORAGE);
             const dati = raw ? JSON.parse(raw) : [];
-            return Array.isArray(dati) ? dati : [];
+            return Array.isArray(dati) ? dati.map(normalizzaRoute).filter(Boolean) : [];
         } catch (e) {
             return [];
         }
     }
 
     function salvaPercorsi() {
-        localStorage.setItem(CHIAVE_STORAGE, JSON.stringify(percorsi));
+        try {
+            localStorage.setItem(CHIAVE_STORAGE, JSON.stringify(percorsi));
+            return true;
+        } catch (e) {
+            toast('Memoria insufficiente: prova con immagini più piccole.');
+            return false;
+        }
+    }
+
+    function nomeTratta(indice) {
+        const lettera = String.fromCharCode(65 + Math.floor(indice / 9));
+        return lettera + ((indice % 9) + 1);
+    }
+
+    function prossimoNomeTratta() {
+        const usati = new Set(segmenti.filter(s => s !== corrente && s.nome).map(s => s.nome));
+        for (let i = 0; i < 10000; i++) {
+            const nome = nomeTratta(i);
+            if (!usati.has(nome)) return nome;
+        }
+        return nomeTratta(segmenti.length);
+    }
+
+    function ordinaSegmenti() {
+        segmenti.sort((a, b) => {
+            if (!a.nome && !b.nome) return 0;
+            if (!a.nome) return 1;
+            if (!b.nome) return -1;
+            return a.nome.localeCompare(b.nome, 'en');
+        });
+    }
+
+    function nomeSegmento(seg) {
+        if (seg.nome) return seg.nome;
+        return seg === corrente ? prossimoNomeTratta() : nomeTratta(segmenti.indexOf(seg));
+    }
+
+    function etichettaTratta(seg) {
+        const base = nomeSegmento(seg);
+        return seg === corrente ? `In corso ${base}` : base;
+    }
+
+    function scambiaNomi(idA, idB) {
+        const a = segmenti.find(s => s.id === idA);
+        const b = segmenti.find(s => s.id === idB);
+        if (!a || !b || a === b) return;
+        const nomeA = nomeSegmento(a);
+        const nomeB = nomeSegmento(b);
+        const coloreA = coloreTratta(a, segmenti.indexOf(a));
+        const coloreB = coloreTratta(b, segmenti.indexOf(b));
+        a.nome = nomeB;
+        b.nome = nomeA;
+        a.colore = coloreB;
+        b.colore = coloreA;
+        scambioNomeId = null;
+        ordinaSegmenti();
+        rinumeriaTutti();
+        disegnaEditor();
+        renderTratte();
+        toast('Nomi delle tratte scambiati.');
+    }
+
+    function coloraTooltip(layer, colore) {
+        layer.on('tooltipopen', e => {
+            const el = e.tooltip && e.tooltip.getElement();
+            if (!el) return;
+            el.style.background = colore;
+            el.style.borderColor = colore;
+        });
+    }
+
+    function opzioniLinea(seg, colore, opzioniComuni) {
+        const stile = seg.stile || 'normale';
+        const comuni = opzioniComuni || {};
+        const inCorso = comuni.dashArray === '9 8';
+        const classe = inCorso ? 'tratta-corrente' : null;
+        const base = Object.assign({ color: colore, weight: 5, opacity: 0.95 }, comuni);
+        if (stile === 'normale') {
+            if (classe) base.className = classe;
+            return [{ opzioni: base, offset: 0 }];
+        }
+        const dashLato = '14 10';
+        const altoPieno = stile !== 'latoB';
+        const bassoPieno = stile !== 'latoA';
+        return [
+            { opzioni: Object.assign({}, base, { color: colore, weight: 3, dashArray: altoPieno ? comuni.dashArray || null : dashLato, className: altoPieno ? classe : null }), offset: -3 },
+            { opzioni: Object.assign({}, base, { color: colore, weight: 3, dashArray: bassoPieno ? comuni.dashArray || null : dashLato, className: bassoPieno ? classe : null }), offset: 3 }
+        ];
+    }
+
+    function offsetPunti(pts, px, comeLatLng) {
+        if (pts.length < 2 || !px) return pts;
+        const normali = [];
+        for (let i = 0; i < pts.length - 1; i++) {
+            const dx = pts[i + 1].x - pts[i].x, dy = pts[i + 1].y - pts[i].y;
+            const len = Math.hypot(dx, dy) || 1;
+            normali.push({ x: -dy / len, y: dx / len });
+        }
+        return pts.map((pt, i) => {
+            let nx, ny;
+            if (i === 0) {
+                nx = normali[0].x; ny = normali[0].y;
+            } else if (i === pts.length - 1) {
+                nx = normali[normali.length - 1].x; ny = normali[normali.length - 1].y;
+            } else {
+                const a = normali[i - 1], b = normali[i];
+                const sx = a.x + b.x, sy = a.y + b.y;
+                const sl = Math.hypot(sx, sy);
+                if (sl < 1e-6) {
+                    nx = a.x; ny = a.y;
+                } else {
+                    nx = sx / sl; ny = sy / sl;
+                    const miter = Math.max(0.5, nx * a.x + ny * a.y);
+                    nx /= miter; ny /= miter;
+                }
+            }
+            const out = { x: pt.x + nx * px, y: pt.y + ny * px };
+            return comeLatLng ? map.containerPointToLatLng([out.x, out.y]) : out;
+        });
+    }
+
+    function offsetLatLngs(latlngs, px) {
+        if (!px || latlngs.length < 2) return latlngs;
+        return offsetPunti(latlngs.map(ll => map.latLngToContainerPoint(ll)), px, true);
+    }
+
+    function offsetCanvas(pts, px) {
+        return offsetPunti(pts, px, false);
+    }
+
+    function tracciaLineaCanvas(ctx, pts, colore, larghezza, tratteggiata) {
+        if (pts.length < 2) return;
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
+        pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+        ctx.setLineDash([]);
+        ctx.strokeStyle = 'rgba(255,255,255,0.94)';
+        ctx.lineWidth = larghezza + 10;
+        ctx.stroke();
+        ctx.strokeStyle = colore;
+        ctx.lineWidth = larghezza;
+        ctx.setLineDash(tratteggiata ? [28, 20] : []);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    function apriStileTratta(seg) {
+        segStile = seg;
+        const overlay = document.getElementById('overlayStile');
+        overlay.style.setProperty('--anteprima-colore', coloreTratta(seg, segmenti.indexOf(seg)));
+        document.getElementById('stileNome').textContent = etichettaTratta(seg);
+        overlay.querySelectorAll('.stile-opzione').forEach(b => {
+            b.classList.toggle('selezionato', b.dataset.stile === (seg.stile || 'normale'));
+        });
+        overlay.hidden = false;
+    }
+
+    function chiudiStile() {
+        document.getElementById('overlayStile').hidden = true;
+        segStile = null;
+    }
+
+    function distanzaM(a, b) {
+        const R = 6371000;
+        const dLat = (b.lat - a.lat) * Math.PI / 180;
+        const dLng = (b.lng - a.lng) * Math.PI / 180;
+        const la1 = a.lat * Math.PI / 180, la2 = b.lat * Math.PI / 180;
+        const h = Math.sin(dLat / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dLng / 2) ** 2;
+        return 2 * R * Math.asin(Math.sqrt(h));
+    }
+
+    function lunghezzaSegmento(seg) {
+        let metri = 0;
+        for (let i = 1; i < seg.punti.length; i++) {
+            const a = getPunto(seg.punti[i - 1].pid);
+            const b = getPunto(seg.punti[i].pid);
+            if (a && b) metri += distanzaM(a, b);
+        }
+        return metri / 1000;
+    }
+
+    function lunghezzaKm(route) {
+        let metri = 0;
+        route.tratte.forEach(seg => {
+            const lista = seg.punti.map(m => puntoDiRoute(route, m.pid)).filter(Boolean);
+            for (let i = 1; i < lista.length; i++) metri += distanzaM(lista[i - 1], lista[i]);
+        });
+        return metri / 1000;
+    }
+
+    function formatKm(km) {
+        return km.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' km';
+    }
+
+    function dataRotta(iso) {
+        const d = new Date(iso);
+        return isNaN(d.getTime()) ? '' : d.toLocaleDateString('it-IT');
     }
 
     function iniziaMappa() {
         map = L.map('mappa', {
-            center: [43.87, 10.24],
-            zoom: 14,
+            center: [43.9362316, 10.2336469],
+            zoom: 17,
             zoomControl: true,
             attributionControl: true,
             doubleClickZoom: false,
@@ -452,54 +970,139 @@
 
         layerEditor = L.layerGroup().addTo(map);
         layerViewer = L.layerGroup();
+        layerSearch = L.layerGroup().addTo(map);
 
         map.on('click', e => {
-            if (modo === 'viewer') {
-                toast('Sei nel visualizzatore: torna all\'editor per disegnare.');
-                return;
-            }
-            if (!corrente) {
-                toast('Premi NUOVA TRATTA per iniziare un altro segmento.');
-                return;
-            }
-            const risolto = risolviPunto(e.latlng);
-            if (risolto.inseritoIn !== corrente.id) {
-                if (corrente.punti[corrente.punti.length - 1] !== risolto.id) {
-                    corrente.punti.push(risolto.id);
-                }
-            }
-            disegnaEditor();
-            renderTratte();
+            if (modo === 'viewer') return;
+            if (clickTimer) clearTimeout(clickTimer);
+            const ll = e.latlng;
+            clickTimer = setTimeout(() => {
+                clickTimer = null;
+                aggiungiPunto(ll);
+            }, 280);
         });
 
+        map.on('dblclick', e => {
+            if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
+            if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
+            if (modo === 'viewer') return;
+            const hit = hitTest(e.latlng);
+            if (hit.tipo === 'punto') { apriNota(hit.punto); return; }
+            if (hit.tipo === 'linea') {
+                apriStileTratta(hit.seg);
+                return;
+            }
+            nuovaTratta(e.latlng);
+        });
+
+        map.on('zoomend', () => { aggiornaLinee(); aggiornaLineeViewer(); });
         resetEditor(false);
         setTimeout(() => map.invalidateSize(), 0);
     }
 
-    function creaMarker(punto, colore) {
+    function mostraLoupe(punto, containerPt, colore) {
+        const el = document.getElementById('loupe');
+        el.style.setProperty('--loupe-color', colore || '#2c603d');
+        el.hidden = false;
+        const zoom = Math.min(19, map.getZoom() + 3);
+        if (!loupeMap) {
+            loupeMap = L.map('loupeMappa', {
+                zoomControl: false,
+                attributionControl: false,
+                dragging: false,
+                scrollWheelZoom: false,
+                doubleClickZoom: false,
+                tap: false
+            }).setView([punto.lat, punto.lng], zoom);
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(loupeMap);
+        } else {
+            loupeMap.setView([punto.lat, punto.lng], zoom, { animate: false });
+        }
+        el.style.left = Math.max(8, Math.min(window.innerWidth - 140, containerPt.x - 66)) + 'px';
+        el.style.top = Math.max(8, Math.min(window.innerHeight - 140, containerPt.y - 168)) + 'px';
+        setTimeout(() => loupeMap.invalidateSize(), 0);
+    }
+
+    function nascondiLoupe() {
+        document.getElementById('loupe').hidden = true;
+    }
+
+    function separaSeCondiviso(seg, mem) {
+        const occorrenze = segmenti.reduce((n, s) => n + s.punti.filter(m => m.pid === mem.pid).length, 0);
+        if (occorrenze <= 1) return getPunto(mem.pid);
+        const orig = getPunto(mem.pid);
+        const copia = Object.assign({}, orig, { id: uid('p'), immagini: [...(orig.immagini || [])] });
+        punti.push(copia);
+        mem.pid = copia.id;
+        return copia;
+    }
+
+    function unisciDopoTrascinamento(seg, mem, p) {
+        const vicino = puntoVicino({ lat: p.lat, lng: p.lng }, p.id);
+        if (vicino) {
+            p.lat = vicino.lat;
+            p.lng = vicino.lng;
+        } else {
+            const hit = lineaVicino({ lat: p.lat, lng: p.lng }, seg.id);
+            if (hit) {
+                p.lat = hit.lat;
+                p.lng = hit.lng;
+            }
+        }
+        disegnaEditor();
+        renderTratte();
+    }
+
+    function creaMarker(seg, mem, punto, colore, offset) {
+        let p = punto;
+        const piccolo = !!p.senzaNumero;
+        const classe = 'pin' + (piccolo ? ' senza-numero' : '') + (p.note ? ' con-nota' : '');
         const icona = L.divIcon({
             className: 'pin-wrapper',
-            html: `<div class="pin" style="background:${colore}"></div>`,
-            iconSize: [18, 18],
-            iconAnchor: [9, 9]
+            html: `<div class="${classe}" style="background:${colore}">${piccolo ? '' : escapeHtml(mem.numero || '000')}</div>`,
+            iconSize: piccolo ? [14, 14] : [34, 34],
+            iconAnchor: piccolo ? [7, 7 + offset] : [17, 17 + offset]
         });
-        const marker = L.marker([punto.lat, punto.lng], {
+        const marker = L.marker([p.lat, p.lng], {
             icon: icona,
             draggable: true,
             riseOnHover: true
         }).addTo(layerEditor);
-        marker.bindTooltip(coordsTesto(punto), { direction: 'top', offset: [0, -10] });
 
-        marker.on('drag', () => {
-            const ll = marker.getLatLng();
-            punto.lat = ll.lat;
-            punto.lng = ll.lng;
-            marker.setTooltipContent(coordsTesto(punto));
-            aggiornaLinee();
-            renderTratte();
+        marker.bindTooltip(coordsTesto(p), {
+            direction: 'top',
+            offset: [0, -12],
+            opacity: 1,
+            className: 'punto-tooltip'
         });
 
-        markerById.set(punto.id, marker);
+        marker.on('dragstart', () => {
+            p = separaSeCondiviso(seg, mem);
+            mostraLoupe(p, map.latLngToContainerPoint([p.lat, p.lng]), colore);
+        });
+        marker.on('drag', () => {
+            const ll = marker.getLatLng();
+            p.lat = ll.lat;
+            p.lng = ll.lng;
+            marker.setTooltipContent(coordsTesto(p));
+            aggiornaLinee();
+            renderTratte();
+            mostraLoupe(p, map.latLngToContainerPoint(ll), colore);
+        });
+        marker.on('dragend', () => {
+            nascondiLoupe();
+            unisciDopoTrascinamento(seg, mem, p);
+        });
+        marker.on('dblclick', e => {
+            if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
+            if (modo === 'editor') apriNota(p);
+        });
+        marker.on('contextmenu', e => {
+            if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
+            eliminaAppartenenza(seg.id, mem.pid);
+        });
+
+        markerById.set(seg.id + '|' + mem.pid, marker);
         return marker;
     }
 
@@ -510,27 +1113,58 @@
         lineeById.clear();
 
         segmenti.forEach((seg, i) => {
-            const colore = COLORI[i % COLORI.length];
-            const lista = seg.punti.map(getPunto).filter(Boolean);
+            const colore = coloreTratta(seg, i);
+            const lista = seg.punti.map(m => getPunto(m.pid)).filter(Boolean);
             if (lista.length >= 2) {
-                const linea = L.polyline(lista.map(p => [p.lat, p.lng]), {
-                    color: colore,
-                    weight: 5,
-                    opacity: 0.95,
-                    dashArray: seg === corrente ? '9 8' : null
-                }).addTo(layerEditor);
-                lineeById.set(seg.id, linea);
+                const latlngs = lista.map(p => [p.lat, p.lng]);
+                const linee = opzioniLinea(seg, colore, { dashArray: seg === corrente ? '9 8' : null }).map(({ opzioni, offset }) => {
+                    const linea = L.polyline(offsetLatLngs(latlngs, offset), opzioni).addTo(layerEditor);
+                    linea.bindTooltip(etichettaTratta(seg), {
+                        sticky: true,
+                        direction: 'top',
+                        opacity: 1,
+                        className: 'tratta-tooltip'
+                    });
+                    coloraTooltip(linea, colore);
+                    return { linea, offset };
+                });
+                lineeById.set(seg.id, { linee });
             }
-            lista.forEach(p => creaMarker(p, colore));
+        });
+
+        const gruppi = new Map();
+        segmenti.forEach((seg, i) => {
+            seg.punti.forEach(m => {
+                const p = getPunto(m.pid);
+                if (!p) return;
+                const chiave = `${p.lat.toFixed(6)},${p.lng.toFixed(6)}`;
+                if (!gruppi.has(chiave)) gruppi.set(chiave, []);
+                gruppi.get(chiave).push({ seg, mem: m, p, colore: coloreTratta(seg, i) });
+            });
+        });
+
+        gruppi.forEach(arr => {
+            if (arr.length === 1) {
+                creaMarker(arr[0].seg, arr[0].mem, arr[0].p, arr[0].colore, 0);
+                return;
+            }
+            const passo = arr.some(item => item.p.senzaNumero) ? 10 : 24;
+            const base = -((arr.length - 1) * passo) / 2;
+            arr.forEach((item, i) => creaMarker(item.seg, item.mem, item.p, item.colore, base + i * passo));
         });
     }
 
     function aggiornaLinee() {
-        lineeById.forEach((linea, id) => {
+        lineeById.forEach((voci, id) => {
             const seg = segmenti.find(s => s.id === id);
             if (!seg) return;
-            linea.setLatLngs(seg.punti.map(getPunto).filter(Boolean).map(p => [p.lat, p.lng]));
+            const latlngs = seg.punti.map(m => getPunto(m.pid)).filter(Boolean).map(p => [p.lat, p.lng]);
+            voci.linee.forEach(({ linea, offset }) => linea.setLatLngs(offsetLatLngs(latlngs, offset)));
         });
+    }
+
+    function aggiornaLineeViewer() {
+        lineeViewer.forEach(({ linea, latlngs, offset }) => linea.setLatLngs(offsetLatLngs(latlngs, offset)));
     }
 
     function renderTratte() {
@@ -542,10 +1176,13 @@
         }
         segmenti.forEach((seg, i) => {
             const li = document.createElement('li');
-            const nome = seg.nome || (seg === corrente ? `Tratta in corso ${i + 1}` : `Tratta ${i + 1}`);
-            const ultimo = seg.punti.length ? getPunto(seg.punti[seg.punti.length - 1]) : null;
-            li.innerHTML = `<span class="nome-tratta" style="color:${COLORI[i % COLORI.length]}">${escapeHtml(nome)}</span>` +
-                `<span class="meta-tratta">${seg.punti.length} punti${ultimo ? '<br>' + coordsTesto(ultimo) : ''}</span>`;
+            const selezionato = scambioNomeId === seg.id;
+            li.innerHTML = `<span class="nome-tratta" style="color:${coloreTratta(seg, i)}">${escapeHtml(etichettaTratta(seg))}</span>` +
+                `<span class="meta-tratta">${seg.punti.length} punti<br>${formatKm(lunghezzaSegmento(seg))}</span>` +
+                (seg.nome ? `<button type="button" class="row-scambia${selezionato ? ' selezionato' : ''}" data-id="${seg.id}" title="Scambia il nome con un'altra tratta" aria-label="Scambia il nome con un'altra tratta">` +
+                    `<svg viewBox="0 0 24 24"><path d="M4 8h14M15 5l3 3-3 3M20 16H6M9 13l-3 3 3 3"/></svg>` +
+                `</button>` : '') +
+                `<button type="button" class="row-x" data-id="${seg.id}" title="Elimina tratta" aria-label="Elimina tratta">×</button>`;
             ul.appendChild(li);
         });
     }
@@ -559,28 +1196,25 @@
         return { d: Math.hypot(p.x - px, p.y - py), t };
     }
 
-    function creaPunto(latlng) {
-        const p = { id: uid('p'), lat: latlng.lat, lng: latlng.lng };
-        punti.push(p);
-        return p;
-    }
-
-    function risolviPunto(latlng) {
+    function puntoVicino(latlng, escludiId = null) {
         const clickPt = map.latLngToContainerPoint(latlng);
-
-        let migliore = null;
-        let dist = SNAP_PUNTO;
+        let migliore = null, dist = SNAP_PUNTO;
         punti.forEach(p => {
+            if (p.id === escludiId) return;
             const d = clickPt.distanceTo(map.latLngToContainerPoint([p.lat, p.lng]));
             if (d < dist) { dist = d; migliore = p; }
         });
-        if (migliore) return { id: migliore.id, inseritoIn: null };
+        return migliore;
+    }
 
+    function lineaVicino(latlng, escludiSegId = null) {
+        const clickPt = map.latLngToContainerPoint(latlng);
         let segTrovato = null, idxTrovato = -1, best = SNAP_LINEA, latTrovata = null, lngTrovata = null;
         segmenti.forEach(seg => {
+            if (seg.id === escludiSegId) return;
             for (let i = 0; i < seg.punti.length - 1; i++) {
-                const a = getPunto(seg.punti[i]);
-                const b = getPunto(seg.punti[i + 1]);
+                const a = getPunto(seg.punti[i].pid);
+                const b = getPunto(seg.punti[i + 1].pid);
                 if (!a || !b) continue;
                 const pa = map.latLngToContainerPoint([a.lat, a.lng]);
                 const pb = map.latLngToContainerPoint([b.lat, b.lng]);
@@ -594,23 +1228,153 @@
                 }
             }
         });
+        return segTrovato ? { seg: segTrovato, idx: idxTrovato, lat: latTrovata, lng: lngTrovata } : null;
+    }
 
-        if (segTrovato) {
-            const p = creaPunto({ lat: latTrovata, lng: lngTrovata });
-            segTrovato.punti.splice(idxTrovato + 1, 0, p.id);
-            return { id: p.id, inseritoIn: segTrovato.id };
+    function hitTest(latlng) {
+        const p = puntoVicino(latlng);
+        if (p) return { tipo: 'punto', punto: p };
+        const l = lineaVicino(latlng);
+        if (l) return Object.assign({ tipo: 'linea' }, l);
+        return { tipo: 'vuoto' };
+    }
+
+    function creaPunto(latlng) {
+        if (punti.length >= 999) {
+            toast('Massimo 999 punti per percorso.');
+            return null;
+        }
+        const p = { id: uid('p'), lat: latlng.lat, lng: latlng.lng, note: null, immagini: [] };
+        punti.push(p);
+        return p;
+    }
+
+    function risolviPunto(latlng) {
+        const vicino = puntoVicino(latlng);
+        if (vicino) {
+            const già = corrente.punti.find(m => m.pid === vicino.id);
+            if (già && corrente.punti[corrente.punti.length - 1] === già) return già;
+            if (già) return già;
+            const p = creaPunto({ lat: vicino.lat, lng: vicino.lng });
+            if (!p) return null;
+            const mem = { pid: p.id, numero: '' };
+            corrente.punti.push(mem);
+            rinumeriaTutti();
+            return mem;
+        }
+
+        const hit = lineaVicino(latlng);
+        if (hit) {
+            const p = creaPunto({ lat: hit.lat, lng: hit.lng });
+            if (!p) return null;
+            p.senzaNumero = true;
+            const mem = { pid: p.id, numero: '' };
+            hit.seg.punti.splice(hit.idx + 1, 0, mem);
+            rinumeriaTutti();
+            return mem;
         }
 
         const p = creaPunto(latlng);
-        return { id: p.id, inseritoIn: null };
+        if (!p) return null;
+        const mem = { pid: p.id, numero: '' };
+        corrente.punti.push(mem);
+        rinumeriaTutti();
+        return mem;
+    }
+
+    function aggiungiPunto(latlng) {
+        if (!corrente) {
+            toast('Fai doppio clic/tap su un\'area vuota per creare una nuova tratta.');
+            return;
+        }
+        risolviPunto(latlng);
+        disegnaEditor();
+        renderTratte();
+    }
+
+    function eliminaAppartenenza(segId, pid) {
+        const seg = segmenti.find(s => s.id === segId);
+        if (!seg) return;
+        seg.punti = seg.punti.filter(m => m.pid !== pid);
+        if (!seg.punti.length) {
+            eliminaTratta(segId);
+            return;
+        }
+        rinumeriaTutti();
+        const usati = new Set(segmenti.flatMap(s => s.punti.map(m => m.pid)));
+        punti = punti.filter(p => usati.has(p.id));
+        disegnaEditor();
+        renderTratte();
+        toast('Punto eliminato.');
+    }
+
+    function eliminaTratta(id) {
+        const seg = segmenti.find(s => s.id === id);
+        if (!seg) return;
+        if (scambioNomeId === id) scambioNomeId = null;
+        segmenti = segmenti.filter(s => s.id !== id);
+        const usati = new Set(segmenti.flatMap(s => s.punti.map(m => m.pid)));
+        punti = punti.filter(p => usati.has(p.id));
+        if (corrente === seg) {
+            corrente = segmenti[segmenti.length - 1] || null;
+            if (!corrente) {
+                corrente = { id: uid('t'), nome: '', colore: prossimoColore(), stile: 'normale', punti: [] };
+                segmenti.push(corrente);
+            }
+        }
+        ordinaSegmenti();
+        rinumeriaTutti();
+        disegnaEditor();
+        renderTratte();
+        toast('Tratta eliminata.');
+    }
+
+    function finalizzaCorrente() {
+        if (!corrente) return null;
+        const seg = corrente;
+        if (!seg.punti.length) {
+            segmenti = segmenti.filter(s => s !== seg);
+            const usati = new Set(segmenti.flatMap(s => s.punti.map(m => m.pid)));
+            punti = punti.filter(p => usati.has(p.id));
+            corrente = null;
+            disegnaEditor();
+            renderTratte();
+            return null;
+        }
+        if (!seg.nome) seg.nome = prossimoNomeTratta();
+        corrente = null;
+        ordinaSegmenti();
+        rinumeriaTutti();
+        disegnaEditor();
+        renderTratte();
+        return seg;
+    }
+
+    function nuovaTratta(primoPunto = null) {
+        if (layerSearch) layerSearch.clearLayers();
+        searchMarker = null;
+        finalizzaCorrente();
+        corrente = { id: uid('t'), nome: '', colore: prossimoColore(), stile: 'normale', punti: [] };
+        segmenti.push(corrente);
+        ordinaSegmenti();
+        if (primoPunto) risolviPunto(primoPunto);
+        disegnaEditor();
+        renderTratte();
+        status('Nuova tratta: tocca i punti da aggiungere.');
+        toast('Nuova tratta creata: la precedente è stata chiusa.');
     }
 
     function resetEditor(mostraMessaggio = true) {
         entraEditor();
+        if (layerSearch) layerSearch.clearLayers();
+        searchMarker = null;
+        scambioNomeId = null;
         punti = [];
         segmenti = [];
-        corrente = { id: uid('t'), nome: '', punti: [] };
+        corrente = { id: uid('t'), nome: '', colore: prossimoColore(), stile: 'normale', punti: [] };
         segmenti.push(corrente);
+        routeInModifica = null;
+        routeAperta = null;
         disegnaEditor();
         renderTratte();
         document.getElementById('pannelloTratte').hidden = true;
@@ -621,84 +1385,96 @@
         if (modo === 'viewer') {
             if (map.hasLayer(layerViewer)) map.removeLayer(layerViewer);
             layerViewer.clearLayers();
+            lineeViewer = [];
             if (!map.hasLayer(layerEditor)) map.addLayer(layerEditor);
             modo = 'editor';
         }
-        document.getElementById('btnNuovaTratta').disabled = false;
-        document.getElementById('btnChiudiTratta').disabled = false;
         document.getElementById('btnSalva').disabled = false;
+        document.getElementById('btnModifica').hidden = true;
         document.getElementById('btnTorna').hidden = true;
     }
 
     function entraViewer(route) {
+        routeAperta = route;
         if (map.hasLayer(layerEditor)) map.removeLayer(layerEditor);
         if (!map.hasLayer(layerViewer)) map.addLayer(layerViewer);
         layerViewer.clearLayers();
+        lineeViewer = [];
         modo = 'viewer';
 
+        const gruppi = new Map();
         route.tratte.forEach((seg, i) => {
-            const colore = COLORI[i % COLORI.length];
-            const lista = seg.punti.map(id => route.punti.find(p => p.id === id)).filter(Boolean);
+            const colore = coloreTratta(seg, i);
+            const lista = seg.punti.map(m => puntoDiRoute(route, m.pid)).filter(Boolean);
             if (lista.length >= 2) {
-                L.polyline(lista.map(p => [p.lat, p.lng]), {
-                    color: colore, weight: 6, opacity: 0.95
-                }).addTo(layerViewer);
+                const latlngs = lista.map(p => [p.lat, p.lng]);
+                opzioniLinea(seg, colore, { weight: 6 }).forEach(({ opzioni, offset }) => {
+                    const linea = L.polyline(offsetLatLngs(latlngs, offset), opzioni).addTo(layerViewer);
+                    lineeViewer.push({ linea, latlngs, offset });
+                    linea.bindTooltip(seg.nome || 'Tratta', {
+                        sticky: true,
+                        direction: 'top',
+                        opacity: 1,
+                        className: 'tratta-tooltip'
+                    });
+                    coloraTooltip(linea, colore);
+                });
             }
-            lista.forEach(p => {
-                L.marker([p.lat, p.lng], {
+            seg.punti.forEach(m => {
+                const p = puntoDiRoute(route, m.pid);
+                if (!p) return;
+                const chiave = `${p.lat.toFixed(6)},${p.lng.toFixed(6)}`;
+                if (!gruppi.has(chiave)) gruppi.set(chiave, []);
+                gruppi.get(chiave).push({ p, numero: m.numero || '000', colore, senzaNumero: !!p.senzaNumero });
+            });
+        });
+        gruppi.forEach(arr => {
+            const passo = arr.some(item => item.senzaNumero) ? 10 : 24;
+            const base = -((arr.length - 1) * passo) / 2;
+            arr.forEach((item, i) => {
+                const classe = 'pin' + (item.senzaNumero ? ' senza-numero' : '') + (item.p.note ? ' con-nota' : '');
+                L.marker([item.p.lat, item.p.lng], {
                     icon: L.divIcon({
                         className: 'pin-wrapper',
-                        html: `<div class="pin" style="background:${colore}"></div>`,
-                        iconSize: [18, 18], iconAnchor: [9, 9]
+                        html: `<div class="${classe}" style="background:${item.colore}">${item.senzaNumero ? '' : escapeHtml(item.numero)}</div>`,
+                        iconSize: item.senzaNumero ? [14, 14] : [34, 34],
+                        iconAnchor: item.senzaNumero ? [7, 7 + base + i * passo] : [17, 17 + base + i * passo]
                     })
-                }).bindTooltip(coordsTesto(p), { direction: 'top' }).addTo(layerViewer);
+                }).bindTooltip(coordsTesto(item.p), { direction: 'top' }).addTo(layerViewer);
             });
         });
 
-        const bounds = L.latLngBounds(route.punti.map(p => [p.lat, p.lng]));
-        if (route.punti.length) map.fitBounds(bounds, { padding: [45, 45], maxZoom: 17 });
+        if (route.punti.length) {
+            const bounds = L.latLngBounds(route.punti.map(p => [p.lat, p.lng]));
+            map.fitBounds(bounds, { padding: [55, 55], maxZoom: 17 });
+        }
 
-        document.getElementById('btnNuovaTratta').disabled = true;
-        document.getElementById('btnChiudiTratta').disabled = true;
         document.getElementById('btnSalva').disabled = true;
+        document.getElementById('btnModifica').hidden = false;
         document.getElementById('btnTorna').hidden = false;
         document.getElementById('pannelloTratte').hidden = true;
         status(`Visualizzazione: ${route.nome}`);
     }
 
-    function nuovaTratta() {
-        if (corrente && corrente.punti.length >= 2) {
-            chiudiTratta();
-            return;
+    function caricaInModifica(route) {
+        entraEditor();
+        punti = route.punti.map(p => Object.assign({}, p, { immagini: [...(p.immagini || [])] }));
+        segmenti = route.tratte.map((s, i) => ({ id: s.id, nome: s.nome, colore: coloreTratta(s, i), stile: s.stile || 'normale', punti: s.punti.map(m => ({ ...m })) }));
+        routeInModifica = route.id;
+        corrente = segmenti[segmenti.length - 1] || null;
+        if (!corrente) {
+            corrente = { id: uid('t'), nome: '', colore: prossimoColore(), stile: 'normale', punti: [] };
+            segmenti.push(corrente);
         }
-        if (corrente && corrente.punti.length === 1) {
-            const id = corrente.punti[0];
-            segmenti = segmenti.filter(s => s !== corrente);
-            if (!segmenti.some(s => s.punti.includes(id))) {
-                punti = punti.filter(p => p.id !== id);
-            }
-        }
-        corrente = { id: uid('t'), nome: '', punti: [] };
-        segmenti.push(corrente);
+        ordinaSegmenti();
+        rinumeriaTutti();
         disegnaEditor();
         renderTratte();
-        status('Tocca il punto di partenza della nuova tratta (si collegherà se vicino).');
-    }
-
-    async function suggerisciNome(seg) {
-        const lista = seg.punti.map(getPunto).filter(Boolean);
-        if (!lista.length) return '';
-        const p = lista[Math.floor(lista.length / 2)];
-        try {
-            const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${p.lat}&lon=${p.lng}&zoom=17&addressdetails=1&accept-language=it`;
-            const res = await fetch(url, { headers: { 'Accept-Language': 'it' } });
-            const j = await res.json();
-            const a = j.address || {};
-            return a.road || a.pedestrian || a.footway || a.path || a.square ||
-                   a.residential || a.place || (j.display_name || '').split(',')[0] || '';
-        } catch (e) {
-            return '';
+        if (punti.length) {
+            map.fitBounds(L.latLngBounds(punti.map(p => [p.lat, p.lng])), { padding: [55, 55], maxZoom: 17 });
         }
+        toast('Percorso caricato: puoi modificarlo.');
+        status(`Modifica: ${route.nome}`);
     }
 
     function apriModal(cfg) {
@@ -753,68 +1529,151 @@
         });
     }
 
-    function chiudiTratta(dopo = null) {
-        if (!corrente || corrente.punti.length < 2) {
-            toast('Aggiungi almeno due punti prima di chiudere la tratta.');
+    function salvaPercorso() {
+        finalizzaCorrente();
+        const chiuse = segmenti.filter(s => s.punti.length >= 1);
+        if (!chiuse.length) {
+            toast('Crea almeno un punto prima di salvare.');
             return;
         }
-        const seg = corrente;
+        const esistente = routeInModifica ? percorsi.find(r => r.id === routeInModifica) : null;
         apriModal({
-            titolo: 'NOME DELLA TRATTA',
-            suggerimento: 'Cerco un suggerimento dal tracciato…',
-            nome: '',
+            titolo: esistente ? 'SALVA MODIFICHE' : 'SALVA PERCORSO',
+            suggerimento: '',
+            nome: esistente ? esistente.nome : '',
+            categorie: true,
+            comune: esistente ? esistente.comune : null,
+            territorio: esistente ? esistente.territorio : null,
             onConferma: dati => {
-                seg.nome = dati.nome.trim() || `Tratta ${segmenti.filter(s => s !== seg).length + 1}`;
-                corrente = null;
-                disegnaEditor();
-                renderTratte();
-                status('Tratta chiusa. Premi NUOVA TRATTA per iniziare un altro segmento.');
-                if (dopo) dopo();
-            }
-        });
-        suggerisciNome(seg).then(nome => {
-            if (document.getElementById('modalTitolo').textContent !== 'NOME DELLA TRATTA') return;
-            if (document.getElementById('overlayModal').hidden) return;
-            const box = document.getElementById('modalSuggerimento');
-            box.textContent = nome ? `Suggerimento: ${nome}` : 'Nessun suggerimento disponibile: scrivi tu il nome.';
-            if (nome && !document.getElementById('modalNome').value.trim()) {
-                document.getElementById('modalNome').value = nome;
+                const tratteFinali = segmenti.filter(s => s !== corrente && s.punti.length >= 1)
+                    .map(s => ({ id: s.id, nome: s.nome || 'Tratta', colore: s.colore || null, stile: s.stile || 'normale', punti: s.punti.map(m => ({ pid: m.pid, numero: m.numero })) }));
+                if (!tratteFinali.length) { toast('Nessuna tratta da salvare.'); return; }
+                const usati = new Set(tratteFinali.flatMap(t => t.punti.map(m => m.pid)));
+                const puntiFinali = punti.filter(p => usati.has(p.id)).map(p => Object.assign({}, p, { immagini: [...(p.immagini || [])] }));
+                const nome = dati.nome.trim() || 'Percorso senza nome';
+                const comune = dati.comune;
+                const territorio = dati.territorio || '';
+
+                if (esistente) {
+                    const vecchio = JSON.stringify(esistente);
+                    esistente.nome = nome;
+                    esistente.comune = comune;
+                    esistente.territorio = territorio;
+                    esistente.punti = puntiFinali;
+                    esistente.tratte = tratteFinali;
+                    esistente.modificato = new Date().toISOString();
+                    if (!salvaPercorsi()) {
+                        Object.assign(esistente, JSON.parse(vecchio));
+                        return;
+                    }
+                    toast('Modifiche salvate.');
+                } else {
+                    const route = {
+                        id: uid('r'),
+                        nome,
+                        comune,
+                        territorio,
+                        creato: new Date().toISOString(),
+                        punti: puntiFinali,
+                        tratte: tratteFinali
+                    };
+                    percorsi.push(route);
+                    if (!salvaPercorsi()) { percorsi.pop(); return; }
+                    toast('Percorso salvato.');
+                }
+                renderViewer();
+                resetEditor();
             }
         });
     }
 
-    function salvaPercorso() {
-        const chiuse = segmenti.filter(s => s !== corrente && s.punti.length >= 2);
-        if (!chiuse.length) {
-            toast('Chiudi almeno una tratta con due o più punti prima di salvare.');
-            return;
-        }
-        const continua = () => apriModal({
-            titolo: 'SALVA PERCORSO',
-            nome: '',
-            categorie: true,
-            onConferma: dati => {
-                const tratteFinali = segmenti.filter(s => s !== corrente && s.punti.length >= 2);
-                if (!tratteFinali.length) { toast('Nessuna tratta da salvare.'); return; }
-                const route = {
-                    id: uid('r'),
-                    nome: dati.nome.trim() || 'Percorso senza nome',
-                    comune: dati.comune,
-                    territorio: dati.territorio || '',
-                    creato: new Date().toISOString(),
-                    punti: punti.map(p => ({ ...p })),
-                    tratte: tratteFinali.map(s => ({ id: s.id, nome: s.nome || 'Tratta', punti: [...s.punti] }))
-                };
-                percorsi.push(route);
-                salvaPercorsi();
-                renderViewer();
-                resetEditor();
-                toast('Percorso salvato.');
-            }
-        });
+    function apriNota(punto) {
+        notaPunto = punto;
+        noteImages = Array.isArray(punto.note && punto.note.immagini) ? [...punto.note.immagini] : [];
+        document.getElementById('notaNumero').textContent = punto.senzaNumero
+            ? coordsTesto(punto)
+            : (numeriDelPunto(punto.id).join(' / ') || '000');
+        document.getElementById('notaTesto').value = (punto.note && punto.note.testo) || '';
+        renderNoteImages();
+        document.getElementById('overlayNota').hidden = false;
+        setTimeout(() => document.getElementById('notaTesto').focus(), 40);
+    }
 
-        if (corrente && corrente.punti.length >= 2) chiudiTratta(continua);
-        else continua();
+    function chiudiNota() {
+        document.getElementById('overlayNota').hidden = true;
+        notaPunto = null;
+        noteImages = [];
+    }
+
+    function renderNoteImages() {
+        const box = document.getElementById('notaImgList');
+        box.innerHTML = '';
+        noteImages.forEach((src, i) => {
+            const item = document.createElement('div');
+            item.className = 'nota-img-item';
+            item.innerHTML = `<img src="${escapeHtml(src)}" alt="Immagine ${i + 1}">` +
+                `<button type="button" data-i="${i}" title="Rimuovi immagine" aria-label="Rimuovi immagine">×</button>`;
+            box.appendChild(item);
+        });
+    }
+
+    function comprimiImmagine(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onerror = reject;
+            reader.onload = () => {
+                const img = new Image();
+                img.onerror = reject;
+                img.onload = () => {
+                    const max = 900;
+                    let w = img.width, h = img.height;
+                    if (Math.max(w, h) > max) {
+                        const r = max / Math.max(w, h);
+                        w = Math.round(w * r);
+                        h = Math.round(h * r);
+                    }
+                    const c = document.createElement('canvas');
+                    c.width = w; c.height = h;
+                    c.getContext('2d').drawImage(img, 0, 0, w, h);
+                    resolve(c.toDataURL('image/jpeg', 0.72));
+                };
+                img.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function aggiungiFileImmagini(files) {
+        for (const file of files) {
+            if (!file.type.startsWith('image/')) continue;
+            try {
+                noteImages.push(await comprimiImmagine(file));
+            } catch (e) {
+                toast('Impossibile leggere un\'immagine.');
+            }
+        }
+        renderNoteImages();
+    }
+
+    function salvaNota() {
+        if (!notaPunto) return;
+        const testo = document.getElementById('notaTesto').value.trim();
+        if (!testo && !noteImages.length) {
+            notaPunto.note = null;
+        } else {
+            notaPunto.note = { testo, immagini: [...noteImages] };
+        }
+        disegnaEditor();
+        chiudiNota();
+        toast('Nota salvata.');
+    }
+
+    function eliminaNota() {
+        if (!notaPunto) return;
+        notaPunto.note = null;
+        disegnaEditor();
+        chiudiNota();
+        toast('Nota eliminata.');
     }
 
     function downloadBlob(blob, nome) {
@@ -832,26 +1691,6 @@
         return nome.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.' + est;
     }
 
-    function esportaGPX(route) {
-        let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-        xml += '<gpx version="1.1" creator="Portale Operatori - RouteEditor" xmlns="http://www.topografix.com/GPX/1/1">\n';
-        xml += `  <metadata><name>${escapeXml(route.nome)}</name></metadata>\n`;
-        xml += '  <trk>\n';
-        xml += `    <name>${escapeXml(route.nome)}</name>\n`;
-        route.tratte.forEach(seg => {
-            xml += '    <trkseg>\n';
-            xml += `      <name>${escapeXml(seg.nome || 'Tratta')}</name>\n`;
-            seg.punti.forEach(id => {
-                const p = route.punti.find(x => x.id === id);
-                if (p) xml += `      <trkpt lat="${p.lat}" lon="${p.lng}"></trkpt>\n`;
-            });
-            xml += '    </trkseg>\n';
-        });
-        xml += '  </trk>\n</gpx>\n';
-        downloadBlob(new Blob([xml], { type: 'application/gpx+xml' }), nomeFile(route.nome, 'gpx'));
-        toast('GPX esportato.');
-    }
-
     function esportaJSON(route) {
         const dati = { versione: 1, percorsi: [route] };
         downloadBlob(new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' }), nomeFile(route.nome, 'json'));
@@ -859,8 +1698,7 @@
     }
 
     function esportaBackup() {
-        const dati = { versione: 1, percorsi };
-        downloadBlob(new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' }), 'backup-percorsi.json');
+        downloadBlob(new Blob([JSON.stringify({ versione: 1, percorsi }, null, 2)], { type: 'application/json' }), 'backup-percorsi.json');
         toast('Backup JSON esportato.');
     }
 
@@ -873,12 +1711,13 @@
                 if (!Array.isArray(lista)) throw new Error('Formato non valido');
                 let aggiunti = 0;
                 lista.forEach(r => {
-                    if (!r || !r.id || !Array.isArray(r.punti) || !Array.isArray(r.tratte)) return;
-                    if (percorsi.some(x => x.id === r.id)) return;
-                    percorsi.push(r);
+                    const norm = normalizzaRoute(r);
+                    if (!norm || !norm.id || !Array.isArray(norm.punti) || !Array.isArray(norm.tratte)) return;
+                    if (percorsi.some(x => x.id === norm.id)) return;
+                    percorsi.push(norm);
                     aggiunti++;
                 });
-                salvaPercorsi();
+                if (!salvaPercorsi()) return;
                 renderViewer();
                 toast(aggiunti ? `${aggiunti} percorsi importati.` : 'Nessun nuovo percorso importato.');
             } catch (e) {
@@ -886,6 +1725,16 @@
             }
         };
         reader.readAsText(file);
+    }
+
+    function eliminaPercorso(id) {
+        const route = percorsi.find(r => r.id === id);
+        if (!route) return;
+        if (!window.confirm(`Eliminare il percorso "${route.nome}"?`)) return;
+        percorsi = percorsi.filter(r => r.id !== id);
+        salvaPercorsi();
+        renderViewer();
+        toast('Percorso eliminato.');
     }
 
     function renderViewer() {
@@ -905,6 +1754,14 @@
             gruppi[comune][territorio].push(r);
         });
 
+        const ico = {
+            mostra: '<svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>',
+            modifica: '<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+            pdf: '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15h6M9 18h4"/></svg>',
+            json: '<svg viewBox="0 0 24 24"><path d="M8 3H6a2 2 0 0 0-2 2v4a2 2 0 0 1-2 2 2 2 0 0 1 2 2v4a2 2 0 0 0 2 2h2M16 3h2a2 2 0 0 1 2 2v4a2 2 0 0 0 2 2 2 2 0 0 0-2 2v4a2 2 0 0 1-2 2h-2"/></svg>',
+            elimina: '<svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v5M14 11v5"/></svg>'
+        };
+
         Object.keys(gruppi).sort((a, b) => a.localeCompare(b, 'it')).forEach(comune => {
             const divG = document.createElement('div');
             divG.className = 'gruppo';
@@ -917,14 +1774,16 @@
                     const nTratte = r.tratte.length;
                     const card = document.createElement('div');
                     card.className = 'route-card';
+                    const idd = escapeHtml(r.id);
                     card.innerHTML =
-                        `<div class="route-info" data-azione="mostra" data-id="${r.id}">${escapeHtml(r.nome)}` +
-                        `<small>${nTratte} tratte · ${nPunti} punti</small></div>` +
+                        `<div class="route-info" data-azione="mostra" data-id="${idd}">${escapeHtml(r.nome)}` +
+                        `<small>${nTratte} tratte · ${nPunti} punti · ${formatKm(lunghezzaKm(r))}</small></div>` +
                         `<div class="route-azioni">` +
-                        `<button type="button" class="btn btn-small" data-azione="mostra" data-id="${r.id}">MOSTRA</button>` +
-                        `<button type="button" class="btn btn-small" data-azione="gpx" data-id="${r.id}">GPX</button>` +
-                        `<button type="button" class="btn btn-small" data-azione="png" data-id="${r.id}">PNG</button>` +
-                        `<button type="button" class="btn btn-small" data-azione="json" data-id="${r.id}">JSON</button>` +
+                        `<button type="button" class="btn-ico mini" data-azione="mostra" data-id="${idd}" title="Mostra" aria-label="Mostra">${ico.mostra}</button>` +
+                        `<button type="button" class="btn-ico mini" data-azione="modifica" data-id="${idd}" title="Modifica" aria-label="Modifica">${ico.modifica}</button>` +
+                        `<button type="button" class="btn-ico mini" data-azione="pdf" data-id="${idd}" title="Esporta PDF" aria-label="Esporta PDF">${ico.pdf}</button>` +
+                        `<button type="button" class="btn-ico mini" data-azione="json" data-id="${idd}" title="Esporta JSON" aria-label="Esporta JSON">${ico.json}</button>` +
+                        `<button type="button" class="btn-ico danger mini" data-azione="elimina" data-id="${idd}" title="Elimina" aria-label="Elimina">${ico.elimina}</button>` +
                         `</div>`;
                     divT.appendChild(card);
                 });
@@ -932,6 +1791,54 @@
             });
             box.appendChild(divG);
         });
+    }
+
+    function cercaIndirizzo(query) {
+        clearTimeout(searchTimer);
+        if (query.trim().length < 3) {
+            document.getElementById('searchResults').hidden = true;
+            return;
+        }
+        searchTimer = setTimeout(async () => {
+            const box = document.getElementById('searchResults');
+            try {
+                const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=it&countrycodes=it&q=${encodeURIComponent(query.trim())}`;
+                const res = await fetch(url, { headers: { 'Accept-Language': 'it' } });
+                const risultati = await res.json();
+                box.innerHTML = '';
+                if (!Array.isArray(risultati) || !risultati.length) {
+                    box.innerHTML = '<button type="button" disabled>Nessun risultato</button>';
+                } else {
+                    risultati.forEach(r => {
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.dataset.lat = r.lat;
+                        b.dataset.lon = r.lon;
+                        b.textContent = r.display_name;
+                        box.appendChild(b);
+                    });
+                }
+                box.hidden = false;
+            } catch (e) {
+                box.innerHTML = '<button type="button" disabled>Ricerca non disponibile</button>';
+                box.hidden = false;
+            }
+        }, 320);
+    }
+
+    function vaiARisultato(lat, lng) {
+        const ll = L.latLng(parseFloat(lat), parseFloat(lng));
+        map.flyTo(ll, 16, { duration: 1.1 });
+        layerSearch.clearLayers();
+        searchMarker = L.marker(ll, {
+            icon: L.divIcon({
+                className: 'pin-wrapper',
+                html: '<div class="pin scacchi"></div>',
+                iconSize: [34, 34], iconAnchor: [17, 17]
+            })
+        }).addTo(layerSearch);
+        document.getElementById('searchResults').hidden = true;
+        document.getElementById('searchInput').value = '';
     }
 
     function latLngToWorld(lat, lng, z) {
@@ -964,19 +1871,34 @@
         return risultati;
     }
 
-    function adattaFont(ctx, testo, maxW, sizeIniziale, peso) {
-        let size = sizeIniziale;
+    function testoAdattato(ctx, testo, maxW, size, peso) {
+        let s = size;
         do {
-            ctx.font = `${peso} ${size}px "Josefin Sans", sans-serif`;
+            ctx.font = `${peso} ${s}px "Josefin Sans", sans-serif`;
             if (ctx.measureText(testo).width <= maxW) break;
-            size -= 2;
-        } while (size > 26);
-        return size;
+            s -= 2;
+        } while (s > 14);
+        return s;
     }
 
-    async function esportaPNG(route) {
-        const W = 1536, H = 2048, BANNER = 240, MAP_H = H - BANNER, PAD = 110;
-        if (!route.punti.length) { toast('Il percorso non ha punti.'); return; }
+    function scegliZoom(route, W, mapH, pad) {
+        if (!route.punti.length) return 2;
+        const lats = route.punti.map(p => p.lat), lngs = route.punti.map(p => p.lng);
+        let north = Math.max(...lats), south = Math.min(...lats);
+        let west = Math.min(...lngs), east = Math.max(...lngs);
+        if (north - south < 0.0008) { north += 0.0004; south -= 0.0004; }
+        if (east - west < 0.0008) { east += 0.0004; west -= 0.0004; }
+        for (let z = 19; z >= 2; z--) {
+            const a = latLngToWorld(north, west, z);
+            const b = latLngToWorld(south, east, z);
+            if ((b.x - a.x) <= W - 2 * pad && (b.y - a.y) <= mapH - 2 * pad) return z;
+        }
+        return 2;
+    }
+
+    async function disegnaMappaPdf(route, canvas, top, mapH, W) {
+        const ctx = canvas.getContext('2d');
+        if (!route.punti.length) return null;
 
         const lats = route.punti.map(p => p.lat), lngs = route.punti.map(p => p.lng);
         let north = Math.max(...lats), south = Math.min(...lats);
@@ -984,56 +1906,48 @@
         if (north - south < 0.0008) { north += 0.0004; south -= 0.0004; }
         if (east - west < 0.0008) { east += 0.0004; west -= 0.0004; }
 
-        let z = 18;
-        for (; z >= 2; z--) {
-            const a = latLngToWorld(north, west, z);
-            const b = latLngToWorld(south, east, z);
-            if ((b.x - a.x) <= W - 2 * PAD && (b.y - a.y) <= MAP_H - 2 * PAD) break;
-        }
-        z = Math.max(2, z);
+        const z = scegliZoom(route, W, mapH, 150);
+        const tileZ = Math.min(19, z + 1);
+        const scala = Math.pow(2, tileZ - z);
+        const tileSize = 256 / scala;
+        const centro = latLngToWorld((north + south) / 2, (west + east) / 2, z);
+        const originX = centro.x - W / 2;
+        const originY = centro.y - mapH / 2;
 
-        const nw = latLngToWorld(north, west, z);
-        const se = latLngToWorld(south, east, z);
-        const originX = (nw.x + se.x) / 2 - W / 2;
-        const originY = (nw.y + se.y) / 2 - MAP_H / 2;
-
-        const canvas = document.createElement('canvas');
-        canvas.width = W;
-        canvas.height = H;
-        const ctx = canvas.getContext('2d');
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, top, W, mapH);
+        ctx.clip();
+        ctx.translate(0, top);
         ctx.fillStyle = '#e8efd2';
-        ctx.fillRect(0, 0, W, MAP_H);
+        ctx.fillRect(0, 0, W, mapH);
 
-        const nTile = Math.pow(2, z);
-        const tx0 = Math.floor(originX / 256), tx1 = Math.floor((originX + W) / 256);
-        const ty0 = Math.floor(originY / 256), ty1 = Math.floor((originY + MAP_H) / 256);
+        const nTile = Math.pow(2, tileZ);
+        const tx0 = Math.floor(originX / tileSize);
+        const tx1 = Math.floor((originX + W) / tileSize);
+        const ty0 = Math.floor(originY / tileSize);
+        const ty1 = Math.floor((originY + mapH) / tileSize);
         const tiles = [];
         for (let ty = ty0; ty <= ty1; ty++) {
             for (let tx = tx0; tx <= tx1; tx++) {
                 if (ty < 0 || ty >= nTile) continue;
-                tiles.push({ tx: ((tx % nTile) + nTile) % nTile, ty, px: tx * 256 - originX, py: ty * 256 - originY });
+                tiles.push({
+                    z: tileZ,
+                    tx: ((tx % nTile) + nTile) % nTile,
+                    ty,
+                    px: tx * tileSize - originX,
+                    py: ty * tileSize - originY
+                });
             }
         }
 
-        const server = [
-            t => `https://tile.openstreetmap.org/${z}/${t.tx}/${t.ty}.png`
-        ];
-        let tileOk = false;
-        for (const urlFn of server) {
-            const imgs = await caricaTiles(tiles, urlFn);
-            if (imgs.length >= Math.max(1, Math.ceil(tiles.length * 0.35))) {
-                imgs.forEach(t => ctx.drawImage(t.img, t.px, t.py));
-                tileOk = true;
-                break;
-            }
-        }
-
-        if (!tileOk) {
-            ctx.fillStyle = '#cfe0a8';
-            for (let i = 0; i < 8; i++) {
-                ctx.fillRect(0, i * MAP_H / 8, W, 2);
-                ctx.fillRect(i * W / 8, 0, 2, MAP_H);
-            }
+        const imgs = await caricaTiles(tiles, t => `https://tile.openstreetmap.org/${t.z}/${t.tx}/${t.ty}.png`);
+        imgs.forEach(t => ctx.drawImage(t.img, t.px, t.py, tileSize, tileSize));
+        if (!imgs.length) {
+            ctx.strokeStyle = 'rgba(44,96,61,0.18)';
+            ctx.lineWidth = 2;
+            for (let x = 0; x < W; x += 160) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, mapH); ctx.stroke(); }
+            for (let y = 0; y < mapH; y += 160) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
         }
 
         const ptCanvas = p => {
@@ -1044,87 +1958,286 @@
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
         route.tratte.forEach((seg, i) => {
-            const colore = COLORI[i % COLORI.length];
-            const lista = seg.punti.map(id => route.punti.find(p => p.id === id)).filter(Boolean).map(ptCanvas);
+            const colore = coloreTratta(seg, i);
+            const puntiSeg = seg.punti.map(m => puntoDiRoute(route, m.pid)).filter(Boolean);
+            const lista = puntiSeg.map(ptCanvas);
             if (lista.length >= 2) {
-                ctx.beginPath();
-                ctx.moveTo(lista[0].x, lista[0].y);
-                lista.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
-                ctx.strokeStyle = 'rgba(255,255,255,0.92)';
-                ctx.lineWidth = 14;
-                ctx.stroke();
-                ctx.strokeStyle = colore;
-                ctx.lineWidth = 7;
-                ctx.stroke();
+                const stile = seg.stile || 'normale';
+                if (stile === 'normale') {
+                    tracciaLineaCanvas(ctx, lista, colore, 10);
+                } else {
+                    tracciaLineaCanvas(ctx, offsetCanvas(lista, -6), colore, 5, stile === 'latoB');
+                    tracciaLineaCanvas(ctx, offsetCanvas(lista, 6), colore, 5, stile === 'latoA');
+                }
             }
-            lista.forEach(p => {
+            puntiSeg.forEach((punto, k) => {
+                const p = lista[k];
+                const piccolo = !!punto.senzaNumero;
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
-                ctx.fillStyle = '#ffffff';
-                ctx.fill();
-                ctx.lineWidth = 3.5;
-                ctx.strokeStyle = colore;
-                ctx.stroke();
+                ctx.arc(p.x, p.y, piccolo ? 5 : 13, 0, Math.PI * 2);
+                if (piccolo) {
+                    ctx.fillStyle = colore;
+                    ctx.fill();
+                } else {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fill();
+                    ctx.lineWidth = 5;
+                    ctx.strokeStyle = colore;
+                    ctx.stroke();
+                }
             });
         });
 
-        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.fillStyle = 'rgba(255,255,255,0.86)';
         ctx.font = '600 22px "Josefin Sans", sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText('© OpenStreetMap contributors', 18, MAP_H - 16);
-
-        ctx.fillStyle = '#1e4a2a';
-        ctx.fillRect(0, MAP_H, W, BANNER);
-        ctx.fillStyle = '#a4bb5b';
-        ctx.fillRect(0, MAP_H, W, 6);
-
-        await (document.fonts ? document.fonts.ready : Promise.resolve());
-
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#d4e68a';
-        adattaFont(ctx, route.nome, W - 100, 82, '700');
-        ctx.fillText(route.nome, W / 2, MAP_H + 108);
-
-        ctx.fillStyle = '#ffffff';
-        const sotto = route.territorio ? `${route.comune} / ${route.territorio}` : route.comune;
-        adattaFont(ctx, sotto, W - 100, 54, '600');
-        ctx.fillText(sotto, W / 2, MAP_H + 182);
-
-        await new Promise(resolve => canvas.toBlob(blob => {
-            downloadBlob(blob, nomeFile(route.nome, 'png'));
-            resolve();
-        }, 'image/png'));
-        toast('PNG 1536×2048 esportato.');
+        ctx.fillText('© OpenStreetMap contributors', 24, mapH - 22);
+        ctx.restore();
+        return { ctx, ptCanvas, z };
     }
 
-    document.getElementById('btnNuovaTratta').addEventListener('click', nuovaTratta);
-    document.getElementById('btnChiudiTratta').addEventListener('click', () => chiudiTratta());
-    document.getElementById('btnSalva').addEventListener('click', salvaPercorso);
-    document.getElementById('btnTorna').addEventListener('click', () => {
-        entraEditor();
-        disegnaEditor();
-        status('Tocca la mappa per aggiungere il primo punto.');
+    function disegnaStrisciaPdf(ctx, route, W, top) {
+        ctx.fillStyle = '#1e4a2a';
+        ctx.fillRect(0, 0, W, top);
+        ctx.fillStyle = '#a4bb5b';
+        ctx.fillRect(0, top - 7, W, 7);
+
+        ctx.textBaseline = 'alphabetic';
+        const left = 70;
+        const right = W - 70;
+        const meta = left + (right - left) * 0.63;
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#d4e68a';
+        testoAdattato(ctx, `GIRO: ${route.nome}`, right - left - (right - meta) - 40, 76, '700');
+        ctx.fillText(`GIRO: ${route.nome}`, left, 112);
+
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#ffffff';
+        testoAdattato(ctx, formatKm(lunghezzaKm(route)), right - meta - 30, 64, '700');
+        ctx.fillText(formatKm(lunghezzaKm(route)), right, 112);
+
+        const sotto = route.territorio ? `${route.comune || ''} / ${route.territorio}` : (route.comune || '');
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#a4bb5b';
+        testoAdattato(ctx, sotto, right - left - (right - meta) - 40, 44, '600');
+        ctx.fillText(sotto, left, 205);
+
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#ffffff';
+        testoAdattato(ctx, dataRotta(route.creato), right - meta - 30, 42, '600');
+        ctx.fillText(dataRotta(route.creato), right, 205);
+    }
+
+    function wrapTesto(ctx, testo, maxW) {
+        const parole = String(testo || '').split(/\s+/).filter(Boolean);
+        const righe = [];
+        let riga = '';
+        parole.forEach(parola => {
+            const prova = riga ? riga + ' ' + parola : parola;
+            if (ctx.measureText(prova).width <= maxW || !riga) {
+                riga = prova;
+            } else {
+                righe.push(riga);
+                riga = parola;
+            }
+        });
+        if (riga) righe.push(riga);
+        return righe.length ? righe : [''];
+    }
+
+    function disegnaImmagineContenuta(ctx, img, x, y, maxW, maxH) {
+        const r = Math.min(maxW / img.width, maxH / img.height);
+        const w = img.width * r, h = img.height * r;
+        ctx.drawImage(img, x + (maxW - w) / 2, y + (maxH - h) / 2, w, h);
+    }
+
+    function nuovaPaginaNote(W, H, top, titolo) {
+        const canvas = document.createElement('canvas');
+        canvas.width = W;
+        canvas.height = H;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#eef3df';
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#1e4a2a';
+        ctx.fillRect(0, 0, W, top);
+        ctx.fillStyle = '#a4bb5b';
+        ctx.fillRect(0, top - 7, W, 7);
+        ctx.fillStyle = '#d4e68a';
+        ctx.font = '700 70px "Josefin Sans", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(titolo, 70, top - 48);
+        return { canvas, ctx, y: top + 80 };
+    }
+
+    async function esportaPDF(route) {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            toast('Libreria PDF non disponibile: controlla la connessione.');
+            return;
+        }
+        if (!route.punti.length) { toast('Il percorso non ha punti.'); return; }
+        await (document.fonts ? document.fonts.ready : Promise.resolve());
+
+        const W = 1800, H = 4000, TOP = 260, MAP_H = H - TOP;
+        const pagina1 = document.createElement('canvas');
+        pagina1.width = W;
+        pagina1.height = H;
+        await disegnaMappaPdf(route, pagina1, TOP, MAP_H, W);
+        disegnaStrisciaPdf(pagina1.getContext('2d'), route, W, TOP);
+
+        const W2 = 1800, H2 = 4000, TOP2 = 210, PAD = 90;
+        const puntiConNota = route.punti
+            .filter(p => p.note && (p.note.testo || (p.note.immagini && p.note.immagini.length)))
+            .sort((a, b) => numeroPerRoute(route, a.id).localeCompare(numeroPerRoute(route, b.id)));
+
+        let correntePg = nuovaPaginaNote(W2, H2, TOP2, 'NOTE');
+        let y = correntePg.y;
+        const pagineNote = [];
+        let ctx = correntePg.ctx;
+
+        if (!puntiConNota.length) {
+            ctx.fillStyle = '#2c603d';
+            ctx.font = '600 48px "Josefin Sans", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('Nessuna nota presente.', PAD, y + 40);
+        }
+
+        for (const p of puntiConNota) {
+            const immagini = await Promise.all((p.note.immagini || []).map(src => caricaImmagine(src).catch(() => null)));
+            const conImmagini = immagini.filter(Boolean);
+            const larghezzaTesto = conImmagini.length ? W2 - 2 * PAD - 520 : W2 - 2 * PAD - 120;
+            ctx.font = '600 40px "Josefin Sans", sans-serif';
+            const righe = wrapTesto(ctx, p.note.testo || '', larghezzaTesto);
+            const hTesto = righe.length * 54;
+            const hImg = conImmagini.length ? 300 : 0;
+            const blockH = Math.max(hTesto, hImg) + 110;
+
+            if (y + blockH > H2 - 90) {
+                pagineNote.push(correntePg.canvas);
+                correntePg = nuovaPaginaNote(W2, H2, TOP2, 'NOTE (SEGUE)');
+                ctx = correntePg.ctx;
+                y = correntePg.y;
+            }
+
+            ctx.fillStyle = '#2c603d';
+            ctx.beginPath();
+            ctx.arc(PAD + 50, y + 45, 46, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#d4e68a';
+            ctx.font = '700 32px "Josefin Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(numeroPerRoute(route, p.id), PAD + 50, y + 58);
+
+            ctx.fillStyle = '#2c603d';
+            ctx.font = '600 40px "Josefin Sans", sans-serif';
+            ctx.textAlign = 'left';
+            righe.forEach((riga, i) => ctx.fillText(riga, PAD + 125, y + 45 + i * 54));
+
+            if (conImmagini.length) {
+                const imgX = W2 - PAD - 470;
+                const nMostrate = Math.min(3, conImmagini.length);
+                const slotW = 150, gap = 12;
+                conImmagini.slice(0, nMostrate).forEach((img, i) => {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(imgX + i * (slotW + gap), y, slotW, 260);
+                    disegnaImmagineContenuta(ctx, img, imgX + i * (slotW + gap), y, slotW, 260);
+                });
+                if (conImmagini.length > nMostrate) {
+                    ctx.fillStyle = '#2c603d';
+                    ctx.font = '600 30px "Josefin Sans", sans-serif';
+                    ctx.fillText(`+${conImmagini.length - nMostrate}`, imgX, y + 320);
+                }
+            }
+
+            ctx.strokeStyle = 'rgba(44,96,61,0.25)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(PAD, y + blockH - 45);
+            ctx.lineTo(W2 - PAD, y + blockH - 45);
+            ctx.stroke();
+            y += blockH;
+        }
+        pagineNote.push(correntePg.canvas);
+
+        const PDF = window.jspdf.jsPDF;
+        const pdf = new PDF({ orientation: 'portrait', unit: 'pt', format: [540, 1200], compress: true });
+        const aggiungi = (canvas, prima) => {
+            if (!prima) pdf.addPage([540, 1200], 'portrait');
+            pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 540, 1200, undefined, 'FAST');
+        };
+        aggiungi(pagina1, true);
+        pagineNote.forEach((c, i) => aggiungi(c, false));
+        pdf.save(nomeFile(route.nome, 'pdf'));
+        toast('PDF esportato (9:20, alta risoluzione).');
+    }
+
+    document.getElementById('btnCerca').addEventListener('click', () => {
+        const input = document.getElementById('searchInput');
+        input.focus();
+        input.select();
     });
+
+    document.addEventListener('keydown', e => {
+        if (e.key !== '/' || e.ctrlKey || e.altKey || e.metaKey) return;
+        const attivo = document.activeElement;
+        if (attivo && (attivo.tagName === 'INPUT' || attivo.tagName === 'TEXTAREA' || attivo.tagName === 'SELECT' || attivo.isContentEditable)) return;
+        e.preventDefault();
+        const input = document.getElementById('searchInput');
+        input.focus();
+        input.select();
+    });
+
+    document.getElementById('btnSalva').addEventListener('click', salvaPercorso);
 
     document.getElementById('btnViewer').addEventListener('click', () => {
         renderViewer();
         document.getElementById('overlayViewer').hidden = false;
     });
+
     document.getElementById('btnChiudiViewer').addEventListener('click', () => {
         document.getElementById('overlayViewer').hidden = true;
     });
+
     document.getElementById('btnTratte').addEventListener('click', () => {
         const pannello = document.getElementById('pannelloTratte');
         pannello.hidden = !pannello.hidden;
     });
+
     document.getElementById('btnChiudiPannello').addEventListener('click', () => {
         document.getElementById('pannelloTratte').hidden = true;
     });
-    document.getElementById('btnEsportaBackup').addEventListener('click', esportaBackup);
-    document.getElementById('btnImportaBackup').addEventListener('click', () => document.getElementById('fileImport').click());
-    document.getElementById('fileImport').addEventListener('change', e => {
-        if (e.target.files[0]) importaBackup(e.target.files[0]);
-        e.target.value = '';
+
+    document.getElementById('btnTorna').addEventListener('click', () => {
+        resetEditor();
+        toast('Editor pronto per un nuovo percorso.');
+    });
+
+    document.getElementById('btnModifica').addEventListener('click', () => {
+        if (routeAperta) caricaInModifica(routeAperta);
+        document.getElementById('overlayViewer').hidden = true;
+    });
+
+    document.getElementById('elencoTratte').addEventListener('click', e => {
+        const scambia = e.target.closest('.row-scambia');
+        if (scambia) {
+            e.stopPropagation();
+            const id = scambia.dataset.id;
+            if (!scambioNomeId) {
+                scambioNomeId = id;
+                renderTratte();
+                toast('Seleziona un’altra tratta per scambiare il nome.');
+            } else if (scambioNomeId === id) {
+                scambioNomeId = null;
+                renderTratte();
+            } else {
+                scambiaNomi(scambioNomeId, id);
+            }
+            return;
+        }
+        const btn = e.target.closest('.row-x');
+        if (!btn) return;
+        e.stopPropagation();
+        eliminaTratta(btn.dataset.id);
     });
 
     document.getElementById('elencoPercorsi').addEventListener('click', e => {
@@ -1136,13 +2249,27 @@
         if (azione === 'mostra') {
             entraViewer(route);
             document.getElementById('overlayViewer').hidden = true;
-        } else if (azione === 'gpx') esportaGPX(route);
-        else if (azione === 'png') esportaPNG(route);
-        else if (azione === 'json') esportaJSON(route);
+        } else if (azione === 'modifica') {
+            caricaInModifica(route);
+            document.getElementById('overlayViewer').hidden = true;
+        } else if (azione === 'pdf') {
+            esportaPDF(route);
+        } else if (azione === 'json') {
+            esportaJSON(route);
+        } else if (azione === 'elimina') {
+            eliminaPercorso(route.id);
+        }
     });
 
-    document.getElementById('selComune').addEventListener('change', popolaTerritori);
+    document.getElementById('btnEsportaBackup').addEventListener('click', esportaBackup);
+    document.getElementById('btnImportaBackup').addEventListener('click', () => document.getElementById('fileImport').click());
+    document.getElementById('fileImport').addEventListener('change', e => {
+        if (e.target.files[0]) importaBackup(e.target.files[0]);
+        e.target.value = '';
+    });
+
     document.getElementById('modalAnnulla').addEventListener('click', chiudiModal);
+    document.getElementById('modalChiudi').addEventListener('click', chiudiModal);
     document.getElementById('modalConferma').addEventListener('click', () => {
         if (!callbackModal) return;
         const dati = {
@@ -1150,12 +2277,70 @@
             comune: document.getElementById('selComune').value,
             territorio: document.getElementById('selTerritorio').value
         };
-        callbackModal(dati);
+        const cb = callbackModal;
         chiudiModal();
+        cb(dati);
     });
     document.getElementById('overlayModal').addEventListener('click', e => {
         if (e.target === e.currentTarget) chiudiModal();
     });
+
+    document.getElementById('notaChiudi').addEventListener('click', chiudiNota);
+    document.getElementById('notaAnnulla').addEventListener('click', chiudiNota);
+    document.getElementById('notaSalva').addEventListener('click', salvaNota);
+    document.getElementById('notaElimina').addEventListener('click', eliminaNota);
+    document.getElementById('overlayNota').addEventListener('click', e => {
+        if (e.target === e.currentTarget) chiudiNota();
+    });
+
+    document.getElementById('stileChiudi').addEventListener('click', chiudiStile);
+    document.getElementById('overlayStile').addEventListener('click', e => {
+        if (e.target === e.currentTarget) chiudiStile();
+    });
+    document.getElementById('overlayStile').addEventListener('click', e => {
+        const opzione = e.target.closest('.stile-opzione');
+        if (!opzione || !segStile) return;
+        segStile.stile = opzione.dataset.stile;
+        const nome = etichettaTratta(segStile);
+        chiudiStile();
+        disegnaEditor();
+        toast(`Aspetto di ${nome} aggiornato.`);
+    });
+    document.getElementById('notaAggiungiFile').addEventListener('click', () => document.getElementById('notaFile').click());
+    document.getElementById('notaFile').addEventListener('change', async e => {
+        await aggiungiFileImmagini(Array.from(e.target.files || []));
+        e.target.value = '';
+    });
+    document.addEventListener('click', e => {
+        const rm = e.target.closest('.nota-img-item button');
+        if (rm) {
+            e.preventDefault();
+            noteImages.splice(parseInt(rm.dataset.i, 10), 1);
+            renderNoteImages();
+            return;
+        }
+        const res = e.target.closest('#searchResults button[data-lat]');
+        if (res) {
+            vaiARisultato(res.dataset.lat, res.dataset.lon);
+            return;
+        }
+        if (!e.target.closest('#searchBar')) {
+            document.getElementById('searchResults').hidden = true;
+        }
+    });
+
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', () => cercaIndirizzo(searchInput.value));
+    searchInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const primo = document.querySelector('#searchResults button[data-lat]');
+            if (primo) vaiARisultato(primo.dataset.lat, primo.dataset.lon);
+        } else if (e.key === 'Escape') {
+            document.getElementById('searchResults').hidden = true;
+        }
+    });
+    document.getElementById('selComune').addEventListener('change', popolaTerritori);
 
     iniziaMappa();
 </script>
