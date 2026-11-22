@@ -178,7 +178,7 @@
             font-weight: 700;
         }
         .nota-testo { font-size: 0.9rem; line-height: 1.35; white-space: pre-wrap; }
-        .nota-etichetta { color: #d35400; font-weight: 700; font-size: 0.8rem; }
+        .nota-etichetta { color: #2c603d; font-weight: 700; font-size: 0.8rem; }
         .nota-mini-immagini { display: flex; gap: 4px; margin-top: 0.3rem; }
         .nota-mini-immagini img { width: 46px; height: 46px; object-fit: cover; border-radius: 0.3rem; border: 1px solid rgba(44,96,61,0.35); }
 
@@ -796,7 +796,7 @@
         let n = indice, testo = '';
         while (n > 0) {
             n--;
-            testo = String.fromCharCode(97 + (n % 26)) + testo;
+            testo = String.fromCharCode(65 + (n % 26)) + testo;
             n = Math.floor(n / 26);
         }
         return testo;
@@ -805,7 +805,7 @@
     function etichettaSuffisso(valore) {
         const testo = String(valore == null ? '' : valore);
         const m = testo.match(/([a-z]+)$/i);
-        return m ? m[1].toLowerCase() : '';
+        return m ? m[1].toUpperCase() : '';
     }
 
     function distanzaOrigineDiramazione(seg, dir, trovaPunto) {
@@ -2511,6 +2511,46 @@
         return risultati;
     }
 
+    async function disegnaSfondoTilesPdf(pdf, rect, z, centro) {
+        const scala = 2;
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(rect.w * scala);
+        canvas.height = Math.round(rect.h * scala);
+        const ctx = canvas.getContext('2d');
+        ctx.scale(scala, scala);
+        ctx.fillStyle = '#e8efd2';
+        ctx.fillRect(0, 0, rect.w, rect.h);
+
+        const originX = centro.x - rect.w / 2;
+        const originY = centro.y - rect.h / 2;
+        const tileZ = Math.min(19, z + 1);
+        const tileSize = 256 / Math.pow(2, tileZ - z);
+        const nTile = Math.pow(2, tileZ);
+        const tx0 = Math.floor(originX / tileSize);
+        const tx1 = Math.floor((originX + rect.w) / tileSize);
+        const ty0 = Math.floor(originY / tileSize);
+        const ty1 = Math.floor((originY + rect.h) / tileSize);
+        const tiles = [];
+        for (let ty = ty0; ty <= ty1; ty++) {
+            if (ty < 0 || ty >= nTile) continue;
+            for (let tx = tx0; tx <= tx1; tx++) {
+                tiles.push({
+                    z: tileZ,
+                    tx: ((tx % nTile) + nTile) % nTile,
+                    ty,
+                    px: tx * tileSize - originX,
+                    py: ty * tileSize - originY
+                });
+            }
+        }
+        const imgs = await caricaTiles(tiles, t => `https://tile.openstreetmap.org/${t.z}/${t.tx}/${t.ty}.png`);
+        imgs.forEach(t => ctx.drawImage(t.img, t.px, t.py, tileSize, tileSize));
+        if (imgs.length) {
+            pdf.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', rect.x, rect.y, rect.w, rect.h, undefined, 'FAST');
+        }
+        return imgs.length;
+    }
+
     function testoAdattato(ctx, testo, maxW, size, peso) {
         let s = size;
         do {
@@ -3030,12 +3070,17 @@
         const nw = worldToLatLng(originX, originY, z);
         const se = worldToLatLng(originX + rect.w, originY + rect.h, z);
 
-        const ways = await caricaMappaVettoriale({ north: nw.lat, south: se.lat, west: nw.lng, east: se.lng });
+        const area = (bounds.north - bounds.south) * (bounds.east - bounds.west);
+        const usaTiles = z < 11 || area > 0.2;
+        const tileCount = usaTiles ? await disegnaSfondoTilesPdf(pdf, rect, z, centro) : 0;
+        const ways = usaTiles
+            ? []
+            : await caricaMappaVettoriale({ north: nw.lat, south: se.lat, west: nw.lng, east: se.lng });
         const disegnabili = ways.map(w => ({ ...w, stile: stileWayOsm(w.tags) }))
             .filter(w => w.stile)
             .sort((a, b) => a.stile.ordine - b.stile.ordine);
 
-        if (!disegnabili.length) disegnaGrigliaVettorialePdf(pdf, rect);
+        if (!disegnabili.length && !tileCount) disegnaGrigliaVettorialePdf(pdf, rect);
 
         disegnabili.forEach(w => {
             const pts = w.geom.map(pt);
@@ -3300,7 +3345,7 @@
                     y += intestazioneH;
                 }
 
-                ctx.fillStyle = '#d35400';
+                ctx.fillStyle = '#2c603d';
                 ctx.font = '700 30px "Josefin Sans", sans-serif';
                 ctx.textAlign = 'left';
                 ctx.fillText(String(nota.numero), PAD + 10, y + 32);
