@@ -129,6 +129,59 @@
             box-shadow: 0 6px 20px rgba(0,0,0,0.25);
         }
         .pannello-tratte[hidden] { display: none; }
+
+        .pannello-note {
+            position: fixed;
+            right: 12px;
+            top: 72px;
+            bottom: 96px;
+            z-index: 1200;
+            width: min(360px, calc(100vw - 24px));
+            overflow: auto;
+            background: rgba(255,255,255,0.97);
+            border: 2px solid #2c603d;
+            border-radius: 1rem;
+            padding: 0.8rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        .pannello-note[hidden] { display: none; }
+        .pannello-head #titoloNote { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .nota-gruppo { margin-bottom: 1rem; }
+        .nota-intervallo {
+            background: #1e4a2a;
+            color: #d4e68a;
+            border-radius: 0.5rem;
+            padding: 0.35rem 0.55rem;
+            font-family: 'Josefin Sans', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 0.45rem;
+        }
+        .nota-riga {
+            display: grid;
+            grid-template-columns: 30px 1fr;
+            gap: 0.5rem;
+            align-items: start;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(44,96,61,0.15);
+        }
+        .nota-riga:last-child { border-bottom: none; }
+        .nota-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #2c603d;
+            color: #d4e68a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        .nota-testo { font-size: 0.9rem; line-height: 1.35; white-space: pre-wrap; }
+        .nota-etichetta { color: #d35400; font-weight: 700; font-size: 0.8rem; }
+        .nota-mini-immagini { display: flex; gap: 4px; margin-top: 0.3rem; }
+        .nota-mini-immagini img { width: 46px; height: 46px; object-fit: cover; border-radius: 0.3rem; border: 1px solid rgba(44,96,61,0.35); }
+
         .pannello-head {
             display: flex;
             align-items: center;
@@ -238,6 +291,20 @@
             resize: vertical;
         }
         input:focus, select:focus, textarea:focus { outline: 2px solid #a4bb5b; }
+        .veicoli-opzioni { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+        .veicoli-opzioni label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin: 0;
+            padding: 0.4rem 0.65rem;
+            border: 2px solid #2c603d;
+            border-radius: 999px;
+            background: #fff;
+            cursor: pointer;
+        }
+        .veicoli-opzioni input { width: auto; padding: 0; accent-color: #2c603d; }
+        .veicoli-opzioni input:focus { outline: none; }
         .modal-buttons { display: flex; gap: 0.6rem; justify-content: flex-end; margin-top: 1.1rem; }
 
         .nota-img-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
@@ -391,7 +458,7 @@
             background: rgba(255,255,255,0.96);
             box-shadow: 0 3px 12px rgba(0,0,0,0.25);
         }
-        .controllo-satellite .btn-ico { box-shadow: none; }
+        .controllo-satellite .btn-ico { box-shadow: none; border-radius: 50%; }
         .controllo-satellite .btn-ico.attivo { background: #d4e68a; color: #1e4a2a; }
         .controllo-satellite input[type="range"] {
             width: 128px;
@@ -503,14 +570,14 @@
     <button type="button" class="btn-ico" id="btnTratte" title="Elenco tratte" aria-label="Elenco tratte">
         <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
     </button>
+    <button type="button" class="btn-ico" id="btnNote" title="Note del percorso" aria-label="Note del percorso" hidden>
+        <svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 12h7M9 16h7"/></svg>
+    </button>
     <button type="button" class="btn-ico primary" id="btnSalva" title="Conferma e salva il percorso" aria-label="Conferma e salva il percorso">
         <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>
     </button>
     <button type="button" class="btn-ico" id="btnViewer" title="Percorsi salvati" aria-label="Percorsi salvati">
         <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-    </button>
-    <button type="button" class="btn-ico" id="btnModifica" title="Modifica il percorso visualizzato" aria-label="Modifica il percorso visualizzato" hidden>
-        <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
     </button>
     <button type="button" class="btn-ico danger" id="btnTorna" title="Torna all'editor" aria-label="Torna all'editor" hidden>
         <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -525,6 +592,14 @@
         <button type="button" class="chiudi" id="btnChiudiPannello" aria-label="Chiudi elenco tratte">×</button>
     </div>
     <ul id="elencoTratte"></ul>
+</div>
+
+<div class="pannello-note" id="pannelloNote" hidden>
+    <div class="pannello-head">
+        <span id="titoloNote">GIRO:</span>
+        <button type="button" class="chiudi" id="btnChiudiNote" aria-label="Chiudi note">×</button>
+    </div>
+    <div id="elencoNote"></div>
 </div>
 
 <div class="overlay" id="overlayModal" hidden>
@@ -543,6 +618,16 @@
             <select id="selComune"></select>
             <label for="selTerritorio">TERRITORIO</label>
             <select id="selTerritorio"></select>
+            <label>VEICOLI</label>
+            <div class="veicoli-opzioni" id="veicoliOpzioni">
+                <label><input type="checkbox" value="22">22</label>
+                <label><input type="checkbox" value="35">35</label>
+                <label><input type="checkbox" value="55">55</label>
+                <label><input type="checkbox" value="75">75</label>
+                <label><input type="checkbox" value="120">120</label>
+                <label><input type="checkbox" value="180">180</label>
+                <label><input type="checkbox" value="180+">180+</label>
+            </div>
         </div>
         <div class="modal-buttons">
             <button type="button" class="btn-ico mini" id="modalAnnulla" title="Annulla" aria-label="Annulla">
@@ -649,6 +734,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     const COLORI = ['#c0392b', '#2c603d', '#e67e22', '#2980b9', '#8e44ad', '#16a085', '#d35400', '#7f8c8d'];
+    const VEICOLI = ['22', '35', '55', '75', '120', '180', '180+'];
     const COMUNI = {
         'camaiore': ['lido', 'centro+collina', 'capezzano'],
         'massarosa': ['centro+sterpeti', 'stiava+conca'],
@@ -854,6 +940,8 @@
                 if (p && notaValida(p.note) && !d.notaNumero) d.notaNumero = prossimoNumeroNota(seg);
             });
         });
+        const veicoliPresenti = Array.isArray(r.veicoli) ? r.veicoli.map(String) : [];
+        r.veicoli = VEICOLI.filter(v => veicoliPresenti.includes(v));
         if (!r.creato) r.creato = new Date().toISOString();
         return r;
     }
@@ -1546,6 +1634,39 @@
         lineeViewer.forEach(({ linea, latlngs, offset }) => linea.setLatLngs(offsetLatLngs(latlngs, offset)));
     }
 
+    function renderPannelloNote(route) {
+        const box = document.getElementById('elencoNote');
+        if (!box) return;
+        box.innerHTML = '';
+        const rotta = route || routeAperta;
+        const titolo = document.getElementById('titoloNote');
+        if (titolo) titolo.textContent = `GIRO: ${(rotta && rotta.nome) || ''}`;
+        const gruppi = notePerTratta(rotta);
+        if (!gruppi.length) {
+            box.innerHTML = '<div class="vuoto">Nessuna nota presente.</div>';
+            return;
+        }
+        gruppi.forEach(g => {
+            const div = document.createElement('div');
+            div.className = 'nota-gruppo';
+            let html = `<div class="nota-intervallo">${escapeHtml(g.intervallo)}</div>`;
+            g.note.forEach(n => {
+                const testo = escapeHtml((n.p.note && n.p.note.testo) || '').replace(/\n/g, '<br>');
+                const immagini = Array.isArray(n.p.note && n.p.note.immagini) ? n.p.note.immagini : [];
+                html += `<div class="nota-riga">` +
+                    `<div class="nota-num">${Number(n.notaNumero) || 1}</div>` +
+                    `<div><div class="nota-etichetta">${escapeHtml(n.numero)}</div>` +
+                    `<div class="nota-testo">${testo || '—'}</div>` +
+                    (immagini.length ? `<div class="nota-mini-immagini">` +
+                        immagini.slice(0, 4).map(src => `<img src="${escapeHtml(src)}" alt="Immagine nota">`).join('') +
+                        `</div>` : '') +
+                    `</div></div>`;
+            });
+            div.innerHTML = html;
+            box.appendChild(div);
+        });
+    }
+
     function renderTratte() {
         const ul = document.getElementById('elencoTratte');
         ul.innerHTML = '';
@@ -1794,9 +1915,11 @@
             if (!map.hasLayer(layerEditor)) map.addLayer(layerEditor);
             modo = 'editor';
         }
+        document.getElementById('btnSalva').hidden = false;
         document.getElementById('btnSalva').disabled = false;
-        document.getElementById('btnModifica').hidden = true;
         document.getElementById('btnTorna').hidden = true;
+        document.getElementById('btnNote').hidden = true;
+        document.getElementById('pannelloNote').hidden = true;
     }
 
     function entraViewer(route) {
@@ -1854,9 +1977,12 @@
             });
         });
 
+        document.getElementById('btnSalva').hidden = true;
         document.getElementById('btnSalva').disabled = true;
-        document.getElementById('btnModifica').hidden = false;
         document.getElementById('btnTorna').hidden = false;
+        document.getElementById('btnNote').hidden = false;
+        document.getElementById('pannelloNote').hidden = false;
+        renderPannelloNote(route);
         status(`Visualizzazione: ${route.nome}`);
     }
 
@@ -1890,6 +2016,10 @@
         document.getElementById('modalSuggerimento').textContent = cfg.suggerimento || '';
         document.getElementById('modalNome').value = cfg.nome || '';
         document.getElementById('modalCategorie').hidden = !cfg.categorie;
+        const veicoliSel = new Set((cfg.veicoli || []).map(String));
+        document.querySelectorAll('#veicoliOpzioni input[type="checkbox"]').forEach(cb => {
+            cb.checked = veicoliSel.has(cb.value);
+        });
         if (cfg.categorie) {
             popolaComuni();
             document.getElementById('selComune').value = cfg.comune || Object.keys(COMUNI)[0];
@@ -1952,6 +2082,7 @@
             categorie: true,
             comune: esistente ? esistente.comune : null,
             territorio: esistente ? esistente.territorio : null,
+            veicoli: esistente ? esistente.veicoli : [],
             onConferma: dati => {
                 const tratteFinali = segmenti.filter(s => s !== corrente && s.punti.length >= 1)
                     .map(s => ({
@@ -1975,6 +2106,7 @@
                     esistente.nome = nome;
                     esistente.comune = comune;
                     esistente.territorio = territorio;
+                    esistente.veicoli = dati.veicoli;
                     esistente.punti = puntiFinali;
                     esistente.tratte = tratteFinali;
                     esistente.modificato = new Date().toISOString();
@@ -1989,6 +2121,7 @@
                         nome,
                         comune,
                         territorio,
+                        veicoli: dati.veicoli,
                         creato: new Date().toISOString(),
                         punti: puntiFinali,
                         tratte: tratteFinali
@@ -2307,11 +2440,8 @@
 
     function scegliZoom(route, W, mapH, pad) {
         if (!route.punti.length) return 2;
-        const lats = route.punti.map(p => p.lat), lngs = route.punti.map(p => p.lng);
-        let north = Math.max(...lats), south = Math.min(...lats);
-        let west = Math.min(...lngs), east = Math.max(...lngs);
-        if (north - south < 0.0008) { north += 0.0004; south -= 0.0004; }
-        if (east - west < 0.0008) { east += 0.0004; west -= 0.0004; }
+        const b = espandiBounds(limitiPdf(route), 0);
+        const north = b.north, south = b.south, west = b.west, east = b.east;
         for (let z = 19; z >= 2; z--) {
             const a = latLngToWorld(north, west, z);
             const b = latLngToWorld(south, east, z);
@@ -2522,13 +2652,24 @@
         };
     }
 
+    function espandiBounds(bounds, frazione = 0.14) {
+        const h = (bounds.north - bounds.south) * frazione;
+        const w = (bounds.east - bounds.west) * frazione;
+        return {
+            north: bounds.north + h,
+            south: bounds.south - h,
+            west: bounds.west - w,
+            east: bounds.east + w
+        };
+    }
+
     function limitiPdf(route) {
         const lats = route.punti.map(p => p.lat), lngs = route.punti.map(p => p.lng);
         let north = Math.max(...lats), south = Math.min(...lats);
         let west = Math.min(...lngs), east = Math.max(...lngs);
         if (north - south < 0.0008) { north += 0.0004; south -= 0.0004; }
         if (east - west < 0.0008) { east += 0.0004; west -= 0.0004; }
-        return { north, south, west, east };
+        return espandiBounds({ north, south, west, east });
     }
 
     function clipSegmentoPdf(a, b, rect) {
@@ -2687,10 +2828,32 @@
         for (let y = rect.y; y <= rect.y + rect.h; y += 30) pdf.line(rect.x, y, rect.x + rect.w, y);
     }
 
+    async function caricaFontPdf(pdf) {
+        if (!window.__josefinPdfBase64) {
+            const url = 'https://raw.githubusercontent.com/google/fonts/main/ofl/josefinsans/JosefinSans%5Bwght%5D.ttf';
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('Font Josefin Sans non disponibile');
+            const bytes = new Uint8Array(await res.arrayBuffer());
+            let bin = '';
+            const pezzo = 0x8000;
+            for (let i = 0; i < bytes.length; i += pezzo) {
+                bin += String.fromCharCode.apply(null, bytes.subarray(i, i + pezzo));
+            }
+            window.__josefinPdfBase64 = btoa(bin);
+        }
+        pdf.addFileToVFS('JosefinSans.ttf', window.__josefinPdfBase64);
+        pdf.addFont('JosefinSans.ttf', 'Josefin', 'normal');
+        pdf.addFont('JosefinSans.ttf', 'Josefin', 'bold');
+    }
+
+    function setFontPdf(pdf, peso) {
+        pdf.setFont(window.__josefinPdfOk ? 'Josefin' : 'helvetica', peso);
+    }
+
     function testoAdattatoPdf(pdf, testo, maxW, size, peso) {
         let s = size;
         do {
-            pdf.setFont('helvetica', peso);
+            setFontPdf(pdf, peso);
             pdf.setFontSize(s);
             if (pdf.getTextWidth(testo) <= maxW) break;
             s -= 1;
@@ -2704,9 +2867,19 @@
         pdf.setLineWidth(0.7 * scala);
         pdf.triangle(cx + 6.5 * scala, cy + 1.2 * scala, cx + 12.5 * scala, cy + 7.4 * scala, cx + 5.5 * scala, cy + 7.4 * scala, 'FD');
         setTextHex(pdf, '#7a3b00');
-        pdf.setFont('helvetica', 'bold');
+        setFontPdf(pdf, 'bold');
         pdf.setFontSize(5.2 * scala);
         pdf.text(String(numero || 1), cx + 9 * scala, cy + 6.4 * scala, { align: 'center' });
+    }
+
+    function intervalloTratta(seg) {
+        const numeri = (seg.punti || [])
+            .map(m => String(m.numero || ''))
+            .filter(n => /^\d+$/.test(n));
+        const lettere = (seg.diramazioni || []).map(d => etichettaSuffisso(d.etichetta || d.suffisso)).filter(Boolean);
+        const primo = numeri[0] || '00';
+        const ultimo = numeri[numeri.length - 1] || primo;
+        return `${primo}-${ultimo}` + (lettere.length ? ` · ${lettere.join(', ')}` : '');
     }
 
     function notePerTratta(route) {
@@ -2727,7 +2900,12 @@
             seg.punti.forEach(m => aggiungi(puntoDiRoute(route, m.pid), m, m.numero));
             (seg.diramazioni || []).forEach(d => aggiungi(puntoDiRoute(route, d.b), d, d.etichetta));
             note.sort((a, b) => a.notaNumero - b.notaNumero || a.numero.localeCompare(b.numero));
-            if (note.length) gruppi.push({ seg, nome: seg.nome || `Tratta ${i + 1}`, note });
+            if (note.length) gruppi.push({
+                seg,
+                nome: seg.nome || `Tratta ${i + 1}`,
+                intervallo: intervalloTratta(seg),
+                note
+            });
         });
         return gruppi;
     }
@@ -2737,7 +2915,7 @@
         pdf.rect(rect.x, rect.y, rect.w, rect.h, 'F');
 
         const bounds = limitiPdf(route);
-        const z = scegliZoom(route, 1800, Math.round(rect.h * 1800 / rect.w), 150);
+        const z = scegliZoom(route, rect.w, rect.h, 34);
         const centro = latLngToWorld((bounds.north + bounds.south) / 2, (bounds.west + bounds.east) / 2, z);
         const originX = centro.x - rect.w / 2;
         const originY = centro.y - rect.h / 2;
@@ -2830,7 +3008,7 @@
                 pdf.circle(cx, cy, item.senzaNumero ? 1.5 : 3.6, 'F');
                 if (!item.senzaNumero) {
                     setTextHex(pdf, '#ffffff');
-                    pdf.setFont('helvetica', 'bold');
+                    setFontPdf(pdf, 'bold');
                     pdf.setFontSize(String(item.numero).length > 2 ? 4 : 5.1);
                     pdf.text(item.numero, cx, cy + 1.8, { align: 'center' });
                 }
@@ -2841,7 +3019,7 @@
         setFillHex(pdf, '#ffffff');
         pdf.rect(rect.x + 6, rect.y + rect.h - 16, 142, 12, 'F');
         setTextHex(pdf, '#3c4b3d');
-        pdf.setFont('helvetica', 'normal');
+        setFontPdf(pdf, 'normal');
         pdf.setFontSize(6);
         pdf.text('© OpenStreetMap contributors', rect.x + 10, rect.y + rect.h - 7);
         pdf.setLineDashPattern([]);
@@ -2855,9 +3033,30 @@
 
         const left = 21, right = W - 21, meta = left + (right - left) * 0.63;
         const titolo = `GIRO: ${route.nome}`;
-        testoAdattatoPdf(pdf, titolo, meta - left - 12, 23, 'bold');
+        const veicoli = Array.isArray(route.veicoli)
+            ? route.veicoli.map(String).filter(v => VEICOLI.includes(v))
+            : [];
+        setFontPdf(pdf, 'bold');
+        pdf.setFontSize(10);
+        const badgePad = 6, badgeGap = 4, badgeH = 19;
+        const larghezzeBadge = veicoli.map(v => pdf.getTextWidth(v) + badgePad * 2);
+        const larghezzaBadge = larghezzeBadge.reduce((a, b) => a + b, 0) + (veicoli.length ? (veicoli.length - 1) * badgeGap : 0);
+        const larghezzaTitolo = Math.max(40, meta - left - 12 - (veicoli.length ? larghezzaBadge + 10 : 0));
+        testoAdattatoPdf(pdf, titolo, larghezzaTitolo, 23, 'bold');
         setTextHex(pdf, '#d4e68a');
         pdf.text(titolo, left, 33.6);
+
+        let bx = left + pdf.getTextWidth(titolo) + 10;
+        veicoli.forEach((v, i) => {
+            const bw = larghezzeBadge[i];
+            setFillHex(pdf, '#a4bb5b');
+            pdf.roundedRect(bx, 14.5, bw, badgeH, 5.5, 5.5, 'F');
+            setTextHex(pdf, '#1e4a2a');
+            setFontPdf(pdf, 'bold');
+            pdf.setFontSize(10);
+            pdf.text(v, bx + badgePad, 27.8);
+            bx += bw + badgeGap;
+        });
 
         const km = formatKm(lunghezzaKm(route));
         testoAdattatoPdf(pdf, km, right - meta - 10, 19, 'bold');
@@ -2885,6 +3084,12 @@
 
         const PDF = window.jspdf.jsPDF;
         const pdf = new PDF({ orientation: 'portrait', unit: 'pt', format: [540, 960], compress: true });
+        try {
+            await caricaFontPdf(pdf);
+            window.__josefinPdfOk = true;
+        } catch (e) {
+            window.__josefinPdfOk = false;
+        }
         pdf.setProperties({ title: route.nome, subject: 'Percorso ERSU', creator: 'ROUTEDITOR' });
         await disegnaMappaVettorialePdf(pdf, route, { x: 0, y: 78, w: 540, h: 882 });
         disegnaStrisciaPdfVettoriale(pdf, route, 540, 78);
@@ -2919,19 +3124,20 @@
             ctx.fillStyle = '#d4e68a';
             ctx.font = '700 38px "Josefin Sans", sans-serif';
             ctx.textAlign = 'left';
-            ctx.fillText(`TRATTA ${gruppo.nome}`, PAD + 24, y + 43);
+            ctx.fillText(gruppo.intervallo, PAD + 24, y + 43);
             y += intestazioneH;
 
             for (const nota of gruppo.note) {
                 const p = nota.p;
                 const immagini = await Promise.all((p.note.immagini || []).map(src => caricaImmagine(src).catch(() => null)));
                 const conImmagini = immagini.filter(Boolean);
-                const larghezzaTesto = conImmagini.length ? W2 - 2 * PAD - 560 : W2 - 2 * PAD - 180;
+                const larghezzaTesto = conImmagini.length ? W2 - 2 * PAD - 560 : W2 - 2 * PAD - 120;
+                const testoNota = `${nota.notaNumero} - ${(p.note.testo || '').trim() || '—'}`;
                 ctx.font = '600 40px "Josefin Sans", sans-serif';
-                const righe = wrapTesto(ctx, p.note.testo || '', larghezzaTesto);
+                const righe = wrapTesto(ctx, testoNota, larghezzaTesto);
                 const hTesto = righe.length * 54;
                 const hImg = conImmagini.length ? 300 : 0;
-                const blockH = Math.max(hTesto, hImg) + 110;
+                const blockH = Math.max(hTesto, hImg) + 96;
 
                 if (y + blockH > H2 - 90) {
                     nuovaPagina(`NOTE - TRATTA ${gruppo.nome}`);
@@ -2940,33 +3146,19 @@
                     ctx.fillStyle = '#d4e68a';
                     ctx.font = '700 38px "Josefin Sans", sans-serif';
                     ctx.textAlign = 'left';
-                    ctx.fillText(`TRATTA ${gruppo.nome} (SEGUE)`, PAD + 24, y + 43);
+                    ctx.fillText(`${gruppo.intervallo} (SEGUE)`, PAD + 24, y + 43);
                     y += intestazioneH;
                 }
 
-                ctx.fillStyle = '#2c603d';
-                ctx.beginPath();
-                ctx.arc(PAD + 50, y + 45, 46, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = '#d4e68a';
-                ctx.font = '700 34px "Josefin Sans", sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(String(nota.notaNumero), PAD + 50, y + 58);
-
                 ctx.fillStyle = '#d35400';
-                ctx.beginPath();
-                ctx.arc(PAD + 145, y + 45, 40, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = '#ffffff';
-                ctx.font = '700 28px "Josefin Sans", sans-serif';
-                ctx.textAlign = 'center';
-                const etichetta = String(nota.numero);
-                ctx.fillText(etichetta, PAD + 145, y + 55, 72);
+                ctx.font = '700 30px "Josefin Sans", sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(String(nota.numero), PAD + 10, y + 32);
 
                 ctx.fillStyle = '#2c603d';
                 ctx.font = '600 40px "Josefin Sans", sans-serif';
                 ctx.textAlign = 'left';
-                righe.forEach((riga, i) => ctx.fillText(riga, PAD + 205, y + 45 + i * 54));
+                righe.forEach((riga, i) => ctx.fillText(riga, PAD + 10, y + 78 + i * 54));
 
                 if (conImmagini.length) {
                     const imgX = W2 - PAD - 470;
@@ -3039,14 +3231,19 @@
         document.getElementById('pannelloTratte').hidden = true;
     });
 
+    document.getElementById('btnNote').addEventListener('click', () => {
+        const pannello = document.getElementById('pannelloNote');
+        pannello.hidden = !pannello.hidden;
+        if (!pannello.hidden) renderPannelloNote(routeAperta);
+    });
+
+    document.getElementById('btnChiudiNote').addEventListener('click', () => {
+        document.getElementById('pannelloNote').hidden = true;
+    });
+
     document.getElementById('btnTorna').addEventListener('click', () => {
         resetEditor();
         toast('Editor pronto per un nuovo percorso.');
-    });
-
-    document.getElementById('btnModifica').addEventListener('click', () => {
-        if (routeAperta) caricaInModifica(routeAperta);
-        document.getElementById('overlayViewer').hidden = true;
     });
 
     document.getElementById('elencoTratte').addEventListener('click', e => {
@@ -3114,7 +3311,8 @@
         const dati = {
             nome: document.getElementById('modalNome').value,
             comune: document.getElementById('selComune').value,
-            territorio: document.getElementById('selTerritorio').value
+            territorio: document.getElementById('selTerritorio').value,
+            veicoli: Array.from(document.querySelectorAll('#veicoliOpzioni input[type="checkbox"]:checked')).map(cb => cb.value)
         };
         const cb = callbackModal;
         chiudiModal();
