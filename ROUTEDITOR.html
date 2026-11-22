@@ -855,7 +855,10 @@
     function prossimoNumeroNota(seg) {
         const usati = new Set();
         (seg.punti || []).forEach(m => { if (m.notaNumero) usati.add(Number(m.notaNumero)); });
-        (seg.diramazioni || []).forEach(d => { if (d.notaNumero) usati.add(Number(d.notaNumero)); });
+        (seg.diramazioni || []).forEach(d => {
+            if (d.notaNumero) usati.add(Number(d.notaNumero));
+            (d.punti || []).forEach(m => { if (m.notaNumero) usati.add(Number(m.notaNumero)); });
+        });
         for (let i = 1; i <= 9; i++) if (!usati.has(i)) return i;
         return usati.size + 1;
     }
@@ -921,9 +924,13 @@
             }).filter(m => m.pid && presenti.has(m.pid));
             seg.diramazioni = (Array.isArray(seg.diramazioni) ? seg.diramazioni : []).map(d => {
                 const suffisso = etichettaSuffisso(d.suffisso || d.etichetta);
+                const intermedi = (Array.isArray(d.punti) ? d.punti : [])
+                    .filter(m => m && m.pid && presenti.has(m.pid))
+                    .map(m => ({ pid: m.pid, numero: '', notaNumero: m.notaNumero || null }));
                 return {
                     a: d.a,
                     b: d.b,
+                    punti: intermedi,
                     suffisso,
                     etichetta: suffisso,
                     notaNumero: d.notaNumero || null
@@ -936,6 +943,10 @@
                 if (p && notaValida(p.note) && !m.notaNumero) m.notaNumero = prossimoNumeroNota(seg);
             });
             (seg.diramazioni || []).forEach(d => {
+                (d.punti || []).forEach(m => {
+                    const p = r.punti.find(x => x.id === m.pid);
+                    if (p && notaValida(p.note) && !m.notaNumero) m.notaNumero = prossimoNumeroNota(seg);
+                });
                 const p = r.punti.find(x => x.id === d.b);
                 if (p && notaValida(p.note) && !d.notaNumero) d.notaNumero = prossimoNumeroNota(seg);
             });
@@ -966,15 +977,33 @@
         return seg.punti.find(m => m.pid === pid) || null;
     }
 
+    function puntiDiramazione(d) {
+        if (!d) return [];
+        const ids = [];
+        if (d.a) ids.push(d.a);
+        (Array.isArray(d.punti) ? d.punti : []).forEach(m => {
+            if (m && m.pid) ids.push(m.pid);
+        });
+        if (d.b) ids.push(d.b);
+        return ids;
+    }
+
     function puntiUsati() {
         const usati = new Set(segmenti.flatMap(s => s.punti.map(m => m.pid)));
-        segmenti.forEach(s => (s.diramazioni || []).forEach(d => { usati.add(d.a); usati.add(d.b); }));
+        segmenti.forEach(s => (s.diramazioni || []).forEach(d => {
+            usati.add(d.a);
+            usati.add(d.b);
+            (d.punti || []).forEach(m => usati.add(m.pid));
+        }));
         return usati;
     }
 
     function pulisciDiramazioni() {
         const presenti = new Set(punti.map(p => p.id));
         segmenti.forEach(seg => {
+            (seg.diramazioni || []).forEach(d => {
+                d.punti = (Array.isArray(d.punti) ? d.punti : []).filter(m => m && presenti.has(m.pid));
+            });
             seg.diramazioni = (seg.diramazioni || []).filter(d =>
                 d && presenti.has(d.a) && presenti.has(d.b) && seg.punti.some(m => m.pid === d.a)
             );
@@ -1197,6 +1226,7 @@
         seg.diramazioni.push({
             a: inter.id,
             b: endpoint.id,
+            punti: [],
             suffisso: dir.suffisso,
             etichetta: dir.etichetta,
             notaNumero: null
@@ -1395,6 +1425,7 @@
                 apriStileTratta(hit.seg);
                 return;
             }
+            if (hit.tipo === 'diramazione') return;
             nuovaTratta(e.latlng);
         });
 
@@ -1478,7 +1509,7 @@
             return;
         }
 
-        const hit = lineaVicino({ lat: p.lat, lng: p.lng }, seg.id);
+        const hit = lineaVicino({ lat: p.lat, lng: p.lng }, seg.id, true);
         if (hit) {
             creaDiramazione(hit.seg, hit.idx, { lat: hit.lat, lng: hit.lng }, p, { seg, mem });
             return;
@@ -1563,17 +1594,17 @@
                 lineeById.set(seg.id, { linee });
             }
             (seg.diramazioni || []).forEach(d => {
-                const a = getPunto(d.a), b = getPunto(d.b);
-                if (!a || !b) return;
+                const latlngsDir = puntiDiramazione(d).map(id => getPunto(id)).filter(Boolean).map(p => [p.lat, p.lng]);
+                if (latlngsDir.length < 2) return;
                 const correnteTratta = seg === corrente;
-                const lineaDir = L.polyline([[a.lat, a.lng], [b.lat, b.lng]], {
+                const lineaDir = L.polyline(latlngsDir, {
                     color: colore,
                     weight: correnteTratta ? 4 : 3,
                     opacity: 0.95,
                     dashArray: correnteTratta ? '9 8' : null,
                     className: correnteTratta ? 'tratta-corrente' : null
                 }).addTo(layerEditor);
-                lineeDiramazione.push({ linea: lineaDir, a: d.a, b: d.b });
+                lineeDiramazione.push({ linea: lineaDir, dir: d });
             });
         });
 
@@ -1590,6 +1621,10 @@
                 if (p) aggiungiAlGruppo({ seg, mem: m, p, colore, notaRef: m, offset: 0 });
             });
             (seg.diramazioni || []).forEach(d => {
+                (d.punti || []).forEach(m => {
+                    const p = getPunto(m.pid);
+                    if (p) aggiungiAlGruppo({ seg, mem: m, p, colore, notaRef: m, offset: 0 });
+                });
                 const p = getPunto(d.b);
                 if (p) aggiungiAlGruppo({
                     seg,
@@ -1624,9 +1659,9 @@
     }
 
     function aggiornaLineeDiramazioni() {
-        lineeDiramazione.forEach(({ linea, a, b }) => {
-            const pa = getPunto(a), pb = getPunto(b);
-            if (pa && pb) linea.setLatLngs([[pa.lat, pa.lng], [pb.lat, pb.lng]]);
+        lineeDiramazione.forEach(({ linea, dir }) => {
+            const latlngs = puntiDiramazione(dir).map(id => getPunto(id)).filter(Boolean).map(p => [p.lat, p.lng]);
+            if (latlngs.length >= 2) linea.setLatLngs(latlngs);
         });
     }
 
@@ -1710,9 +1745,9 @@
         return migliore;
     }
 
-    function lineaVicino(latlng, escludiSegId = null) {
+    function lineaVicino(latlng, escludiSegId = null, soloTratte = false) {
         const clickPt = map.latLngToContainerPoint(latlng);
-        let segTrovato = null, idxTrovato = -1, best = SNAP_LINEA, latTrovata = null, lngTrovata = null;
+        let segTrovato = null, dirTrovata = null, idxTrovato = -1, best = SNAP_LINEA, latTrovata = null, lngTrovata = null;
         segmenti.forEach(seg => {
             if (seg.id === escludiSegId) return;
             for (let i = 0; i < seg.punti.length - 1; i++) {
@@ -1725,20 +1760,43 @@
                 if (r.d < best) {
                     best = r.d;
                     segTrovato = seg;
+                    dirTrovata = null;
                     idxTrovato = i;
                     latTrovata = a.lat + (b.lat - a.lat) * r.t;
                     lngTrovata = a.lng + (b.lng - a.lng) * r.t;
                 }
             }
+            if (soloTratte) return;
+            (seg.diramazioni || []).forEach(d => {
+                const ids = puntiDiramazione(d);
+                for (let i = 0; i < ids.length - 1; i++) {
+                    const a = getPunto(ids[i]);
+                    const b = getPunto(ids[i + 1]);
+                    if (!a || !b) continue;
+                    const pa = map.latLngToContainerPoint([a.lat, a.lng]);
+                    const pb = map.latLngToContainerPoint([b.lat, b.lng]);
+                    const r = proiezione(clickPt, pa, pb);
+                    if (r.d < best) {
+                        best = r.d;
+                        segTrovato = seg;
+                        dirTrovata = d;
+                        idxTrovato = i;
+                        latTrovata = a.lat + (b.lat - a.lat) * r.t;
+                        lngTrovata = a.lng + (b.lng - a.lng) * r.t;
+                    }
+                }
+            });
         });
-        return segTrovato ? { seg: segTrovato, idx: idxTrovato, lat: latTrovata, lng: lngTrovata } : null;
+        return segTrovato
+            ? { seg: segTrovato, diramazione: dirTrovata, idx: idxTrovato, lat: latTrovata, lng: lngTrovata }
+            : null;
     }
 
     function hitTest(latlng) {
         const p = puntoVicino(latlng);
         if (p) return { tipo: 'punto', punto: p };
         const l = lineaVicino(latlng);
-        if (l) return Object.assign({ tipo: 'linea' }, l);
+        if (l) return Object.assign({ tipo: l.diramazione ? 'diramazione' : 'linea' }, l);
         return { tipo: 'vuoto' };
     }
 
@@ -1750,6 +1808,21 @@
         const p = { id: uid('p'), lat: latlng.lat, lng: latlng.lng, note: null, immagini: [] };
         punti.push(p);
         return p;
+    }
+
+    function inserisciPuntoIntermedio(hit) {
+        const p = creaPunto({ lat: hit.lat, lng: hit.lng });
+        if (!p) return null;
+        p.senzaNumero = true;
+        const mem = { pid: p.id, numero: '', notaNumero: null };
+        if (hit.diramazione) {
+            hit.diramazione.punti = Array.isArray(hit.diramazione.punti) ? hit.diramazione.punti : [];
+            hit.diramazione.punti.splice(hit.idx + 1, 0, mem);
+        } else {
+            hit.seg.punti.splice(hit.idx + 1, 0, mem);
+        }
+        rinumeriaTutti();
+        return mem;
     }
 
     function risolviPunto(latlng) {
@@ -1769,15 +1842,7 @@
         }
 
         const hit = lineaVicino(latlng);
-        if (hit) {
-            const p = creaPunto({ lat: hit.lat, lng: hit.lng });
-            if (!p) return null;
-            p.senzaNumero = true;
-            const mem = { pid: p.id, numero: '' };
-            hit.seg.punti.splice(hit.idx + 1, 0, mem);
-            rinumeriaTutti();
-            return mem;
-        }
+        if (hit) return inserisciPuntoIntermedio(hit);
 
         const p = creaPunto(latlng);
         if (!p) return null;
@@ -1792,11 +1857,7 @@
         if (!corrente) {
             const hit = lineaVicino(latlng);
             if (hit) {
-                const p = creaPunto({ lat: hit.lat, lng: hit.lng });
-                if (!p) return;
-                p.senzaNumero = true;
-                hit.seg.punti.splice(hit.idx + 1, 0, { pid: p.id, numero: '' });
-                rinumeriaTutti();
+                inserisciPuntoIntermedio(hit);
                 disegnaEditor();
                 renderTratte();
                 toast('Punto intermedio aggiunto.');
@@ -1814,6 +1875,9 @@
         const seg = segmenti.find(s => s.id === segId);
         if (!seg) return;
         seg.punti = seg.punti.filter(m => m.pid !== pid);
+        (seg.diramazioni || []).forEach(d => {
+            d.punti = (Array.isArray(d.punti) ? d.punti : []).filter(m => m.pid !== pid);
+        });
         seg.diramazioni = (seg.diramazioni || []).filter(d => d.a !== pid && d.b !== pid);
         if (!seg.punti.length && !(seg.diramazioni || []).length) {
             eliminaTratta(segId);
@@ -1947,15 +2011,20 @@
                 });
             }
             (seg.diramazioni || []).forEach(d => {
-                const a = puntoDiRoute(route, d.a), b = puntoDiRoute(route, d.b);
-                if (!a || !b) return;
-                L.polyline([[a.lat, a.lng], [b.lat, b.lng]], { color: colore, weight: 4, opacity: 0.95 }).addTo(layerViewer);
+                const path = puntiDiramazione(d).map(id => puntoDiRoute(route, id)).filter(Boolean);
+                if (path.length >= 2) {
+                    L.polyline(path.map(p => [p.lat, p.lng]), { color: colore, weight: 4, opacity: 0.95 }).addTo(layerViewer);
+                }
             });
             seg.punti.forEach(m => {
                 const p = puntoDiRoute(route, m.pid);
                 if (p) aggiungiAlGruppo({ p, numero: p.etichetta || m.numero || '00', colore, senzaNumero: !!p.senzaNumero && !p.etichetta, notaNumero: m.notaNumero });
             });
             (seg.diramazioni || []).forEach(d => {
+                (d.punti || []).forEach(m => {
+                    const p = puntoDiRoute(route, m.pid);
+                    if (p) aggiungiAlGruppo({ p, numero: '', colore, senzaNumero: true, notaNumero: m.notaNumero });
+                });
                 const p = puntoDiRoute(route, d.b);
                 if (p) aggiungiAlGruppo({ p, numero: d.etichetta || p.etichetta || '00', colore, senzaNumero: false, notaNumero: d.notaNumero });
             });
@@ -1995,7 +2064,10 @@
             colore: coloreTratta(s, i),
             stile: s.stile || 'normale',
             punti: s.punti.map(m => ({ ...m })),
-            diramazioni: (s.diramazioni || []).map(d => ({ ...d }))
+            diramazioni: (s.diramazioni || []).map(d => ({
+                ...d,
+                punti: (d.punti || []).map(m => ({ ...m }))
+            }))
         }));
         routeInModifica = route.id;
         corrente = segmenti[segmenti.length - 1] || null;
@@ -2091,11 +2163,22 @@
                         colore: s.colore || null,
                         stile: s.stile || 'normale',
                         punti: s.punti.map(m => ({ pid: m.pid, numero: m.numero, notaNumero: m.notaNumero || null })),
-                        diramazioni: (s.diramazioni || []).map(d => ({ ...d }))
+                        diramazioni: (s.diramazioni || []).map(d => ({
+                            a: d.a,
+                            b: d.b,
+                            punti: (d.punti || []).map(m => ({ pid: m.pid, numero: m.numero || '', notaNumero: m.notaNumero || null })),
+                            suffisso: d.suffisso,
+                            etichetta: d.etichetta,
+                            notaNumero: d.notaNumero || null
+                        }))
                     }));
                 if (!tratteFinali.length) { toast('Nessuna tratta da salvare.'); return; }
                 const usati = new Set(tratteFinali.flatMap(t => t.punti.map(m => m.pid)));
-                tratteFinali.forEach(t => (t.diramazioni || []).forEach(d => { usati.add(d.a); usati.add(d.b); }));
+                tratteFinali.forEach(t => (t.diramazioni || []).forEach(d => {
+                    usati.add(d.a);
+                    usati.add(d.b);
+                    (d.punti || []).forEach(m => usati.add(m.pid));
+                }));
                 const puntiFinali = punti.filter(p => usati.has(p.id)).map(p => Object.assign({}, p, { immagini: [...(p.immagini || [])] }));
                 const nome = dati.nome.trim() || 'Percorso senza nome';
                 const comune = dati.comune;
@@ -2850,6 +2933,13 @@
         pdf.setFont(window.__josefinPdfOk ? 'Josefin' : 'helvetica', peso);
     }
 
+    function testoCanvas(ctx, testo, x, y, size, weight, colore, align = 'left') {
+        ctx.font = `${weight} ${size}px "Josefin Sans", sans-serif`;
+        ctx.fillStyle = colore;
+        ctx.textAlign = align;
+        ctx.fillText(String(testo), x, y);
+    }
+
     function testoAdattatoPdf(pdf, testo, maxW, size, peso) {
         let s = size;
         do {
@@ -2861,11 +2951,15 @@
         return s;
     }
 
-    function disegnaTriangoloNotaPdf(pdf, cx, cy, numero, scala) {
+    function disegnaTriangoloNotaPdf(pdf, cx, cy, numero, scala, ctxTesto = null) {
         setFillHex(pdf, '#f1c40f');
         setDrawHex(pdf, '#d35400');
         pdf.setLineWidth(0.7 * scala);
         pdf.triangle(cx + 6.5 * scala, cy + 1.2 * scala, cx + 12.5 * scala, cy + 7.4 * scala, cx + 5.5 * scala, cy + 7.4 * scala, 'FD');
+        if (ctxTesto) {
+            testoCanvas(ctxTesto, numero || 1, cx + 9 * scala, cy + 6.4 * scala, 5.2 * scala, 700, '#7a3b00', 'center');
+            return;
+        }
         setTextHex(pdf, '#7a3b00');
         setFontPdf(pdf, 'bold');
         pdf.setFontSize(5.2 * scala);
@@ -2898,7 +2992,10 @@
                 });
             };
             seg.punti.forEach(m => aggiungi(puntoDiRoute(route, m.pid), m, m.numero));
-            (seg.diramazioni || []).forEach(d => aggiungi(puntoDiRoute(route, d.b), d, d.etichetta));
+            (seg.diramazioni || []).forEach(d => {
+                (d.punti || []).forEach(m => aggiungi(puntoDiRoute(route, m.pid), m, '•'));
+                aggiungi(puntoDiRoute(route, d.b), d, d.etichetta);
+            });
             note.sort((a, b) => a.notaNumero - b.notaNumero || a.numero.localeCompare(b.numero));
             if (note.length) gruppi.push({
                 seg,
@@ -2913,6 +3010,13 @@
     async function disegnaMappaVettorialePdf(pdf, route, rect) {
         setFillHex(pdf, '#e8efd2');
         pdf.rect(rect.x, rect.y, rect.w, rect.h, 'F');
+
+        const testiCanvasEl = document.createElement('canvas');
+        testiCanvasEl.width = 540 * 4;
+        testiCanvasEl.height = 960 * 4;
+        const ctxTesti = testiCanvasEl.getContext('2d');
+        ctxTesti.scale(4, 4);
+        ctxTesti.textBaseline = 'alphabetic';
 
         const bounds = limitiPdf(route);
         const z = scegliZoom(route, rect.w, rect.h, 34);
@@ -2969,8 +3073,10 @@
                 }
             }
             (seg.diramazioni || []).forEach(d => {
-                const a = puntoDiRoute(route, d.a), b = puntoDiRoute(route, d.b);
-                if (a && b) disegnaLineePdf(pdf, segmentiVisibiliPdf([pt(a), pt(b)], rect), colore, 1.8, null, '#ffffff');
+                const path = puntiDiramazione(d).map(id => puntoDiRoute(route, id)).filter(Boolean);
+                if (path.length >= 2) {
+                    disegnaLineePdf(pdf, segmentiVisibiliPdf(path.map(pt), rect), colore, 1.8, null, '#ffffff');
+                }
             });
             puntiSeg.forEach((punto, k) => {
                 aggiungiGruppo({
@@ -2983,6 +3089,17 @@
                 });
             });
             (seg.diramazioni || []).forEach(d => {
+                (d.punti || []).forEach(m => {
+                    const p = puntoDiRoute(route, m.pid);
+                    if (p) aggiungiGruppo({
+                        p,
+                        pos: pt(p),
+                        numero: '',
+                        colore,
+                        senzaNumero: true,
+                        notaNumero: m.notaNumero
+                    });
+                });
                 const p = puntoDiRoute(route, d.b);
                 if (p) aggiungiGruppo({
                     p,
@@ -3007,71 +3124,104 @@
                 setFillHex(pdf, item.colore);
                 pdf.circle(cx, cy, item.senzaNumero ? 1.5 : 3.6, 'F');
                 if (!item.senzaNumero) {
-                    setTextHex(pdf, '#ffffff');
-                    setFontPdf(pdf, 'bold');
-                    pdf.setFontSize(String(item.numero).length > 2 ? 4 : 5.1);
-                    pdf.text(item.numero, cx, cy + 1.8, { align: 'center' });
+                    testoCanvas(ctxTesti, item.numero, cx, cy + 1.8, String(item.numero).length > 2 ? 4 : 5.1, 700, '#ffffff', 'center');
                 }
-                if (notaValida(item.p.note)) disegnaTriangoloNotaPdf(pdf, cx, cy, item.notaNumero, 0.8);
+                if (notaValida(item.p.note)) disegnaTriangoloNotaPdf(pdf, cx, cy, item.notaNumero, 0.8, ctxTesti);
             });
         });
 
         setFillHex(pdf, '#ffffff');
         pdf.rect(rect.x + 6, rect.y + rect.h - 16, 142, 12, 'F');
-        setTextHex(pdf, '#3c4b3d');
-        setFontPdf(pdf, 'normal');
-        pdf.setFontSize(6);
-        pdf.text('© OpenStreetMap contributors', rect.x + 10, rect.y + rect.h - 7);
+        testoCanvas(ctxTesti, '© OpenStreetMap contributors', rect.x + 10, rect.y + rect.h - 7, 6, 600, '#3c4b3d');
         pdf.setLineDashPattern([]);
+        pdf.addImage(testiCanvasEl.toDataURL('image/png'), 'PNG', 0, 0, 540, 960, undefined, 'FAST');
     }
 
     function disegnaStrisciaPdfVettoriale(pdf, route, W, top) {
-        setFillHex(pdf, '#1e4a2a');
-        pdf.rect(0, 0, W, top, 'F');
-        setFillHex(pdf, '#a4bb5b');
-        pdf.rect(0, top - 2.1, W, 2.1, 'F');
+        const scala = 4;
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(W * scala);
+        canvas.height = Math.round(top * scala);
+        const ctx = canvas.getContext('2d');
+        ctx.scale(scala, scala);
+        ctx.textBaseline = 'alphabetic';
+
+        const font = (size, weight) => `${weight} ${size}px "Josefin Sans", sans-serif`;
+        const adattaFont = (testo, maxW, size, weight) => {
+            let s = size;
+            do {
+                ctx.font = font(s, weight);
+                if (ctx.measureText(testo).width <= maxW || s <= 6) break;
+                s -= 1;
+            } while (true);
+            return s;
+        };
+        const rettangoloArrotondato = (x, y, w, h, r) => {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        };
+
+        ctx.fillStyle = '#1e4a2a';
+        ctx.fillRect(0, 0, W, top);
+        ctx.fillStyle = '#a4bb5b';
+        ctx.fillRect(0, top - 2.1, W, 2.1);
 
         const left = 21, right = W - 21, meta = left + (right - left) * 0.63;
         const titolo = `GIRO: ${route.nome}`;
         const veicoli = Array.isArray(route.veicoli)
             ? route.veicoli.map(String).filter(v => VEICOLI.includes(v))
             : [];
-        setFontPdf(pdf, 'bold');
-        pdf.setFontSize(10);
         const badgePad = 6, badgeGap = 4, badgeH = 19;
-        const larghezzeBadge = veicoli.map(v => pdf.getTextWidth(v) + badgePad * 2);
+        ctx.font = font(10, 700);
+        const larghezzeBadge = veicoli.map(v => ctx.measureText(v).width + badgePad * 2);
         const larghezzaBadge = larghezzeBadge.reduce((a, b) => a + b, 0) + (veicoli.length ? (veicoli.length - 1) * badgeGap : 0);
         const larghezzaTitolo = Math.max(40, meta - left - 12 - (veicoli.length ? larghezzaBadge + 10 : 0));
-        testoAdattatoPdf(pdf, titolo, larghezzaTitolo, 23, 'bold');
-        setTextHex(pdf, '#d4e68a');
-        pdf.text(titolo, left, 33.6);
+        adattaFont(titolo, larghezzaTitolo, 23, 700);
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#d4e68a';
+        ctx.fillText(titolo, left, 33.6);
 
-        let bx = left + pdf.getTextWidth(titolo) + 10;
+        let bx = left + ctx.measureText(titolo).width + 10;
         veicoli.forEach((v, i) => {
             const bw = larghezzeBadge[i];
-            setFillHex(pdf, '#a4bb5b');
-            pdf.roundedRect(bx, 14.5, bw, badgeH, 5.5, 5.5, 'F');
-            setTextHex(pdf, '#1e4a2a');
-            setFontPdf(pdf, 'bold');
-            pdf.setFontSize(10);
-            pdf.text(v, bx + badgePad, 27.8);
+            ctx.font = font(10, 700);
+            ctx.fillStyle = '#a4bb5b';
+            rettangoloArrotondato(bx, 14.5, bw, badgeH, 5.5);
+            ctx.fill();
+            ctx.fillStyle = '#1e4a2a';
+            ctx.textAlign = 'left';
+            ctx.fillText(v, bx + badgePad, 27.8);
             bx += bw + badgeGap;
         });
 
         const km = formatKm(lunghezzaKm(route));
-        testoAdattatoPdf(pdf, km, right - meta - 10, 19, 'bold');
-        setTextHex(pdf, '#ffffff');
-        pdf.text(km, right, 33.6, { align: 'right' });
+        adattaFont(km, right - meta - 10, 19, 700);
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'right';
+        ctx.fillText(km, right, 33.6);
 
         const sotto = route.territorio ? `${route.comune || ''} / ${route.territorio}` : (route.comune || '');
-        testoAdattatoPdf(pdf, sotto, meta - left - 12, 13, 'normal');
-        setTextHex(pdf, '#a4bb5b');
-        pdf.text(sotto, left, 61.5);
+        adattaFont(sotto, meta - left - 12, 13, 600);
+        ctx.fillStyle = '#a4bb5b';
+        ctx.textAlign = 'left';
+        ctx.fillText(sotto, left, 61.5);
 
         const data = dataRotta(route.creato);
-        testoAdattatoPdf(pdf, data, right - meta - 10, 12.5, 'normal');
-        setTextHex(pdf, '#ffffff');
-        pdf.text(data, right, 61.5, { align: 'right' });
+        adattaFont(data, right - meta - 10, 12.5, 600);
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'right';
+        ctx.fillText(data, right, 61.5);
+
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, W, top, undefined, 'FAST');
     }
 
     async function esportaPDF(route) {
