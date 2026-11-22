@@ -30,7 +30,7 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            padding: 0 4px 0 10px;
+            padding: 0 12px;
             border: 2px solid #2c603d;
             border-radius: 999px;
             background: rgba(255,255,255,0.97);
@@ -154,6 +154,21 @@
             flex-shrink: 0;
         }
         .row-x { width: 24px; height: 24px; font-size: 0.95rem; border-color: #c0392b; color: #c0392b; }
+        .row-check {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #2c603d;
+            border-radius: 50%;
+            background: transparent;
+            color: #2c603d;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .row-check svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+        .row-check:hover { background: #2c603d; color: #ffffff; }
         .row-scambia {
             width: 24px;
             height: 24px;
@@ -287,6 +302,7 @@
         .route-card .route-info { cursor: pointer; font-weight: 700; flex: 1 1 180px; }
         .route-card .route-info small { display: block; font-weight: 400; opacity: 0.8; }
         .route-card .route-azioni { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+        .route-card .btn-ico { box-shadow: none; }
         .vuoto { text-align: center; padding: 1.5rem; font-style: italic; }
 
         .toast {
@@ -324,14 +340,13 @@
             font-weight: 700;
             letter-spacing: -0.3px;
         }
-        .pin.con-nota::after {
-            content: '';
+        .nota-tri {
             position: absolute;
             right: -10px;
             bottom: -9px;
             width: 24px;
             height: 24px;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpolygon points='6,1.5 10.5,10.5 1.5,10.5' fill='%23f1c40f' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
+            pointer-events: none;
         }
         .pin.senza-numero {
             width: 14px;
@@ -339,7 +354,7 @@
             border: none;
             font-size: 0;
         }
-        .pin.senza-numero.con-nota::after { right: -13px; bottom: -12px; }
+        .pin.senza-numero .nota-tri { right: -13px; bottom: -12px; }
         .leaflet-tooltip.punto-tooltip {
             background: rgba(255,255,255,0.96);
             border: 1px solid #2c603d;
@@ -361,6 +376,30 @@
             padding: 3px 9px;
         }
         .leaflet-tooltip.tratta-tooltip::before { display: none; }
+
+        .controllo-satellite {
+            position: fixed;
+            right: 12px;
+            bottom: 34px;
+            z-index: 1200;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 12px 5px 6px;
+            border: 2px solid #2c603d;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.96);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+        }
+        .controllo-satellite .btn-ico { box-shadow: none; }
+        .controllo-satellite .btn-ico.attivo { background: #d4e68a; color: #1e4a2a; }
+        .controllo-satellite input[type="range"] {
+            width: 128px;
+            accent-color: #2c603d;
+            cursor: pointer;
+        }
+        .controllo-satellite input[type="range"]:disabled { opacity: 0.4; cursor: default; }
+
         @keyframes dashTrattaCorrente {
             from { stroke-dashoffset: 0; }
             to { stroke-dashoffset: -34px; }
@@ -456,11 +495,11 @@
 <div class="toolbar-mappa" id="toolbarEditor">
     <div class="search-bar" id="searchBar">
         <input type="text" id="searchInput" placeholder="Cerca un indirizzo" autocomplete="off" aria-label="Cerca un indirizzo">
-        <button type="button" class="btn-ico" id="btnCerca" title="Cerca un indirizzo" aria-label="Cerca un indirizzo">
-            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
-        </button>
         <div class="search-results" id="searchResults" hidden></div>
     </div>
+    <button type="button" class="btn-ico" id="btnCerca" title="Cerca un indirizzo" aria-label="Cerca un indirizzo">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+    </button>
     <button type="button" class="btn-ico" id="btnTratte" title="Elenco tratte" aria-label="Elenco tratte">
         <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
     </button>
@@ -480,7 +519,7 @@
 
 <span id="status" hidden></span>
 
-<div class="pannello-tratte" id="pannelloTratte" hidden>
+<div class="pannello-tratte" id="pannelloTratte">
     <div class="pannello-head">
         <span>TRATTE</span>
         <button type="button" class="chiudi" id="btnChiudiPannello" aria-label="Chiudi elenco tratte">×</button>
@@ -519,7 +558,7 @@
 <div class="overlay" id="overlayNota" hidden>
     <div class="finestra">
         <div class="modal-head">
-            <h2>NOTA PUNTO <span id="notaNumero"></span></h2>
+            <h2>NOTA <span id="notaNumero"></span></h2>
             <button type="button" class="btn-ico mini" id="notaChiudi" title="Chiudi" aria-label="Chiudi">
                 <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
@@ -598,6 +637,13 @@
 <input type="file" id="fileImport" accept="application/json,.json" hidden>
 <div class="toast" id="toast" hidden></div>
 
+<div class="controllo-satellite" id="controlloSatellite">
+    <button type="button" class="btn-ico mini" id="satelliteToggle" title="Attiva vista satellitare" aria-label="Attiva vista satellitare" aria-pressed="false">
+        <svg viewBox="0 0 24 24"><path d="M3 19l5-5 3 3 5-6 5 4"/><circle cx="7" cy="8" r="2"/><path d="M3 21h18"/></svg>
+    </button>
+    <input type="range" id="satelliteOpacity" min="0" max="100" value="65" aria-label="Trasparenza vista satellitare" disabled>
+</div>
+
 <div class="loupe" id="loupe" hidden><div id="loupeMappa"></div></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -623,6 +669,7 @@
     let markerById = new Map();
     let lineeById = new Map();
     let lineeViewer = [];
+    let lineeDiramazione = [];
     let modo = 'editor';
     let percorsi = caricaPercorsi();
     let callbackModal = null;
@@ -631,15 +678,108 @@
     let routeInModifica = null;
     let routeAperta = null;
     let notaPunto = null;
+    let notaRef = null;
+    let notaSeg = null;
     let noteImages = [];
     let loupeMap = null;
     let searchMarker = null;
     let searchTimer = null;
     let scambioNomeId = null;
     let segStile = null;
+    let satelliteLayer = null;
+    let satelliteAttivo = false;
+    let branchDrag = null;
+    let layerBranchPreview = null;
+    let sopprimiClickFinoA = 0;
 
     function uid(pref) {
         return pref + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+
+    function normalizzaNumero(valore, indice) {
+        const testo = String(valore == null || valore === '' ? '' : valore);
+        if (/^\d+$/.test(testo)) return String(Number(testo)).padStart(2, '0');
+        return testo || String(indice + 1).padStart(2, '0');
+    }
+
+    function notaValida(note) {
+        return !!(note && (note.testo || (note.immagini && note.immagini.length)));
+    }
+
+    function etichettaLettera(indice) {
+        let n = indice, testo = '';
+        while (n > 0) {
+            n--;
+            testo = String.fromCharCode(97 + (n % 26)) + testo;
+            n = Math.floor(n / 26);
+        }
+        return testo;
+    }
+
+    function etichettaSuffisso(valore) {
+        const testo = String(valore == null ? '' : valore);
+        const m = testo.match(/([a-z]+)$/i);
+        return m ? m[1].toLowerCase() : '';
+    }
+
+    function distanzaOrigineDiramazione(seg, dir, trovaPunto) {
+        const idx = seg.punti.findIndex(m => m.pid === dir.a);
+        if (idx < 0) return Infinity;
+        let distanza = 0;
+        for (let i = 0; i < idx; i++) {
+            const a = trovaPunto(seg.punti[i].pid);
+            const b = trovaPunto(seg.punti[i + 1].pid);
+            if (!a || !b) continue;
+            distanza += Math.hypot(b.lat - a.lat, b.lng - a.lng);
+        }
+        const origine = trovaPunto(seg.punti[0].pid);
+        const attacco = trovaPunto(dir.a);
+        if (origine && attacco) distanza += Math.hypot(attacco.lat - origine.lat, attacco.lng - origine.lng) * 0.000001;
+        return distanza;
+    }
+
+    function rinominaDiramazioni(seg, trovaPunto = getPunto) {
+        if (!seg) return;
+        seg.diramazioni = Array.isArray(seg.diramazioni) ? seg.diramazioni : [];
+        const ordinate = seg.diramazioni.slice().sort((a, b) =>
+            distanzaOrigineDiramazione(seg, a, trovaPunto) - distanzaOrigineDiramazione(seg, b, trovaPunto)
+        );
+        ordinate.forEach((d, i) => {
+            const suffisso = etichettaLettera(i + 1);
+            d.suffisso = suffisso;
+            d.etichetta = suffisso;
+            const p = trovaPunto(d.b);
+            if (p) {
+                p.etichetta = suffisso;
+                p.diramazione = true;
+            }
+        });
+    }
+
+    function prossimaDiramazione(seg) {
+        seg.diramazioni = Array.isArray(seg.diramazioni) ? seg.diramazioni : [];
+        const usati = new Set(seg.diramazioni.map(d => etichettaSuffisso(d.suffisso || d.etichetta)).filter(Boolean));
+        for (let i = 1; i <= 702; i++) {
+            const suffisso = etichettaLettera(i);
+            if (!usati.has(suffisso)) return { suffisso, etichetta: suffisso };
+        }
+        return null;
+    }
+
+    function prossimoNumeroNota(seg) {
+        const usati = new Set();
+        (seg.punti || []).forEach(m => { if (m.notaNumero) usati.add(Number(m.notaNumero)); });
+        (seg.diramazioni || []).forEach(d => { if (d.notaNumero) usati.add(Number(d.notaNumero)); });
+        for (let i = 1; i <= 9; i++) if (!usati.has(i)) return i;
+        return usati.size + 1;
+    }
+
+    function htmlTriangoloNota(numero) {
+        const n = Number(numero) || 1;
+        return `<svg class="nota-tri" viewBox="0 0 24 24" aria-hidden="true">` +
+            `<polygon points="12,2.5 22,21 2,21" fill="#f1c40f" stroke="#d35400" stroke-width="2.5" stroke-linejoin="round"/>` +
+            `<text x="12" y="18.5" text-anchor="middle" font-family="Arial,sans-serif" font-size="10.5" font-weight="700" fill="#7a3b00">${n}</text>` +
+            `</svg>`;
     }
 
     function escapeHtml(t) {
@@ -659,32 +799,60 @@
             const m = seg.punti.find(x => x.pid === pid);
             if (!m) continue;
             const p = puntoDiRoute(route, pid);
-            return (p && p.senzaNumero) ? '•' : (m.numero || '000');
+            if (p && p.etichetta) return p.etichetta;
+            return (p && p.senzaNumero) ? '•' : (m.numero || '00');
         }
-        return '000';
+        return '00';
     }
 
     function normalizzaRoute(r) {
         if (!r || typeof r !== 'object') return null;
         const lista = Array.isArray(r.punti) ? r.punti : [];
         const numeriVecchi = {};
-        lista.forEach((p, i) => { numeriVecchi[p.id] = p.numero || String(i + 1).padStart(3, '0'); });
+        lista.forEach((p, i) => { numeriVecchi[p.id] = normalizzaNumero(p.numero, i); });
         r.punti = lista.map(p => ({
             id: p.id,
             lat: p.lat,
             lng: p.lng,
             note: p.note || null,
             immagini: Array.isArray(p.immagini) ? [...p.immagini] : [],
-            senzaNumero: !!p.senzaNumero
+            senzaNumero: !!p.senzaNumero,
+            etichetta: etichettaSuffisso(p.etichetta),
+            diramazione: !!p.diramazione
         }));
+        const presenti = new Set(r.punti.map(p => p.id));
         r.tratte = Array.isArray(r.tratte) ? r.tratte : [];
         r.tratte.forEach(seg => {
             seg.colore = seg.colore || null;
             seg.stile = seg.stile || 'normale';
             seg.punti = (Array.isArray(seg.punti) ? seg.punti : []).map((m, i) => {
-                if (typeof m === 'string') return { pid: m, numero: numeriVecchi[m] || String(i + 1).padStart(3, '0') };
-                return { pid: m.pid, numero: m.numero || String(i + 1).padStart(3, '0') };
-            }).filter(m => m.pid && r.punti.some(p => p.id === m.pid));
+                if (typeof m === 'string') return { pid: m, numero: normalizzaNumero(numeriVecchi[m], i), notaNumero: null };
+                return {
+                    pid: m.pid,
+                    numero: normalizzaNumero(m.numero || numeriVecchi[m.pid], i),
+                    notaNumero: m.notaNumero || null
+                };
+            }).filter(m => m.pid && presenti.has(m.pid));
+            seg.diramazioni = (Array.isArray(seg.diramazioni) ? seg.diramazioni : []).map(d => {
+                const suffisso = etichettaSuffisso(d.suffisso || d.etichetta);
+                return {
+                    a: d.a,
+                    b: d.b,
+                    suffisso,
+                    etichetta: suffisso,
+                    notaNumero: d.notaNumero || null
+                };
+            }).filter(d => presenti.has(d.a) && presenti.has(d.b) && seg.punti.some(m => m.pid === d.a));
+            rinominaDiramazioni(seg, id => r.punti.find(p => p.id === id));
+
+            seg.punti.forEach(m => {
+                const p = r.punti.find(x => x.id === m.pid);
+                if (p && notaValida(p.note) && !m.notaNumero) m.notaNumero = prossimoNumeroNota(seg);
+            });
+            (seg.diramazioni || []).forEach(d => {
+                const p = r.punti.find(x => x.id === d.b);
+                if (p && notaValida(p.note) && !d.notaNumero) d.notaNumero = prossimoNumeroNota(seg);
+            });
         });
         if (!r.creato) r.creato = new Date().toISOString();
         return r;
@@ -710,16 +878,32 @@
         return seg.punti.find(m => m.pid === pid) || null;
     }
 
+    function puntiUsati() {
+        const usati = new Set(segmenti.flatMap(s => s.punti.map(m => m.pid)));
+        segmenti.forEach(s => (s.diramazioni || []).forEach(d => { usati.add(d.a); usati.add(d.b); }));
+        return usati;
+    }
+
+    function pulisciDiramazioni() {
+        const presenti = new Set(punti.map(p => p.id));
+        segmenti.forEach(seg => {
+            seg.diramazioni = (seg.diramazioni || []).filter(d =>
+                d && presenti.has(d.a) && presenti.has(d.b) && seg.punti.some(m => m.pid === d.a)
+            );
+        });
+    }
+
     function rinumeriaTutti() {
         let n = 1;
+        segmenti.forEach(seg => rinominaDiramazioni(seg));
         segmenti.forEach(seg => {
             seg.punti.forEach(m => {
                 const p = getPunto(m.pid);
-                if (p && p.senzaNumero) {
-                    m.numero = '';
+                if (p && (p.senzaNumero || p.etichetta)) {
+                    m.numero = p.etichetta || '';
                     return;
                 }
-                m.numero = String(n++).padStart(3, '0');
+                m.numero = String(n++).padStart(2, '0');
             });
         });
     }
@@ -822,6 +1006,123 @@
             el.style.background = colore;
             el.style.borderColor = colore;
         });
+    }
+
+    function applicaSatellite() {
+        const slider = document.getElementById('satelliteOpacity');
+        const pulsante = document.getElementById('satelliteToggle');
+        if (!slider || !pulsante) return;
+        slider.disabled = !satelliteAttivo;
+        pulsante.classList.toggle('attivo', satelliteAttivo);
+        pulsante.setAttribute('aria-pressed', String(satelliteAttivo));
+        pulsante.title = satelliteAttivo ? 'Disattiva vista satellitare' : 'Attiva vista satellitare';
+        if (satelliteLayer) satelliteLayer.setOpacity(satelliteAttivo ? Number(slider.value) / 100 : 0);
+    }
+
+    function hitSuTratta(latlng, seg) {
+        const clickPt = map.latLngToContainerPoint(latlng);
+        let migliore = null, dist = Infinity;
+        for (let i = 0; i < seg.punti.length - 1; i++) {
+            const a = getPunto(seg.punti[i].pid);
+            const b = getPunto(seg.punti[i + 1].pid);
+            if (!a || !b) continue;
+            const pa = map.latLngToContainerPoint([a.lat, a.lng]);
+            const pb = map.latLngToContainerPoint([b.lat, b.lng]);
+            const r = proiezione(clickPt, pa, pb);
+            if (r.d < dist) {
+                dist = r.d;
+                migliore = {
+                    seg,
+                    idx: i,
+                    lat: a.lat + (b.lat - a.lat) * r.t,
+                    lng: a.lng + (b.lng - a.lng) * r.t
+                };
+            }
+        }
+        return migliore;
+    }
+
+    function iniziaDiramazioneDaLinea(e, seg) {
+        if (modo !== 'editor' || branchDrag || !seg || seg.punti.length < 2) return;
+        const hit = hitSuTratta(e.latlng, seg);
+        if (!hit) return;
+        if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
+        branchDrag = {
+            seg,
+            idx: hit.idx,
+            lat: hit.lat,
+            lng: hit.lng,
+            inizioPx: map.latLngToContainerPoint(e.latlng),
+            ultimo: e.latlng,
+            mosso: false
+        };
+    }
+
+    function mostraAnteprimaDiramazione(drag, latlng) {
+        if (!layerBranchPreview) return;
+        layerBranchPreview.clearLayers();
+        const colore = coloreTratta(drag.seg, segmenti.indexOf(drag.seg));
+        L.polyline([[drag.lat, drag.lng], [latlng.lat, latlng.lng]], {
+            color: colore,
+            weight: 2.5,
+            opacity: 0.9,
+            dashArray: '6 6',
+            interactive: false
+        }).addTo(layerBranchPreview);
+        L.circleMarker([latlng.lat, latlng.lng], {
+            radius: 5,
+            color: '#ffffff',
+            weight: 2,
+            fillColor: colore,
+            fillOpacity: 1,
+            interactive: false
+        }).addTo(layerBranchPreview);
+    }
+
+    function completaDiramazione() {
+        if (!branchDrag) return;
+        const drag = branchDrag;
+        branchDrag = null;
+        if (layerBranchPreview) layerBranchPreview.clearLayers();
+        if (map.dragging && !map.dragging.enabled()) map.dragging.enable();
+        if (!drag.mosso || !drag.ultimo) return;
+        sopprimiClickFinoA = Date.now() + 400;
+        const endpoint = creaPunto(drag.ultimo);
+        if (!endpoint) return;
+        creaDiramazione(drag.seg, drag.idx, { lat: drag.lat, lng: drag.lng }, endpoint);
+    }
+
+    function creaDiramazione(seg, idx, origine, endpoint, sorgente = null) {
+        const dir = prossimaDiramazione(seg);
+        if (!dir) {
+            toast('Diramazioni esaurite per questa tratta.');
+            return null;
+        }
+        const inter = creaPunto(origine);
+        if (!inter) return null;
+        inter.senzaNumero = true;
+        seg.diramazioni = Array.isArray(seg.diramazioni) ? seg.diramazioni : [];
+        seg.punti.splice(idx + 1, 0, { pid: inter.id, numero: '' });
+        endpoint.etichetta = dir.etichetta;
+        endpoint.diramazione = true;
+        endpoint.senzaNumero = false;
+        seg.diramazioni.push({
+            a: inter.id,
+            b: endpoint.id,
+            suffisso: dir.suffisso,
+            etichetta: dir.etichetta,
+            notaNumero: null
+        });
+        if (sorgente && sorgente.seg && sorgente.mem) {
+            sorgente.seg.punti = sorgente.seg.punti.filter(m => m !== sorgente.mem);
+            if (!sorgente.seg.punti.length && !(sorgente.seg.diramazioni || []).length) eliminaTratta(sorgente.seg.id);
+        }
+        pulisciDiramazioni();
+        rinumeriaTutti();
+        disegnaEditor();
+        renderTratte();
+        toast(`Diramazione ${dir.etichetta} creata.`);
+        return dir;
     }
 
     function opzioniLinea(seg, colore, opzioniComuni) {
@@ -968,12 +1269,19 @@
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
+        satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19,
+            opacity: 0,
+            attribution: 'Imagery &copy; Esri'
+        }).addTo(map);
+
         layerEditor = L.layerGroup().addTo(map);
         layerViewer = L.layerGroup();
         layerSearch = L.layerGroup().addTo(map);
+        layerBranchPreview = L.layerGroup().addTo(map);
 
         map.on('click', e => {
-            if (modo === 'viewer') return;
+            if (modo === 'viewer' || Date.now() < sopprimiClickFinoA) return;
             if (clickTimer) clearTimeout(clickTimer);
             const ll = e.latlng;
             clickTimer = setTimeout(() => {
@@ -984,10 +1292,17 @@
 
         map.on('dblclick', e => {
             if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
+            if (Date.now() < sopprimiClickFinoA) return;
             if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
             if (modo === 'viewer') return;
             const hit = hitTest(e.latlng);
-            if (hit.tipo === 'punto') { apriNota(hit.punto); return; }
+            if (hit.tipo === 'punto') {
+                const seg = segmenti.find(s => s.punti.some(m => m.pid === hit.punto.id)) ||
+                    segmenti.find(s => (s.diramazioni || []).some(d => d.b === hit.punto.id)) || null;
+                const notaRef = seg && ((seg.diramazioni || []).find(d => d.b === hit.punto.id) || getMem(seg, hit.punto.id));
+                apriNota(seg, hit.punto, notaRef || null);
+                return;
+            }
             if (hit.tipo === 'linea') {
                 apriStileTratta(hit.seg);
                 return;
@@ -995,8 +1310,36 @@
             nuovaTratta(e.latlng);
         });
 
+        map.on('mousemove', e => {
+            if (!branchDrag) return;
+            branchDrag.ultimo = e.latlng;
+            const px = map.latLngToContainerPoint(e.latlng);
+            if (!branchDrag.mosso && px.distanceTo(branchDrag.inizioPx) > 7) {
+                branchDrag.mosso = true;
+                map.dragging.disable();
+            }
+            if (branchDrag.mosso) mostraAnteprimaDiramazione(branchDrag, e.latlng);
+        });
+        map.on('mouseup', () => completaDiramazione());
+        map.on('touchend', () => completaDiramazione());
+        document.addEventListener('mouseup', () => completaDiramazione());
+
+        document.getElementById('satelliteToggle').addEventListener('click', () => {
+            satelliteAttivo = !satelliteAttivo;
+            applicaSatellite();
+        });
+        document.getElementById('satelliteOpacity').addEventListener('input', e => {
+            if (!satelliteAttivo) {
+                satelliteAttivo = true;
+                applicaSatellite();
+            } else {
+                applicaSatellite();
+            }
+        });
+
         map.on('zoomend', () => { aggiornaLinee(); aggiornaLineeViewer(); });
         resetEditor(false);
+        applicaSatellite();
         setTimeout(() => map.invalidateSize(), 0);
     }
 
@@ -1042,24 +1385,30 @@
         if (vicino) {
             p.lat = vicino.lat;
             p.lng = vicino.lng;
-        } else {
-            const hit = lineaVicino({ lat: p.lat, lng: p.lng }, seg.id);
-            if (hit) {
-                p.lat = hit.lat;
-                p.lng = hit.lng;
-            }
+            disegnaEditor();
+            renderTratte();
+            return;
         }
+
+        const hit = lineaVicino({ lat: p.lat, lng: p.lng }, seg.id);
+        if (hit) {
+            creaDiramazione(hit.seg, hit.idx, { lat: hit.lat, lng: hit.lng }, p, { seg, mem });
+            return;
+        }
+
         disegnaEditor();
         renderTratte();
     }
 
-    function creaMarker(seg, mem, punto, colore, offset) {
+    function creaMarker(seg, mem, punto, colore, offset, riferimentoNota = mem) {
         let p = punto;
-        const piccolo = !!p.senzaNumero;
+        const piccolo = !!p.senzaNumero && !p.etichetta;
         const classe = 'pin' + (piccolo ? ' senza-numero' : '') + (p.note ? ' con-nota' : '');
+        const etichetta = p.etichetta || mem.numero || '00';
+        const triangolo = p.note ? htmlTriangoloNota(riferimentoNota && riferimentoNota.notaNumero) : '';
         const icona = L.divIcon({
             className: 'pin-wrapper',
-            html: `<div class="${classe}" style="background:${colore}">${piccolo ? '' : escapeHtml(mem.numero || '000')}</div>`,
+            html: `<div class="${classe}" style="background:${colore}">${piccolo ? '' : escapeHtml(etichetta)}${triangolo}</div>`,
             iconSize: piccolo ? [14, 14] : [34, 34],
             iconAnchor: piccolo ? [7, 7 + offset] : [17, 17 + offset]
         });
@@ -1095,7 +1444,7 @@
         });
         marker.on('dblclick', e => {
             if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
-            if (modo === 'editor') apriNota(p);
+            if (modo === 'editor') apriNota(seg, p, riferimentoNota);
         });
         marker.on('contextmenu', e => {
             if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
@@ -1111,6 +1460,7 @@
         layerEditor.clearLayers();
         markerById.clear();
         lineeById.clear();
+        lineeDiramazione = [];
 
         segmenti.forEach((seg, i) => {
             const colore = coloreTratta(seg, i);
@@ -1119,38 +1469,59 @@
                 const latlngs = lista.map(p => [p.lat, p.lng]);
                 const linee = opzioniLinea(seg, colore, { dashArray: seg === corrente ? '9 8' : null }).map(({ opzioni, offset }) => {
                     const linea = L.polyline(offsetLatLngs(latlngs, offset), opzioni).addTo(layerEditor);
-                    linea.bindTooltip(etichettaTratta(seg), {
-                        sticky: true,
-                        direction: 'top',
-                        opacity: 1,
-                        className: 'tratta-tooltip'
-                    });
-                    coloraTooltip(linea, colore);
+                    linea.on('mousedown touchstart', e => iniziaDiramazioneDaLinea(e, seg));
                     return { linea, offset };
                 });
                 lineeById.set(seg.id, { linee });
             }
+            (seg.diramazioni || []).forEach(d => {
+                const a = getPunto(d.a), b = getPunto(d.b);
+                if (!a || !b) return;
+                const correnteTratta = seg === corrente;
+                const lineaDir = L.polyline([[a.lat, a.lng], [b.lat, b.lng]], {
+                    color: colore,
+                    weight: correnteTratta ? 4 : 3,
+                    opacity: 0.95,
+                    dashArray: correnteTratta ? '9 8' : null,
+                    className: correnteTratta ? 'tratta-corrente' : null
+                }).addTo(layerEditor);
+                lineeDiramazione.push({ linea: lineaDir, a: d.a, b: d.b });
+            });
         });
 
         const gruppi = new Map();
+        const aggiungiAlGruppo = item => {
+            const chiave = `${item.p.lat.toFixed(6)},${item.p.lng.toFixed(6)}`;
+            if (!gruppi.has(chiave)) gruppi.set(chiave, []);
+            gruppi.get(chiave).push(item);
+        };
         segmenti.forEach((seg, i) => {
+            const colore = coloreTratta(seg, i);
             seg.punti.forEach(m => {
                 const p = getPunto(m.pid);
-                if (!p) return;
-                const chiave = `${p.lat.toFixed(6)},${p.lng.toFixed(6)}`;
-                if (!gruppi.has(chiave)) gruppi.set(chiave, []);
-                gruppi.get(chiave).push({ seg, mem: m, p, colore: coloreTratta(seg, i) });
+                if (p) aggiungiAlGruppo({ seg, mem: m, p, colore, notaRef: m, offset: 0 });
+            });
+            (seg.diramazioni || []).forEach(d => {
+                const p = getPunto(d.b);
+                if (p) aggiungiAlGruppo({
+                    seg,
+                    mem: { pid: d.b, numero: d.etichetta || p.etichetta || '00' },
+                    p,
+                    colore,
+                    notaRef: d,
+                    offset: 0
+                });
             });
         });
 
         gruppi.forEach(arr => {
             if (arr.length === 1) {
-                creaMarker(arr[0].seg, arr[0].mem, arr[0].p, arr[0].colore, 0);
+                creaMarker(arr[0].seg, arr[0].mem, arr[0].p, arr[0].colore, arr[0].offset || 0, arr[0].notaRef);
                 return;
             }
-            const passo = arr.some(item => item.p.senzaNumero) ? 10 : 24;
+            const passo = arr.some(item => item.p.senzaNumero && !item.p.etichetta) ? 10 : 24;
             const base = -((arr.length - 1) * passo) / 2;
-            arr.forEach((item, i) => creaMarker(item.seg, item.mem, item.p, item.colore, base + i * passo));
+            arr.forEach((item, i) => creaMarker(item.seg, item.mem, item.p, item.colore, (item.offset || 0) + base + i * passo, item.notaRef));
         });
     }
 
@@ -1160,6 +1531,14 @@
             if (!seg) return;
             const latlngs = seg.punti.map(m => getPunto(m.pid)).filter(Boolean).map(p => [p.lat, p.lng]);
             voci.linee.forEach(({ linea, offset }) => linea.setLatLngs(offsetLatLngs(latlngs, offset)));
+        });
+        aggiornaLineeDiramazioni();
+    }
+
+    function aggiornaLineeDiramazioni() {
+        lineeDiramazione.forEach(({ linea, a, b }) => {
+            const pa = getPunto(a), pb = getPunto(b);
+            if (pa && pb) linea.setLatLngs([[pa.lat, pa.lng], [pb.lat, pb.lng]]);
         });
     }
 
@@ -1181,6 +1560,9 @@
                 `<span class="meta-tratta">${seg.punti.length} punti<br>${formatKm(lunghezzaSegmento(seg))}</span>` +
                 (seg.nome ? `<button type="button" class="row-scambia${selezionato ? ' selezionato' : ''}" data-id="${seg.id}" title="Scambia il nome con un'altra tratta" aria-label="Scambia il nome con un'altra tratta">` +
                     `<svg viewBox="0 0 24 24"><path d="M4 8h14M15 5l3 3-3 3M20 16H6M9 13l-3 3 3 3"/></svg>` +
+                `</button>` : '') +
+                (corrente && seg.id === corrente.id ? `<button type="button" class="row-check" data-id="${seg.id}" title="Conferma la tratta in corso" aria-label="Conferma la tratta in corso">` +
+                    `<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>` +
                 `</button>` : '') +
                 `<button type="button" class="row-x" data-id="${seg.id}" title="Elimina tratta" aria-label="Elimina tratta">×</button>`;
             ul.appendChild(li);
@@ -1250,6 +1632,7 @@
     }
 
     function risolviPunto(latlng) {
+        const intermedio = corrente.punti.length > 0;
         const vicino = puntoVicino(latlng);
         if (vicino) {
             const già = corrente.punti.find(m => m.pid === vicino.id);
@@ -1257,6 +1640,7 @@
             if (già) return già;
             const p = creaPunto({ lat: vicino.lat, lng: vicino.lng });
             if (!p) return null;
+            if (intermedio) p.senzaNumero = true;
             const mem = { pid: p.id, numero: '' };
             corrente.punti.push(mem);
             rinumeriaTutti();
@@ -1276,6 +1660,7 @@
 
         const p = creaPunto(latlng);
         if (!p) return null;
+        if (intermedio) p.senzaNumero = true;
         const mem = { pid: p.id, numero: '' };
         corrente.punti.push(mem);
         rinumeriaTutti();
@@ -1284,6 +1669,18 @@
 
     function aggiungiPunto(latlng) {
         if (!corrente) {
+            const hit = lineaVicino(latlng);
+            if (hit) {
+                const p = creaPunto({ lat: hit.lat, lng: hit.lng });
+                if (!p) return;
+                p.senzaNumero = true;
+                hit.seg.punti.splice(hit.idx + 1, 0, { pid: p.id, numero: '' });
+                rinumeriaTutti();
+                disegnaEditor();
+                renderTratte();
+                toast('Punto intermedio aggiunto.');
+                return;
+            }
             toast('Fai doppio clic/tap su un\'area vuota per creare una nuova tratta.');
             return;
         }
@@ -1296,12 +1693,14 @@
         const seg = segmenti.find(s => s.id === segId);
         if (!seg) return;
         seg.punti = seg.punti.filter(m => m.pid !== pid);
-        if (!seg.punti.length) {
+        seg.diramazioni = (seg.diramazioni || []).filter(d => d.a !== pid && d.b !== pid);
+        if (!seg.punti.length && !(seg.diramazioni || []).length) {
             eliminaTratta(segId);
             return;
         }
+        pulisciDiramazioni();
         rinumeriaTutti();
-        const usati = new Set(segmenti.flatMap(s => s.punti.map(m => m.pid)));
+        const usati = puntiUsati();
         punti = punti.filter(p => usati.has(p.id));
         disegnaEditor();
         renderTratte();
@@ -1313,7 +1712,8 @@
         if (!seg) return;
         if (scambioNomeId === id) scambioNomeId = null;
         segmenti = segmenti.filter(s => s.id !== id);
-        const usati = new Set(segmenti.flatMap(s => s.punti.map(m => m.pid)));
+        pulisciDiramazioni();
+        const usati = puntiUsati();
         punti = punti.filter(p => usati.has(p.id));
         if (corrente === seg) {
             corrente = segmenti[segmenti.length - 1] || null;
@@ -1334,12 +1734,18 @@
         const seg = corrente;
         if (!seg.punti.length) {
             segmenti = segmenti.filter(s => s !== seg);
-            const usati = new Set(segmenti.flatMap(s => s.punti.map(m => m.pid)));
+            pulisciDiramazioni();
+            const usati = puntiUsati();
             punti = punti.filter(p => usati.has(p.id));
             corrente = null;
             disegnaEditor();
             renderTratte();
             return null;
+        }
+        const ultimo = seg.punti[seg.punti.length - 1];
+        const p = getPunto(ultimo.pid);
+        if (p && p.senzaNumero && !p.etichetta) {
+            separaSeCondiviso(seg, ultimo).senzaNumero = false;
         }
         if (!seg.nome) seg.nome = prossimoNomeTratta();
         corrente = null;
@@ -1377,7 +1783,6 @@
         routeAperta = null;
         disegnaEditor();
         renderTratte();
-        document.getElementById('pannelloTratte').hidden = true;
         if (mostraMessaggio) status('Tocca la mappa per aggiungere il primo punto.');
     }
 
@@ -1403,6 +1808,11 @@
         modo = 'viewer';
 
         const gruppi = new Map();
+        const aggiungiAlGruppo = item => {
+            const chiave = `${item.p.lat.toFixed(6)},${item.p.lng.toFixed(6)}`;
+            if (!gruppi.has(chiave)) gruppi.set(chiave, []);
+            gruppi.get(chiave).push(item);
+        };
         route.tratte.forEach((seg, i) => {
             const colore = coloreTratta(seg, i);
             const lista = seg.punti.map(m => puntoDiRoute(route, m.pid)).filter(Boolean);
@@ -1411,21 +1821,20 @@
                 opzioniLinea(seg, colore, { weight: 6 }).forEach(({ opzioni, offset }) => {
                     const linea = L.polyline(offsetLatLngs(latlngs, offset), opzioni).addTo(layerViewer);
                     lineeViewer.push({ linea, latlngs, offset });
-                    linea.bindTooltip(seg.nome || 'Tratta', {
-                        sticky: true,
-                        direction: 'top',
-                        opacity: 1,
-                        className: 'tratta-tooltip'
-                    });
-                    coloraTooltip(linea, colore);
                 });
             }
+            (seg.diramazioni || []).forEach(d => {
+                const a = puntoDiRoute(route, d.a), b = puntoDiRoute(route, d.b);
+                if (!a || !b) return;
+                L.polyline([[a.lat, a.lng], [b.lat, b.lng]], { color: colore, weight: 4, opacity: 0.95 }).addTo(layerViewer);
+            });
             seg.punti.forEach(m => {
                 const p = puntoDiRoute(route, m.pid);
-                if (!p) return;
-                const chiave = `${p.lat.toFixed(6)},${p.lng.toFixed(6)}`;
-                if (!gruppi.has(chiave)) gruppi.set(chiave, []);
-                gruppi.get(chiave).push({ p, numero: m.numero || '000', colore, senzaNumero: !!p.senzaNumero });
+                if (p) aggiungiAlGruppo({ p, numero: p.etichetta || m.numero || '00', colore, senzaNumero: !!p.senzaNumero && !p.etichetta, notaNumero: m.notaNumero });
+            });
+            (seg.diramazioni || []).forEach(d => {
+                const p = puntoDiRoute(route, d.b);
+                if (p) aggiungiAlGruppo({ p, numero: d.etichetta || p.etichetta || '00', colore, senzaNumero: false, notaNumero: d.notaNumero });
             });
         });
         gruppi.forEach(arr => {
@@ -1433,10 +1842,11 @@
             const base = -((arr.length - 1) * passo) / 2;
             arr.forEach((item, i) => {
                 const classe = 'pin' + (item.senzaNumero ? ' senza-numero' : '') + (item.p.note ? ' con-nota' : '');
+                const triangolo = item.p.note ? htmlTriangoloNota(item.notaNumero) : '';
                 L.marker([item.p.lat, item.p.lng], {
                     icon: L.divIcon({
                         className: 'pin-wrapper',
-                        html: `<div class="${classe}" style="background:${item.colore}">${item.senzaNumero ? '' : escapeHtml(item.numero)}</div>`,
+                        html: `<div class="${classe}" style="background:${item.colore}">${item.senzaNumero ? '' : escapeHtml(item.numero)}${triangolo}</div>`,
                         iconSize: item.senzaNumero ? [14, 14] : [34, 34],
                         iconAnchor: item.senzaNumero ? [7, 7 + base + i * passo] : [17, 17 + base + i * passo]
                     })
@@ -1444,22 +1854,23 @@
             });
         });
 
-        if (route.punti.length) {
-            const bounds = L.latLngBounds(route.punti.map(p => [p.lat, p.lng]));
-            map.fitBounds(bounds, { padding: [55, 55], maxZoom: 17 });
-        }
-
         document.getElementById('btnSalva').disabled = true;
         document.getElementById('btnModifica').hidden = false;
         document.getElementById('btnTorna').hidden = false;
-        document.getElementById('pannelloTratte').hidden = true;
         status(`Visualizzazione: ${route.nome}`);
     }
 
     function caricaInModifica(route) {
         entraEditor();
         punti = route.punti.map(p => Object.assign({}, p, { immagini: [...(p.immagini || [])] }));
-        segmenti = route.tratte.map((s, i) => ({ id: s.id, nome: s.nome, colore: coloreTratta(s, i), stile: s.stile || 'normale', punti: s.punti.map(m => ({ ...m })) }));
+        segmenti = route.tratte.map((s, i) => ({
+            id: s.id,
+            nome: s.nome,
+            colore: coloreTratta(s, i),
+            stile: s.stile || 'normale',
+            punti: s.punti.map(m => ({ ...m })),
+            diramazioni: (s.diramazioni || []).map(d => ({ ...d }))
+        }));
         routeInModifica = route.id;
         corrente = segmenti[segmenti.length - 1] || null;
         if (!corrente) {
@@ -1470,9 +1881,6 @@
         rinumeriaTutti();
         disegnaEditor();
         renderTratte();
-        if (punti.length) {
-            map.fitBounds(L.latLngBounds(punti.map(p => [p.lat, p.lng])), { padding: [55, 55], maxZoom: 17 });
-        }
         toast('Percorso caricato: puoi modificarlo.');
         status(`Modifica: ${route.nome}`);
     }
@@ -1546,9 +1954,17 @@
             territorio: esistente ? esistente.territorio : null,
             onConferma: dati => {
                 const tratteFinali = segmenti.filter(s => s !== corrente && s.punti.length >= 1)
-                    .map(s => ({ id: s.id, nome: s.nome || 'Tratta', colore: s.colore || null, stile: s.stile || 'normale', punti: s.punti.map(m => ({ pid: m.pid, numero: m.numero })) }));
+                    .map(s => ({
+                        id: s.id,
+                        nome: s.nome || 'Tratta',
+                        colore: s.colore || null,
+                        stile: s.stile || 'normale',
+                        punti: s.punti.map(m => ({ pid: m.pid, numero: m.numero, notaNumero: m.notaNumero || null })),
+                        diramazioni: (s.diramazioni || []).map(d => ({ ...d }))
+                    }));
                 if (!tratteFinali.length) { toast('Nessuna tratta da salvare.'); return; }
                 const usati = new Set(tratteFinali.flatMap(t => t.punti.map(m => m.pid)));
+                tratteFinali.forEach(t => (t.diramazioni || []).forEach(d => { usati.add(d.a); usati.add(d.b); }));
                 const puntiFinali = punti.filter(p => usati.has(p.id)).map(p => Object.assign({}, p, { immagini: [...(p.immagini || [])] }));
                 const nome = dati.nome.trim() || 'Percorso senza nome';
                 const comune = dati.comune;
@@ -1587,12 +2003,13 @@
         });
     }
 
-    function apriNota(punto) {
+    function apriNota(seg, punto, riferimento) {
         notaPunto = punto;
+        notaRef = riferimento || null;
+        notaSeg = seg || null;
         noteImages = Array.isArray(punto.note && punto.note.immagini) ? [...punto.note.immagini] : [];
-        document.getElementById('notaNumero').textContent = punto.senzaNumero
-            ? coordsTesto(punto)
-            : (numeriDelPunto(punto.id).join(' / ') || '000');
+        const numero = (notaRef && notaRef.notaNumero) || (notaSeg ? prossimoNumeroNota(notaSeg) : 1);
+        document.getElementById('notaNumero').textContent = numero;
         document.getElementById('notaTesto').value = (punto.note && punto.note.testo) || '';
         renderNoteImages();
         document.getElementById('overlayNota').hidden = false;
@@ -1602,6 +2019,8 @@
     function chiudiNota() {
         document.getElementById('overlayNota').hidden = true;
         notaPunto = null;
+        notaRef = null;
+        notaSeg = null;
         noteImages = [];
     }
 
@@ -1660,8 +2079,12 @@
         const testo = document.getElementById('notaTesto').value.trim();
         if (!testo && !noteImages.length) {
             notaPunto.note = null;
+            if (notaRef) delete notaRef.notaNumero;
         } else {
             notaPunto.note = { testo, immagini: [...noteImages] };
+            if (notaRef && !notaRef.notaNumero) {
+                notaRef.notaNumero = notaSeg ? prossimoNumeroNota(notaSeg) : 1;
+            }
         }
         disegnaEditor();
         chiudiNota();
@@ -1671,6 +2094,7 @@
     function eliminaNota() {
         if (!notaPunto) return;
         notaPunto.note = null;
+        if (notaRef) delete notaRef.notaNumero;
         disegnaEditor();
         chiudiNota();
         toast('Nota eliminata.');
@@ -2070,6 +2494,387 @@
         return { canvas, ctx, y: top + 80 };
     }
 
+    function rgbHex(hex) {
+        const h = String(hex || '#000000').replace('#', '');
+        return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+    }
+
+    function setDrawHex(pdf, hex) {
+        const c = rgbHex(hex);
+        pdf.setDrawColor(c[0], c[1], c[2]);
+    }
+
+    function setFillHex(pdf, hex) {
+        const c = rgbHex(hex);
+        pdf.setFillColor(c[0], c[1], c[2]);
+    }
+
+    function setTextHex(pdf, hex) {
+        const c = rgbHex(hex);
+        pdf.setTextColor(c[0], c[1], c[2]);
+    }
+
+    function worldToLatLng(x, y, z) {
+        const n = 256 * Math.pow(2, z);
+        return {
+            lat: Math.atan(Math.sinh(Math.PI * (1 - 2 * y / n))) * 180 / Math.PI,
+            lng: x / n * 360 - 180
+        };
+    }
+
+    function limitiPdf(route) {
+        const lats = route.punti.map(p => p.lat), lngs = route.punti.map(p => p.lng);
+        let north = Math.max(...lats), south = Math.min(...lats);
+        let west = Math.min(...lngs), east = Math.max(...lngs);
+        if (north - south < 0.0008) { north += 0.0004; south -= 0.0004; }
+        if (east - west < 0.0008) { east += 0.0004; west -= 0.0004; }
+        return { north, south, west, east };
+    }
+
+    function clipSegmentoPdf(a, b, rect) {
+        let t0 = 0, t1 = 1;
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const p = [-dx, dx, -dy, dy];
+        const q = [a.x - rect.x, rect.x + rect.w - a.x, a.y - rect.y, rect.y + rect.h - a.y];
+        for (let i = 0; i < 4; i++) {
+            if (p[i] === 0) {
+                if (q[i] < 0) return null;
+            } else {
+                const r = q[i] / p[i];
+                if (p[i] < 0) {
+                    if (r > t1) return null;
+                    if (r > t0) t0 = r;
+                } else {
+                    if (r < t0) return null;
+                    if (r < t1) t1 = r;
+                }
+            }
+        }
+        return [
+            { x: a.x + t0 * dx, y: a.y + t0 * dy },
+            { x: a.x + t1 * dx, y: a.y + t1 * dy }
+        ];
+    }
+
+    function parseOsmXml(xml) {
+        const doc = new DOMParser().parseFromString(xml, 'text/xml');
+        if (doc.querySelector('parsererror')) return [];
+        const nodes = new Map();
+        doc.querySelectorAll('node').forEach(n => {
+            nodes.set(n.getAttribute('id'), {
+                lat: parseFloat(n.getAttribute('lat')),
+                lng: parseFloat(n.getAttribute('lon'))
+            });
+        });
+        const ways = [];
+        doc.querySelectorAll('way').forEach(w => {
+            const tags = {};
+            w.querySelectorAll('tag').forEach(t => { tags[t.getAttribute('k')] = t.getAttribute('v'); });
+            const geom = [];
+            w.querySelectorAll('nd').forEach(nd => {
+                const n = nodes.get(nd.getAttribute('ref'));
+                if (n && Number.isFinite(n.lat) && Number.isFinite(n.lng)) geom.push(n);
+            });
+            if (geom.length > 1) ways.push({ tags, geom });
+        });
+        return ways;
+    }
+
+    async function caricaMappaVettoriale(bbox) {
+        let { north, south, west, east } = bbox;
+        north = Math.min(85, north);
+        south = Math.max(-85, south);
+        const area = (north - south) * (east - west);
+        if (!Number.isFinite(area) || area <= 0) return [];
+        if (area > 0.2) {
+            const k = Math.sqrt(0.2 / area);
+            const cLat = (north + south) / 2, cLng = (west + east) / 2;
+            north = cLat + (north - south) * k / 2;
+            south = cLat - (north - south) * k / 2;
+            east = cLng + (east - west) * k / 2;
+            west = cLng - (east - west) * k / 2;
+        }
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 20000);
+        try {
+            const url = `https://api.openstreetmap.org/api/0.6/map?bbox=${west},${south},${east},${north}`;
+            const res = await fetch(url, { signal: controller.signal });
+            if (!res.ok) return [];
+            return parseOsmXml(await res.text());
+        } catch (e) {
+            return [];
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
+    function stileWayOsm(tags) {
+        const h = tags.highway;
+        if (tags.natural === 'water' || tags.waterway === 'riverbank' || tags.landuse === 'reservoir') {
+            return { tipo: 'area', fill: '#bcd9e8', stroke: '#a8cadd', ordine: 0 };
+        }
+        if (tags.natural === 'wood' || tags.landuse === 'forest' || tags.landuse === 'grass' ||
+            tags.landuse === 'meadow' || tags.landuse === 'recreation_ground' ||
+            ['park', 'garden', 'playground'].includes(tags.leisure)) {
+            return { tipo: 'area', fill: '#d5e6b8', stroke: '#c3d8a4', ordine: 0 };
+        }
+        if (['residential', 'commercial', 'industrial', 'retail'].includes(tags.landuse)) {
+            return { tipo: 'area', fill: '#e9e6d8', stroke: '#d9d5c5', ordine: 0 };
+        }
+        if (tags.building) {
+            return { tipo: 'area', fill: '#ded9c9', stroke: '#c3bdaa', ordine: 1 };
+        }
+        if (tags.waterway) {
+            return { tipo: 'linea', colore: '#8ec3dd', larghezza: 1.8, ordine: 2 };
+        }
+        if (tags.railway) {
+            return { tipo: 'linea', colore: '#7f8c8d', larghezza: 0.9, dash: [3, 2], ordine: 3 };
+        }
+        if (h) {
+            if (['motorway', 'trunk', 'primary', 'secondary'].includes(h)) {
+                return { tipo: 'linea', colore: '#f3c36b', casing: '#ffffff', larghezza: 2.6, ordine: 4 };
+            }
+            if (['tertiary', 'unclassified', 'residential', 'living_street'].includes(h)) {
+                return { tipo: 'linea', colore: '#ffffff', casing: '#d5d0bd', larghezza: 1.8, ordine: 4 };
+            }
+            if (['service', 'track'].includes(h)) {
+                return { tipo: 'linea', colore: '#ffffff', casing: '#dcd8c6', larghezza: 1.1, ordine: 4 };
+            }
+            if (['footway', 'path', 'cycleway', 'pedestrian', 'steps'].includes(h)) {
+                return { tipo: 'linea', colore: '#e0a95c', casing: '#ffffff', larghezza: 1, dash: [2, 2], ordine: 5 };
+            }
+            return { tipo: 'linea', colore: '#ffffff', casing: '#dcd8c6', larghezza: 1, ordine: 4 };
+        }
+        return null;
+    }
+
+    function percorsoChiusoPdf(pdf, pts) {
+        if (!pts.length) return;
+        pdf.moveTo(pts[0].x, pts[0].y);
+        pts.slice(1).forEach(p => pdf.lineTo(p.x, p.y));
+        pdf.close();
+    }
+
+    function disegnaLineePdf(pdf, segments, colore, larghezza, dash, casing) {
+        if (!segments.length) return;
+        pdf.setLineDashPattern([]);
+        if (casing) {
+            setDrawHex(pdf, casing);
+            pdf.setLineWidth(larghezza + 1.5);
+            segments.forEach(s => pdf.line(s[0].x, s[0].y, s[1].x, s[1].y));
+        }
+        setDrawHex(pdf, colore);
+        pdf.setLineWidth(larghezza);
+        pdf.setLineDashPattern(dash || []);
+        segments.forEach(s => pdf.line(s[0].x, s[0].y, s[1].x, s[1].y));
+        pdf.setLineDashPattern([]);
+    }
+
+    function segmentiVisibiliPdf(pts, rect) {
+        const out = [];
+        for (let i = 0; i < pts.length - 1; i++) {
+            const c = clipSegmentoPdf(pts[i], pts[i + 1], rect);
+            if (c) out.push(c);
+        }
+        return out;
+    }
+
+    function disegnaGrigliaVettorialePdf(pdf, rect) {
+        pdf.setLineDashPattern([]);
+        setDrawHex(pdf, '#dce3cd');
+        pdf.setLineWidth(0.5);
+        for (let x = rect.x; x <= rect.x + rect.w; x += 30) pdf.line(x, rect.y, x, rect.y + rect.h);
+        for (let y = rect.y; y <= rect.y + rect.h; y += 30) pdf.line(rect.x, y, rect.x + rect.w, y);
+    }
+
+    function testoAdattatoPdf(pdf, testo, maxW, size, peso) {
+        let s = size;
+        do {
+            pdf.setFont('helvetica', peso);
+            pdf.setFontSize(s);
+            if (pdf.getTextWidth(testo) <= maxW) break;
+            s -= 1;
+        } while (s > 6);
+        return s;
+    }
+
+    function disegnaTriangoloNotaPdf(pdf, cx, cy, numero, scala) {
+        setFillHex(pdf, '#f1c40f');
+        setDrawHex(pdf, '#d35400');
+        pdf.setLineWidth(0.7 * scala);
+        pdf.triangle(cx + 6.5 * scala, cy + 1.2 * scala, cx + 12.5 * scala, cy + 7.4 * scala, cx + 5.5 * scala, cy + 7.4 * scala, 'FD');
+        setTextHex(pdf, '#7a3b00');
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(5.2 * scala);
+        pdf.text(String(numero || 1), cx + 9 * scala, cy + 6.4 * scala, { align: 'center' });
+    }
+
+    function notePerTratta(route) {
+        const gruppi = [];
+        route.tratte.forEach((seg, i) => {
+            const visti = new Set();
+            const note = [];
+            const aggiungi = (p, notaRef, fallback) => {
+                if (!p || !notaValida(p.note) || visti.has(p.id)) return;
+                visti.add(p.id);
+                note.push({
+                    p,
+                    notaRef,
+                    numero: p.etichetta || (notaRef && notaRef.etichetta) || fallback || '00',
+                    notaNumero: (notaRef && notaRef.notaNumero) || 1
+                });
+            };
+            seg.punti.forEach(m => aggiungi(puntoDiRoute(route, m.pid), m, m.numero));
+            (seg.diramazioni || []).forEach(d => aggiungi(puntoDiRoute(route, d.b), d, d.etichetta));
+            note.sort((a, b) => a.notaNumero - b.notaNumero || a.numero.localeCompare(b.numero));
+            if (note.length) gruppi.push({ seg, nome: seg.nome || `Tratta ${i + 1}`, note });
+        });
+        return gruppi;
+    }
+
+    async function disegnaMappaVettorialePdf(pdf, route, rect) {
+        setFillHex(pdf, '#e8efd2');
+        pdf.rect(rect.x, rect.y, rect.w, rect.h, 'F');
+
+        const bounds = limitiPdf(route);
+        const z = scegliZoom(route, 1800, Math.round(rect.h * 1800 / rect.w), 150);
+        const centro = latLngToWorld((bounds.north + bounds.south) / 2, (bounds.west + bounds.east) / 2, z);
+        const originX = centro.x - rect.w / 2;
+        const originY = centro.y - rect.h / 2;
+        const pt = ll => {
+            const w = latLngToWorld(ll.lat, ll.lng, z);
+            return { x: w.x - originX + rect.x, y: w.y - originY + rect.y };
+        };
+        const nw = worldToLatLng(originX, originY, z);
+        const se = worldToLatLng(originX + rect.w, originY + rect.h, z);
+
+        const ways = await caricaMappaVettoriale({ north: nw.lat, south: se.lat, west: nw.lng, east: se.lng });
+        const disegnabili = ways.map(w => ({ ...w, stile: stileWayOsm(w.tags) }))
+            .filter(w => w.stile)
+            .sort((a, b) => a.stile.ordine - b.stile.ordine);
+
+        if (!disegnabili.length) disegnaGrigliaVettorialePdf(pdf, rect);
+
+        disegnabili.forEach(w => {
+            const pts = w.geom.map(pt);
+            if (w.stile.tipo === 'area') {
+                if (pts.length < 3) return;
+                setFillHex(pdf, w.stile.fill);
+                percorsoChiusoPdf(pdf, pts);
+                pdf.fill();
+                setDrawHex(pdf, w.stile.stroke);
+                pdf.setLineWidth(0.4);
+                percorsoChiusoPdf(pdf, pts);
+                pdf.stroke();
+                return;
+            }
+            disegnaLineePdf(pdf, segmentiVisibiliPdf(pts, rect), w.stile.colore, w.stile.larghezza, w.stile.dash, w.stile.casing);
+        });
+
+        const gruppiPunti = new Map();
+        const aggiungiGruppo = item => {
+            const chiave = `${item.p.lat.toFixed(6)},${item.p.lng.toFixed(6)}`;
+            if (!gruppiPunti.has(chiave)) gruppiPunti.set(chiave, []);
+            gruppiPunti.get(chiave).push(item);
+        };
+        route.tratte.forEach((seg, i) => {
+            const colore = coloreTratta(seg, i);
+            const puntiSeg = seg.punti.map(m => puntoDiRoute(route, m.pid)).filter(Boolean);
+            const lista = puntiSeg.map(pt);
+            if (lista.length >= 2) {
+                const stile = seg.stile || 'normale';
+                if (stile === 'normale') {
+                    disegnaLineePdf(pdf, segmentiVisibiliPdf(lista, rect), colore, 2.8, null, '#ffffff');
+                } else {
+                    disegnaLineePdf(pdf, segmentiVisibiliPdf(offsetPunti(lista, -1.8, false), rect), colore, 1.5, stile === 'latoB' ? [4, 3] : null, '#ffffff');
+                    disegnaLineePdf(pdf, segmentiVisibiliPdf(offsetPunti(lista, 1.8, false), rect), colore, 1.5, stile === 'latoA' ? [4, 3] : null, '#ffffff');
+                }
+            }
+            (seg.diramazioni || []).forEach(d => {
+                const a = puntoDiRoute(route, d.a), b = puntoDiRoute(route, d.b);
+                if (a && b) disegnaLineePdf(pdf, segmentiVisibiliPdf([pt(a), pt(b)], rect), colore, 1.8, null, '#ffffff');
+            });
+            puntiSeg.forEach((punto, k) => {
+                aggiungiGruppo({
+                    p: punto,
+                    pos: lista[k],
+                    numero: punto.etichetta || seg.punti[k].numero || '00',
+                    colore,
+                    senzaNumero: !!punto.senzaNumero && !punto.etichetta,
+                    notaNumero: seg.punti[k].notaNumero
+                });
+            });
+            (seg.diramazioni || []).forEach(d => {
+                const p = puntoDiRoute(route, d.b);
+                if (p) aggiungiGruppo({
+                    p,
+                    pos: pt(p),
+                    numero: d.etichetta || p.etichetta || '00',
+                    colore,
+                    senzaNumero: false,
+                    notaNumero: d.notaNumero
+                });
+            });
+        });
+
+        gruppiPunti.forEach(arr => {
+            const passo = arr.some(item => item.senzaNumero) ? 3 : 7.2;
+            const base = -((arr.length - 1) * passo) / 2;
+            arr.forEach((item, i) => {
+                const cx = item.pos.x;
+                const cy = item.pos.y + base + i * passo;
+                if (cx < rect.x - 8 || cx > rect.x + rect.w + 8 || cy < rect.y - 8 || cy > rect.y + rect.h + 8) return;
+                setFillHex(pdf, '#ffffff');
+                pdf.circle(cx, cy, item.senzaNumero ? 2.1 : 4.6, 'F');
+                setFillHex(pdf, item.colore);
+                pdf.circle(cx, cy, item.senzaNumero ? 1.5 : 3.6, 'F');
+                if (!item.senzaNumero) {
+                    setTextHex(pdf, '#ffffff');
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(String(item.numero).length > 2 ? 4 : 5.1);
+                    pdf.text(item.numero, cx, cy + 1.8, { align: 'center' });
+                }
+                if (notaValida(item.p.note)) disegnaTriangoloNotaPdf(pdf, cx, cy, item.notaNumero, 0.8);
+            });
+        });
+
+        setFillHex(pdf, '#ffffff');
+        pdf.rect(rect.x + 6, rect.y + rect.h - 16, 142, 12, 'F');
+        setTextHex(pdf, '#3c4b3d');
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(6);
+        pdf.text('© OpenStreetMap contributors', rect.x + 10, rect.y + rect.h - 7);
+        pdf.setLineDashPattern([]);
+    }
+
+    function disegnaStrisciaPdfVettoriale(pdf, route, W, top) {
+        setFillHex(pdf, '#1e4a2a');
+        pdf.rect(0, 0, W, top, 'F');
+        setFillHex(pdf, '#a4bb5b');
+        pdf.rect(0, top - 2.1, W, 2.1, 'F');
+
+        const left = 21, right = W - 21, meta = left + (right - left) * 0.63;
+        const titolo = `GIRO: ${route.nome}`;
+        testoAdattatoPdf(pdf, titolo, meta - left - 12, 23, 'bold');
+        setTextHex(pdf, '#d4e68a');
+        pdf.text(titolo, left, 33.6);
+
+        const km = formatKm(lunghezzaKm(route));
+        testoAdattatoPdf(pdf, km, right - meta - 10, 19, 'bold');
+        setTextHex(pdf, '#ffffff');
+        pdf.text(km, right, 33.6, { align: 'right' });
+
+        const sotto = route.territorio ? `${route.comune || ''} / ${route.territorio}` : (route.comune || '');
+        testoAdattatoPdf(pdf, sotto, meta - left - 12, 13, 'normal');
+        setTextHex(pdf, '#a4bb5b');
+        pdf.text(sotto, left, 61.5);
+
+        const data = dataRotta(route.creato);
+        testoAdattatoPdf(pdf, data, right - meta - 10, 12.5, 'normal');
+        setTextHex(pdf, '#ffffff');
+        pdf.text(data, right, 61.5, { align: 'right' });
+    }
+
     async function esportaPDF(route) {
         if (!window.jspdf || !window.jspdf.jsPDF) {
             toast('Libreria PDF non disponibile: controlla la connessione.');
@@ -2078,97 +2883,124 @@
         if (!route.punti.length) { toast('Il percorso non ha punti.'); return; }
         await (document.fonts ? document.fonts.ready : Promise.resolve());
 
-        const W = 1800, H = 4000, TOP = 260, MAP_H = H - TOP;
-        const pagina1 = document.createElement('canvas');
-        pagina1.width = W;
-        pagina1.height = H;
-        await disegnaMappaPdf(route, pagina1, TOP, MAP_H, W);
-        disegnaStrisciaPdf(pagina1.getContext('2d'), route, W, TOP);
+        const PDF = window.jspdf.jsPDF;
+        const pdf = new PDF({ orientation: 'portrait', unit: 'pt', format: [540, 960], compress: true });
+        pdf.setProperties({ title: route.nome, subject: 'Percorso ERSU', creator: 'ROUTEDITOR' });
+        await disegnaMappaVettorialePdf(pdf, route, { x: 0, y: 78, w: 540, h: 882 });
+        disegnaStrisciaPdfVettoriale(pdf, route, 540, 78);
 
-        const W2 = 1800, H2 = 4000, TOP2 = 210, PAD = 90;
-        const puntiConNota = route.punti
-            .filter(p => p.note && (p.note.testo || (p.note.immagini && p.note.immagini.length)))
-            .sort((a, b) => numeroPerRoute(route, a.id).localeCompare(numeroPerRoute(route, b.id)));
+        const W2 = 1800, H2 = 3200, TOP2 = 210, PAD = 90;
+        const gruppiNote = notePerTratta(route);
 
         let correntePg = nuovaPaginaNote(W2, H2, TOP2, 'NOTE');
         let y = correntePg.y;
         const pagineNote = [];
         let ctx = correntePg.ctx;
 
-        if (!puntiConNota.length) {
+        if (!gruppiNote.length) {
             ctx.fillStyle = '#2c603d';
             ctx.font = '600 48px "Josefin Sans", sans-serif';
             ctx.textAlign = 'left';
             ctx.fillText('Nessuna nota presente.', PAD, y + 40);
         }
 
-        for (const p of puntiConNota) {
-            const immagini = await Promise.all((p.note.immagini || []).map(src => caricaImmagine(src).catch(() => null)));
-            const conImmagini = immagini.filter(Boolean);
-            const larghezzaTesto = conImmagini.length ? W2 - 2 * PAD - 520 : W2 - 2 * PAD - 120;
-            ctx.font = '600 40px "Josefin Sans", sans-serif';
-            const righe = wrapTesto(ctx, p.note.testo || '', larghezzaTesto);
-            const hTesto = righe.length * 54;
-            const hImg = conImmagini.length ? 300 : 0;
-            const blockH = Math.max(hTesto, hImg) + 110;
+        const nuovaPagina = titolo => {
+            pagineNote.push(correntePg.canvas);
+            correntePg = nuovaPaginaNote(W2, H2, TOP2, titolo);
+            ctx = correntePg.ctx;
+            y = correntePg.y;
+        };
 
-            if (y + blockH > H2 - 90) {
-                pagineNote.push(correntePg.canvas);
-                correntePg = nuovaPaginaNote(W2, H2, TOP2, 'NOTE (SEGUE)');
-                ctx = correntePg.ctx;
-                y = correntePg.y;
-            }
-
-            ctx.fillStyle = '#2c603d';
-            ctx.beginPath();
-            ctx.arc(PAD + 50, y + 45, 46, 0, Math.PI * 2);
-            ctx.fill();
+        for (const gruppo of gruppiNote) {
+            const intestazioneH = 82;
+            if (y + intestazioneH + 120 > H2 - 90) nuovaPagina('NOTE (SEGUE)');
+            ctx.fillStyle = '#1e4a2a';
+            ctx.fillRect(PAD, y, W2 - 2 * PAD, 64);
             ctx.fillStyle = '#d4e68a';
-            ctx.font = '700 32px "Josefin Sans", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(numeroPerRoute(route, p.id), PAD + 50, y + 58);
-
-            ctx.fillStyle = '#2c603d';
-            ctx.font = '600 40px "Josefin Sans", sans-serif';
+            ctx.font = '700 38px "Josefin Sans", sans-serif';
             ctx.textAlign = 'left';
-            righe.forEach((riga, i) => ctx.fillText(riga, PAD + 125, y + 45 + i * 54));
+            ctx.fillText(`TRATTA ${gruppo.nome}`, PAD + 24, y + 43);
+            y += intestazioneH;
 
-            if (conImmagini.length) {
-                const imgX = W2 - PAD - 470;
-                const nMostrate = Math.min(3, conImmagini.length);
-                const slotW = 150, gap = 12;
-                conImmagini.slice(0, nMostrate).forEach((img, i) => {
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(imgX + i * (slotW + gap), y, slotW, 260);
-                    disegnaImmagineContenuta(ctx, img, imgX + i * (slotW + gap), y, slotW, 260);
-                });
-                if (conImmagini.length > nMostrate) {
-                    ctx.fillStyle = '#2c603d';
-                    ctx.font = '600 30px "Josefin Sans", sans-serif';
-                    ctx.fillText(`+${conImmagini.length - nMostrate}`, imgX, y + 320);
+            for (const nota of gruppo.note) {
+                const p = nota.p;
+                const immagini = await Promise.all((p.note.immagini || []).map(src => caricaImmagine(src).catch(() => null)));
+                const conImmagini = immagini.filter(Boolean);
+                const larghezzaTesto = conImmagini.length ? W2 - 2 * PAD - 560 : W2 - 2 * PAD - 180;
+                ctx.font = '600 40px "Josefin Sans", sans-serif';
+                const righe = wrapTesto(ctx, p.note.testo || '', larghezzaTesto);
+                const hTesto = righe.length * 54;
+                const hImg = conImmagini.length ? 300 : 0;
+                const blockH = Math.max(hTesto, hImg) + 110;
+
+                if (y + blockH > H2 - 90) {
+                    nuovaPagina(`NOTE - TRATTA ${gruppo.nome}`);
+                    ctx.fillStyle = '#1e4a2a';
+                    ctx.fillRect(PAD, y, W2 - 2 * PAD, 64);
+                    ctx.fillStyle = '#d4e68a';
+                    ctx.font = '700 38px "Josefin Sans", sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(`TRATTA ${gruppo.nome} (SEGUE)`, PAD + 24, y + 43);
+                    y += intestazioneH;
                 }
-            }
 
-            ctx.strokeStyle = 'rgba(44,96,61,0.25)';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(PAD, y + blockH - 45);
-            ctx.lineTo(W2 - PAD, y + blockH - 45);
-            ctx.stroke();
-            y += blockH;
+                ctx.fillStyle = '#2c603d';
+                ctx.beginPath();
+                ctx.arc(PAD + 50, y + 45, 46, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#d4e68a';
+                ctx.font = '700 34px "Josefin Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(String(nota.notaNumero), PAD + 50, y + 58);
+
+                ctx.fillStyle = '#d35400';
+                ctx.beginPath();
+                ctx.arc(PAD + 145, y + 45, 40, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '700 28px "Josefin Sans", sans-serif';
+                ctx.textAlign = 'center';
+                const etichetta = String(nota.numero);
+                ctx.fillText(etichetta, PAD + 145, y + 55, 72);
+
+                ctx.fillStyle = '#2c603d';
+                ctx.font = '600 40px "Josefin Sans", sans-serif';
+                ctx.textAlign = 'left';
+                righe.forEach((riga, i) => ctx.fillText(riga, PAD + 205, y + 45 + i * 54));
+
+                if (conImmagini.length) {
+                    const imgX = W2 - PAD - 470;
+                    const nMostrate = Math.min(3, conImmagini.length);
+                    const slotW = 150, gap = 12;
+                    conImmagini.slice(0, nMostrate).forEach((img, i) => {
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(imgX + i * (slotW + gap), y, slotW, 260);
+                        disegnaImmagineContenuta(ctx, img, imgX + i * (slotW + gap), y, slotW, 260);
+                    });
+                    if (conImmagini.length > nMostrate) {
+                        ctx.fillStyle = '#2c603d';
+                        ctx.font = '600 30px "Josefin Sans", sans-serif';
+                        ctx.fillText(`+${conImmagini.length - nMostrate}`, imgX, y + 320);
+                    }
+                }
+
+                ctx.strokeStyle = 'rgba(44,96,61,0.25)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(PAD, y + blockH - 45);
+                ctx.lineTo(W2 - PAD, y + blockH - 45);
+                ctx.stroke();
+                y += blockH;
+            }
         }
         pagineNote.push(correntePg.canvas);
 
-        const PDF = window.jspdf.jsPDF;
-        const pdf = new PDF({ orientation: 'portrait', unit: 'pt', format: [540, 1200], compress: true });
-        const aggiungi = (canvas, prima) => {
-            if (!prima) pdf.addPage([540, 1200], 'portrait');
-            pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 540, 1200, undefined, 'FAST');
-        };
-        aggiungi(pagina1, true);
-        pagineNote.forEach((c, i) => aggiungi(c, false));
+        pagineNote.forEach(canvas => {
+            pdf.addPage([540, 960], 'portrait');
+            pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 540, 960, undefined, 'FAST');
+        });
         pdf.save(nomeFile(route.nome, 'pdf'));
-        toast('PDF esportato (9:20, alta risoluzione).');
+        toast('PDF esportato (9:16, alta risoluzione).');
     }
 
     document.getElementById('btnCerca').addEventListener('click', () => {
@@ -2232,6 +3064,13 @@
             } else {
                 scambiaNomi(scambioNomeId, id);
             }
+            return;
+        }
+        const check = e.target.closest('.row-check');
+        if (check) {
+            e.stopPropagation();
+            finalizzaCorrente();
+            toast('Tratta confermata.');
             return;
         }
         const btn = e.target.closest('.row-x');
