@@ -178,7 +178,6 @@
             font-weight: 700;
         }
         .nota-testo { font-size: 0.9rem; line-height: 1.35; white-space: pre-wrap; }
-        .nota-etichetta { color: #2c603d; font-weight: 700; font-size: 0.8rem; }
         .nota-mini-immagini { display: flex; gap: 4px; margin-top: 0.3rem; }
         .nota-mini-immagini img { width: 46px; height: 46px; object-fit: cover; border-radius: 0.3rem; border: 1px solid rgba(44,96,61,0.35); }
 
@@ -508,6 +507,18 @@
         .stile-opzione[data-stile="latoB"] .anteprima i:first-child {
             background: repeating-linear-gradient(90deg, var(--anteprima-colore, #2c603d) 0 7px, transparent 7px 12px);
         }
+        .stile-opzione[data-stile="piedi"] .anteprima i { display: none; }
+        .stile-opzione[data-stile="piedi"] .anteprima::after {
+            content: '';
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            top: 6px;
+            height: 10px;
+            background-image: radial-gradient(circle, var(--anteprima-colore, #2c603d) 0 2px, transparent 2.4px);
+            background-size: 9px 10px;
+            background-repeat: repeat-x;
+        }
 
         .pin.scacchi {
             background: repeating-conic-gradient(#111 0% 25%, #fff 0% 50%) 50% / 16px 16px;
@@ -695,6 +706,9 @@
             <button type="button" class="stile-opzione" data-stile="latoB">
                 <span class="anteprima"><i></i><i></i></span><span>LATO B</span>
             </button>
+            <button type="button" class="stile-opzione" data-stile="piedi">
+                <span class="anteprima"><i></i><i></i></span><span>A PIEDI</span>
+            </button>
         </div>
     </div>
 </div>
@@ -804,50 +818,118 @@
 
     function etichettaSuffisso(valore) {
         const testo = String(valore == null ? '' : valore);
-        const m = testo.match(/([a-z]+)$/i);
+        const m = testo.match(/([a-z]+(?:\d+(?:\.\d+)*)?)$/i);
         return m ? m[1].toUpperCase() : '';
     }
 
-    function distanzaOrigineDiramazione(seg, dir, trovaPunto) {
-        const idx = seg.punti.findIndex(m => m.pid === dir.a);
+    function nomeDiramazioneFiglia(padre, indice) {
+        if (!padre) return etichettaLettera(indice);
+        const base = etichettaSuffisso(padre.etichetta || padre.suffisso);
+        return base + (/\d/.test(base) ? '.' : '') + indice;
+    }
+
+    function figliDiramazione(seg, padre) {
+        if (padre) return Array.isArray(padre.diramazioni) ? padre.diramazioni : [];
+        return seg && Array.isArray(seg.diramazioni) ? seg.diramazioni : [];
+    }
+
+    function diramazioniRicorsive(seg, padre = null, livello = 0) {
+        const elenco = [];
+        figliDiramazione(seg, padre).forEach(d => {
+            if (!d) return;
+            const info = { dir: d, seg, padre, livello };
+            elenco.push(info);
+            elenco.push(...diramazioniRicorsive(seg, d, livello + 1));
+        });
+        return elenco;
+    }
+
+    function clonaDiramazioni(lista) {
+        return (Array.isArray(lista) ? lista : []).map(d => ({
+            ...d,
+            punti: (Array.isArray(d.punti) ? d.punti : []).map(m => ({ ...m })),
+            diramazioni: clonaDiramazioni(d.diramazioni)
+        }));
+    }
+
+    function serializzaDiramazioni(lista) {
+        return (Array.isArray(lista) ? lista : []).map(d => ({
+            a: d.a,
+            b: d.b,
+            punti: (Array.isArray(d.punti) ? d.punti : []).map(m => ({
+                pid: m.pid,
+                numero: m.numero || '',
+                notaNumero: m.notaNumero || null
+            })),
+            suffisso: d.suffisso,
+            etichetta: d.etichetta,
+            stile: d.stile || 'normale',
+            notaNumero: d.notaNumero || null,
+            diramazioni: serializzaDiramazioni(d.diramazioni)
+        }));
+    }
+
+    function distanzaLungoPercorso(ids, target, trovaPunto) {
+        const percorso = (ids || []).filter(Boolean);
+        const idx = percorso.indexOf(target);
         if (idx < 0) return Infinity;
         let distanza = 0;
         for (let i = 0; i < idx; i++) {
-            const a = trovaPunto(seg.punti[i].pid);
-            const b = trovaPunto(seg.punti[i + 1].pid);
-            if (!a || !b) continue;
-            distanza += Math.hypot(b.lat - a.lat, b.lng - a.lng);
+            const a = trovaPunto(percorso[i]);
+            const b = trovaPunto(percorso[i + 1]);
+            if (a && b) distanza += Math.hypot(b.lat - a.lat, b.lng - a.lng);
         }
-        const origine = trovaPunto(seg.punti[0].pid);
-        const attacco = trovaPunto(dir.a);
-        if (origine && attacco) distanza += Math.hypot(attacco.lat - origine.lat, attacco.lng - origine.lng) * 0.000001;
         return distanza;
+    }
+
+    function rinominaListaDiramazioni(seg, lista, percorsoPadre, padre, trovaPunto, distanzaBase = 0) {
+        const ordinate = (lista || []).slice().sort((a, b) => {
+            const ea = distanzaLungoPercorso(percorsoPadre, a.a, trovaPunto);
+            const eb = distanzaLungoPercorso(percorsoPadre, b.a, trovaPunto);
+            const da = Number.isFinite(ea) ? distanzaBase + ea : 1e15;
+            const db = Number.isFinite(eb) ? distanzaBase + eb : 1e15;
+            return da - db || String(a.a).localeCompare(String(b.a)) || String(a.b).localeCompare(String(b.b));
+        });
+        ordinate.forEach((d, i) => {
+            const nome = nomeDiramazioneFiglia(padre, i + 1);
+            d.suffisso = nome;
+            d.etichetta = nome;
+            const p = trovaPunto(d.b);
+            if (p) {
+                p.etichetta = nome;
+                p.diramazione = true;
+                p.senzaNumero = false;
+            }
+            const distanzaPropria = distanzaLungoPercorso(percorsoPadre, d.a, trovaPunto);
+            rinominaListaDiramazioni(
+                seg,
+                d.diramazioni,
+                puntiDiramazione(d),
+                d,
+                trovaPunto,
+                Number.isFinite(distanzaPropria) ? distanzaBase + distanzaPropria : distanzaBase
+            );
+        });
     }
 
     function rinominaDiramazioni(seg, trovaPunto = getPunto) {
         if (!seg) return;
         seg.diramazioni = Array.isArray(seg.diramazioni) ? seg.diramazioni : [];
-        const ordinate = seg.diramazioni.slice().sort((a, b) =>
-            distanzaOrigineDiramazione(seg, a, trovaPunto) - distanzaOrigineDiramazione(seg, b, trovaPunto)
+        rinominaListaDiramazioni(
+            seg,
+            seg.diramazioni,
+            (seg.punti || []).map(m => m.pid),
+            null,
+            trovaPunto
         );
-        ordinate.forEach((d, i) => {
-            const suffisso = etichettaLettera(i + 1);
-            d.suffisso = suffisso;
-            d.etichetta = suffisso;
-            const p = trovaPunto(d.b);
-            if (p) {
-                p.etichetta = suffisso;
-                p.diramazione = true;
-            }
-        });
     }
 
-    function prossimaDiramazione(seg) {
-        seg.diramazioni = Array.isArray(seg.diramazioni) ? seg.diramazioni : [];
-        const usati = new Set(seg.diramazioni.map(d => etichettaSuffisso(d.suffisso || d.etichetta)).filter(Boolean));
+    function prossimaDiramazione(seg, padre = null) {
+        const lista = figliDiramazione(seg, padre);
+        const usati = new Set(lista.map(d => etichettaSuffisso(d.suffisso || d.etichetta)).filter(Boolean));
         for (let i = 1; i <= 702; i++) {
-            const suffisso = etichettaLettera(i);
-            if (!usati.has(suffisso)) return { suffisso, etichetta: suffisso };
+            const nome = nomeDiramazioneFiglia(padre, i);
+            if (!usati.has(nome)) return { suffisso: nome, etichetta: nome };
         }
         return null;
     }
@@ -855,12 +937,49 @@
     function prossimoNumeroNota(seg) {
         const usati = new Set();
         (seg.punti || []).forEach(m => { if (m.notaNumero) usati.add(Number(m.notaNumero)); });
-        (seg.diramazioni || []).forEach(d => {
-            if (d.notaNumero) usati.add(Number(d.notaNumero));
-            (d.punti || []).forEach(m => { if (m.notaNumero) usati.add(Number(m.notaNumero)); });
+        diramazioniRicorsive(seg).forEach(({ dir }) => {
+            if (dir.notaNumero) usati.add(Number(dir.notaNumero));
+            (dir.punti || []).forEach(m => { if (m.notaNumero) usati.add(Number(m.notaNumero)); });
         });
         for (let i = 1; i <= 9; i++) if (!usati.has(i)) return i;
         return usati.size + 1;
+    }
+
+    function puntoOrigineNote(seg, trovaPunto = getPunto) {
+        const numerati = (seg.punti || []).map(m => ({ m, p: trovaPunto(m.pid) }))
+            .filter(x => x.p && /^\d+$/.test(String(x.m.numero || '')));
+        if (!numerati.length) {
+            const primo = (seg.punti || [])[0];
+            return primo ? trovaPunto(primo.pid) : null;
+        }
+        numerati.sort((a, b) => Number(a.m.numero) - Number(b.m.numero));
+        return numerati[0].p;
+    }
+
+    function rinumeriaNoteTratta(seg, trovaPunto = getPunto) {
+        if (!seg) return;
+        const origine = puntoOrigineNote(seg, trovaPunto);
+        if (!origine) return;
+        const riferimenti = [];
+        const visti = new Set();
+        const aggiungi = (rif, pid) => {
+            if (!rif || !pid || visti.has(pid)) return;
+            const p = trovaPunto(pid);
+            if (!p || !notaValida(p.note)) return;
+            visti.add(pid);
+            riferimenti.push({ rif, p });
+        };
+        (seg.punti || []).forEach(m => aggiungi(m, m.pid));
+        diramazioniRicorsive(seg).forEach(({ dir }) => {
+            (dir.punti || []).forEach(m => aggiungi(m, m.pid));
+            aggiungi(dir, dir.b);
+        });
+        riferimenti.sort((a, b) => {
+            const da = Math.hypot(a.p.lat - origine.lat, a.p.lng - origine.lng);
+            const db = Math.hypot(b.p.lat - origine.lat, b.p.lng - origine.lng);
+            return da - db;
+        });
+        riferimenti.forEach(({ rif }, i) => { rif.notaNumero = i + 1; });
     }
 
     function htmlTriangoloNota(numero) {
@@ -922,34 +1041,31 @@
                     notaNumero: m.notaNumero || null
                 };
             }).filter(m => m.pid && presenti.has(m.pid));
-            seg.diramazioni = (Array.isArray(seg.diramazioni) ? seg.diramazioni : []).map(d => {
-                const suffisso = etichettaSuffisso(d.suffisso || d.etichetta);
-                const intermedi = (Array.isArray(d.punti) ? d.punti : [])
-                    .filter(m => m && m.pid && presenti.has(m.pid))
-                    .map(m => ({ pid: m.pid, numero: '', notaNumero: m.notaNumero || null }));
-                return {
-                    a: d.a,
-                    b: d.b,
-                    punti: intermedi,
-                    suffisso,
-                    etichetta: suffisso,
-                    notaNumero: d.notaNumero || null
-                };
-            }).filter(d => presenti.has(d.a) && presenti.has(d.b) && seg.punti.some(m => m.pid === d.a));
+            const normalizzaListaDiramazioni = (lista, validiPadre) =>
+                (Array.isArray(lista) ? lista : []).map(d => {
+                    const suffisso = etichettaSuffisso(d.suffisso || d.etichetta);
+                    const intermedi = (Array.isArray(d.punti) ? d.punti : [])
+                        .filter(m => m && m.pid && presenti.has(m.pid))
+                        .map(m => ({ pid: m.pid, numero: '', notaNumero: m.notaNumero || null }));
+                    const dir = {
+                        a: d.a,
+                        b: d.b,
+                        punti: intermedi,
+                        suffisso,
+                        etichetta: suffisso,
+                        stile: d.stile || 'normale',
+                        notaNumero: d.notaNumero || null,
+                        diramazioni: []
+                    };
+                    dir.diramazioni = normalizzaListaDiramazioni(d.diramazioni, new Set(puntiDiramazione(dir)));
+                    return dir;
+                }).filter(d =>
+                    d.a && d.b && presenti.has(d.a) && presenti.has(d.b) && validiPadre.has(d.a)
+                );
+            seg.diramazioni = normalizzaListaDiramazioni(seg.diramazioni, new Set(seg.punti.map(m => m.pid)));
             rinominaDiramazioni(seg, id => r.punti.find(p => p.id === id));
 
-            seg.punti.forEach(m => {
-                const p = r.punti.find(x => x.id === m.pid);
-                if (p && notaValida(p.note) && !m.notaNumero) m.notaNumero = prossimoNumeroNota(seg);
-            });
-            (seg.diramazioni || []).forEach(d => {
-                (d.punti || []).forEach(m => {
-                    const p = r.punti.find(x => x.id === m.pid);
-                    if (p && notaValida(p.note) && !m.notaNumero) m.notaNumero = prossimoNumeroNota(seg);
-                });
-                const p = r.punti.find(x => x.id === d.b);
-                if (p && notaValida(p.note) && !d.notaNumero) d.notaNumero = prossimoNumeroNota(seg);
-            });
+            rinumeriaNoteTratta(seg, id => r.punti.find(p => p.id === id));
         });
         const veicoliPresenti = Array.isArray(r.veicoli) ? r.veicoli.map(String) : [];
         r.veicoli = VEICOLI.filter(v => veicoliPresenti.includes(v));
@@ -977,6 +1093,17 @@
         return seg.punti.find(m => m.pid === pid) || null;
     }
 
+    function riferimentoNotaPerPunto(seg, pid) {
+        const mem = getMem(seg, pid);
+        if (mem) return mem;
+        for (const { dir } of diramazioniRicorsive(seg)) {
+            if (dir.b === pid) return dir;
+            const inter = (dir.punti || []).find(m => m.pid === pid);
+            if (inter) return inter;
+        }
+        return null;
+    }
+
     function puntiDiramazione(d) {
         if (!d) return [];
         const ids = [];
@@ -990,22 +1117,27 @@
 
     function puntiUsati() {
         const usati = new Set(segmenti.flatMap(s => s.punti.map(m => m.pid)));
-        segmenti.forEach(s => (s.diramazioni || []).forEach(d => {
-            usati.add(d.a);
-            usati.add(d.b);
-            (d.punti || []).forEach(m => usati.add(m.pid));
+        segmenti.forEach(s => diramazioniRicorsive(s).forEach(({ dir }) => {
+            puntiDiramazione(dir).forEach(id => usati.add(id));
         }));
         return usati;
+    }
+
+    function pulisciListaDiramazioni(lista, validiPadre, presenti) {
+        return (Array.isArray(lista) ? lista : []).map(d => {
+            d.punti = (Array.isArray(d.punti) ? d.punti : []).filter(m => m && presenti.has(m.pid));
+            d.diramazioni = pulisciListaDiramazioni(d.diramazioni, new Set(puntiDiramazione(d)), presenti);
+            return d;
+        }).filter(d => d && presenti.has(d.a) && presenti.has(d.b) && validiPadre.has(d.a));
     }
 
     function pulisciDiramazioni() {
         const presenti = new Set(punti.map(p => p.id));
         segmenti.forEach(seg => {
-            (seg.diramazioni || []).forEach(d => {
-                d.punti = (Array.isArray(d.punti) ? d.punti : []).filter(m => m && presenti.has(m.pid));
-            });
-            seg.diramazioni = (seg.diramazioni || []).filter(d =>
-                d && presenti.has(d.a) && presenti.has(d.b) && seg.punti.some(m => m.pid === d.a)
+            seg.diramazioni = pulisciListaDiramazioni(
+                seg.diramazioni,
+                new Set(seg.punti.map(m => m.pid)),
+                presenti
             );
         });
     }
@@ -1023,6 +1155,7 @@
                 m.numero = String(n++).padStart(2, '0');
             });
         });
+        segmenti.forEach(seg => rinumeriaNoteTratta(seg));
     }
 
     function coloreTratta(seg, i) {
@@ -1136,12 +1269,12 @@
         if (satelliteLayer) satelliteLayer.setOpacity(satelliteAttivo ? Number(slider.value) / 100 : 0);
     }
 
-    function hitSuTratta(latlng, seg) {
+    function hitSuPercorso(latlng, ids, seg, dir = null) {
         const clickPt = map.latLngToContainerPoint(latlng);
         let migliore = null, dist = Infinity;
-        for (let i = 0; i < seg.punti.length - 1; i++) {
-            const a = getPunto(seg.punti[i].pid);
-            const b = getPunto(seg.punti[i + 1].pid);
+        for (let i = 0; i < (ids || []).length - 1; i++) {
+            const a = getPunto(ids[i]);
+            const b = getPunto(ids[i + 1]);
             if (!a || !b) continue;
             const pa = map.latLngToContainerPoint([a.lat, a.lng]);
             const pb = map.latLngToContainerPoint([b.lat, b.lng]);
@@ -1150,6 +1283,7 @@
                 dist = r.d;
                 migliore = {
                     seg,
+                    diramazione: dir,
                     idx: i,
                     lat: a.lat + (b.lat - a.lat) * r.t,
                     lng: a.lng + (b.lng - a.lng) * r.t
@@ -1159,13 +1293,20 @@
         return migliore;
     }
 
-    function iniziaDiramazioneDaLinea(e, seg) {
-        if (modo !== 'editor' || branchDrag || !seg || seg.punti.length < 2) return;
-        const hit = hitSuTratta(e.latlng, seg);
+    function hitSuTratta(latlng, seg) {
+        return hitSuPercorso(latlng, (seg.punti || []).map(m => m.pid), seg);
+    }
+
+    function iniziaDiramazioneDaLinea(e, seg, dir = null) {
+        if (modo !== 'editor' || branchDrag || !seg) return;
+        const ids = dir ? puntiDiramazione(dir) : (seg.punti || []).map(m => m.pid);
+        if (ids.length < 2) return;
+        const hit = hitSuPercorso(e.latlng, ids, seg, dir);
         if (!hit) return;
         if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
         branchDrag = {
             seg,
+            dir,
             idx: hit.idx,
             lat: hit.lat,
             lng: hit.lng,
@@ -1206,41 +1347,55 @@
         sopprimiClickFinoA = Date.now() + 400;
         const endpoint = creaPunto(drag.ultimo);
         if (!endpoint) return;
-        creaDiramazione(drag.seg, drag.idx, { lat: drag.lat, lng: drag.lng }, endpoint);
+        creaDiramazione(drag.seg, drag.idx, { lat: drag.lat, lng: drag.lng }, endpoint, null, drag.dir);
     }
 
-    function creaDiramazione(seg, idx, origine, endpoint, sorgente = null) {
-        const dir = prossimaDiramazione(seg);
-        if (!dir) {
+    function creaDiramazione(seg, idx, origine, endpoint, sorgente = null, padre = null) {
+        const nuovo = prossimaDiramazione(seg, padre);
+        if (!nuovo) {
             toast('Diramazioni esaurite per questa tratta.');
             return null;
         }
         const inter = creaPunto(origine);
         if (!inter) return null;
         inter.senzaNumero = true;
-        seg.diramazioni = Array.isArray(seg.diramazioni) ? seg.diramazioni : [];
-        seg.punti.splice(idx + 1, 0, { pid: inter.id, numero: '' });
-        endpoint.etichetta = dir.etichetta;
+        const contenitore = padre
+            ? (Array.isArray(padre.punti) ? padre.punti : (padre.punti = []))
+            : (Array.isArray(seg.punti) ? seg.punti : (seg.punti = []));
+        contenitore.splice(padre ? idx : idx + 1, 0, { pid: inter.id, numero: '' });
+        endpoint.etichetta = nuovo.etichetta;
         endpoint.diramazione = true;
         endpoint.senzaNumero = false;
-        seg.diramazioni.push({
+        const dir = {
             a: inter.id,
             b: endpoint.id,
             punti: [],
-            suffisso: dir.suffisso,
-            etichetta: dir.etichetta,
-            notaNumero: null
-        });
+            suffisso: nuovo.suffisso,
+            etichetta: nuovo.etichetta,
+            stile: 'normale',
+            notaNumero: null,
+            diramazioni: []
+        };
+        const lista = padre
+            ? (Array.isArray(padre.diramazioni) ? padre.diramazioni : (padre.diramazioni = []))
+            : (Array.isArray(seg.diramazioni) ? seg.diramazioni : (seg.diramazioni = []));
+        lista.push(dir);
         if (sorgente && sorgente.seg && sorgente.mem) {
-            sorgente.seg.punti = sorgente.seg.punti.filter(m => m !== sorgente.mem);
-            if (!sorgente.seg.punti.length && !(sorgente.seg.diramazioni || []).length) eliminaTratta(sorgente.seg.id);
+            if (sorgente.dir) {
+                sorgente.dir.punti = (sorgente.dir.punti || []).filter(m => m !== sorgente.mem);
+            } else {
+                sorgente.seg.punti = sorgente.seg.punti.filter(m => m !== sorgente.mem);
+                if (!sorgente.seg.punti.length && !diramazioniRicorsive(sorgente.seg).length) {
+                    eliminaTratta(sorgente.seg.id);
+                }
+            }
         }
         pulisciDiramazioni();
         rinumeriaTutti();
         disegnaEditor();
         renderTratte();
         toast(`Diramazione ${dir.etichetta} creata.`);
-        return dir;
+        return nuovo;
     }
 
     function opzioniLinea(seg, colore, opzioniComuni) {
@@ -1252,6 +1407,15 @@
         if (stile === 'normale') {
             if (classe) base.className = classe;
             return [{ opzioni: base, offset: 0 }];
+        }
+        if (stile === 'piedi') {
+            const piedi = Object.assign({}, base, {
+                dashArray: '1 10',
+                lineCap: 'round',
+                lineJoin: 'round'
+            });
+            if (classe) piedi.className = classe;
+            return [{ opzioni: piedi, offset: 0 }];
         }
         const dashLato = '14 10';
         const altoPieno = stile !== 'latoB';
@@ -1318,13 +1482,17 @@
         ctx.setLineDash([]);
     }
 
-    function apriStileTratta(seg) {
-        segStile = seg;
+    function apriStileTratta(seg, dir = null) {
+        if (!seg) return;
+        segStile = { seg, dir };
+        const target = dir || seg;
         const overlay = document.getElementById('overlayStile');
         overlay.style.setProperty('--anteprima-colore', coloreTratta(seg, segmenti.indexOf(seg)));
-        document.getElementById('stileNome').textContent = etichettaTratta(seg);
+        document.getElementById('stileNome').textContent = dir
+            ? `DIRAMAZIONE ${dir.etichetta || ''}`.trim()
+            : etichettaTratta(seg);
         overlay.querySelectorAll('.stile-opzione').forEach(b => {
-            b.classList.toggle('selezionato', b.dataset.stile === (seg.stile || 'normale'));
+            b.classList.toggle('selezionato', b.dataset.stile === (target.stile || 'normale'));
         });
         overlay.hidden = false;
     }
@@ -1415,17 +1583,22 @@
             if (modo === 'viewer') return;
             const hit = hitTest(e.latlng);
             if (hit.tipo === 'punto') {
-                const seg = segmenti.find(s => s.punti.some(m => m.pid === hit.punto.id)) ||
-                    segmenti.find(s => (s.diramazioni || []).some(d => d.b === hit.punto.id)) || null;
-                const notaRef = seg && ((seg.diramazioni || []).find(d => d.b === hit.punto.id) || getMem(seg, hit.punto.id));
-                apriNota(seg, hit.punto, notaRef || null);
+                let seg = null, notaRef = null;
+                for (const s of segmenti) {
+                    const rif = riferimentoNotaPerPunto(s, hit.punto.id);
+                    if (rif) { seg = s; notaRef = rif; break; }
+                }
+                apriNota(seg, hit.punto, notaRef);
                 return;
             }
             if (hit.tipo === 'linea') {
                 apriStileTratta(hit.seg);
                 return;
             }
-            if (hit.tipo === 'diramazione') return;
+            if (hit.tipo === 'diramazione') {
+                apriStileTratta(hit.seg, hit.diramazione);
+                return;
+            }
             nuovaTratta(e.latlng);
         });
 
@@ -1499,7 +1672,7 @@
         return copia;
     }
 
-    function unisciDopoTrascinamento(seg, mem, p) {
+    function unisciDopoTrascinamento(seg, mem, p, dir = null) {
         const vicino = puntoVicino({ lat: p.lat, lng: p.lng }, p.id);
         if (vicino) {
             p.lat = vicino.lat;
@@ -1509,9 +1682,9 @@
             return;
         }
 
-        const hit = lineaVicino({ lat: p.lat, lng: p.lng }, seg.id, true);
+        const hit = lineaVicino({ lat: p.lat, lng: p.lng }, seg.id, false, dir);
         if (hit) {
-            creaDiramazione(hit.seg, hit.idx, { lat: hit.lat, lng: hit.lng }, p, { seg, mem });
+            creaDiramazione(hit.seg, hit.idx, { lat: hit.lat, lng: hit.lng }, p, { seg, mem, dir }, hit.diramazione);
             return;
         }
 
@@ -1519,7 +1692,7 @@
         renderTratte();
     }
 
-    function creaMarker(seg, mem, punto, colore, offset, riferimentoNota = mem) {
+    function creaMarker(seg, mem, punto, colore, offset, riferimentoNota = mem, dir = null) {
         let p = punto;
         const piccolo = !!p.senzaNumero && !p.etichetta;
         const classe = 'pin' + (piccolo ? ' senza-numero' : '') + (p.note ? ' con-nota' : '');
@@ -1559,7 +1732,7 @@
         });
         marker.on('dragend', () => {
             nascondiLoupe();
-            unisciDopoTrascinamento(seg, mem, p);
+            unisciDopoTrascinamento(seg, mem, p, dir);
         });
         marker.on('dblclick', e => {
             if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
@@ -1593,18 +1766,23 @@
                 });
                 lineeById.set(seg.id, { linee });
             }
-            (seg.diramazioni || []).forEach(d => {
-                const latlngsDir = puntiDiramazione(d).map(id => getPunto(id)).filter(Boolean).map(p => [p.lat, p.lng]);
+            diramazioniRicorsive(seg).forEach(({ dir }) => {
+                const latlngsDir = puntiDiramazione(dir).map(id => getPunto(id)).filter(Boolean).map(p => [p.lat, p.lng]);
                 if (latlngsDir.length < 2) return;
                 const correnteTratta = seg === corrente;
-                const lineaDir = L.polyline(latlngsDir, {
-                    color: colore,
+                const linee = opzioniLinea(dir, colore, {
                     weight: correnteTratta ? 4 : 3,
-                    opacity: 0.95,
-                    dashArray: correnteTratta ? '9 8' : null,
-                    className: correnteTratta ? 'tratta-corrente' : null
-                }).addTo(layerEditor);
-                lineeDiramazione.push({ linea: lineaDir, dir: d });
+                    dashArray: correnteTratta ? '9 8' : null
+                }).map(({ opzioni, offset }) => {
+                    const linea = L.polyline(offsetLatLngs(latlngsDir, offset), opzioni).addTo(layerEditor);
+                    linea.on('mousedown touchstart', e => iniziaDiramazioneDaLinea(e, seg, dir));
+                    linea.on('dblclick', e => {
+                        if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
+                        apriStileTratta(seg, dir);
+                    });
+                    return { linea, offset };
+                });
+                lineeDiramazione.push({ linee, dir });
             });
         });
 
@@ -1620,18 +1798,19 @@
                 const p = getPunto(m.pid);
                 if (p) aggiungiAlGruppo({ seg, mem: m, p, colore, notaRef: m, offset: 0 });
             });
-            (seg.diramazioni || []).forEach(d => {
-                (d.punti || []).forEach(m => {
+            diramazioniRicorsive(seg).forEach(({ dir }) => {
+                (dir.punti || []).forEach(m => {
                     const p = getPunto(m.pid);
-                    if (p) aggiungiAlGruppo({ seg, mem: m, p, colore, notaRef: m, offset: 0 });
+                    if (p) aggiungiAlGruppo({ seg, dir, mem: m, p, colore, notaRef: m, offset: 0 });
                 });
-                const p = getPunto(d.b);
+                const p = getPunto(dir.b);
                 if (p) aggiungiAlGruppo({
                     seg,
-                    mem: { pid: d.b, numero: d.etichetta || p.etichetta || '00' },
+                    dir,
+                    mem: { pid: dir.b, numero: dir.etichetta || p.etichetta || '00' },
                     p,
                     colore,
-                    notaRef: d,
+                    notaRef: dir,
                     offset: 0
                 });
             });
@@ -1639,12 +1818,15 @@
 
         gruppi.forEach(arr => {
             if (arr.length === 1) {
-                creaMarker(arr[0].seg, arr[0].mem, arr[0].p, arr[0].colore, arr[0].offset || 0, arr[0].notaRef);
+                creaMarker(arr[0].seg, arr[0].mem, arr[0].p, arr[0].colore, arr[0].offset || 0, arr[0].notaRef, arr[0].dir || null);
                 return;
             }
             const passo = arr.some(item => item.p.senzaNumero && !item.p.etichetta) ? 10 : 24;
             const base = -((arr.length - 1) * passo) / 2;
-            arr.forEach((item, i) => creaMarker(item.seg, item.mem, item.p, item.colore, (item.offset || 0) + base + i * passo, item.notaRef));
+            arr.forEach((item, i) => creaMarker(
+                item.seg, item.mem, item.p, item.colore,
+                (item.offset || 0) + base + i * passo, item.notaRef, item.dir || null
+            ));
         });
     }
 
@@ -1656,12 +1838,14 @@
             voci.linee.forEach(({ linea, offset }) => linea.setLatLngs(offsetLatLngs(latlngs, offset)));
         });
         aggiornaLineeDiramazioni();
+        segmenti.forEach(seg => rinumeriaNoteTratta(seg));
     }
 
     function aggiornaLineeDiramazioni() {
-        lineeDiramazione.forEach(({ linea, dir }) => {
+        lineeDiramazione.forEach(({ linee, dir }) => {
             const latlngs = puntiDiramazione(dir).map(id => getPunto(id)).filter(Boolean).map(p => [p.lat, p.lng]);
-            if (latlngs.length >= 2) linea.setLatLngs(latlngs);
+            if (latlngs.length < 2) return;
+            linee.forEach(({ linea, offset }) => linea.setLatLngs(offsetLatLngs(latlngs, offset)));
         });
     }
 
@@ -1690,7 +1874,6 @@
                 const immagini = Array.isArray(n.p.note && n.p.note.immagini) ? n.p.note.immagini : [];
                 html += `<div class="nota-riga">` +
                     `<div class="nota-num">${Number(n.notaNumero) || 1}</div>` +
-                    `<div><div class="nota-etichetta">${escapeHtml(n.numero)}</div>` +
                     `<div class="nota-testo">${testo || '—'}</div>` +
                     (immagini.length ? `<div class="nota-mini-immagini">` +
                         immagini.slice(0, 4).map(src => `<img src="${escapeHtml(src)}" alt="Immagine nota">`).join('') +
@@ -1745,14 +1928,14 @@
         return migliore;
     }
 
-    function lineaVicino(latlng, escludiSegId = null, soloTratte = false) {
+    function lineaVicino(latlng, escludiSegId = null, soloTratte = false, escludiDir = null) {
         const clickPt = map.latLngToContainerPoint(latlng);
         let segTrovato = null, dirTrovata = null, idxTrovato = -1, best = SNAP_LINEA, latTrovata = null, lngTrovata = null;
-        segmenti.forEach(seg => {
-            if (seg.id === escludiSegId) return;
-            for (let i = 0; i < seg.punti.length - 1; i++) {
-                const a = getPunto(seg.punti[i].pid);
-                const b = getPunto(seg.punti[i + 1].pid);
+        const controlla = (ids, seg, dir) => {
+            if (dir && dir === escludiDir) return;
+            for (let i = 0; i < (ids || []).length - 1; i++) {
+                const a = getPunto(ids[i]);
+                const b = getPunto(ids[i + 1]);
                 if (!a || !b) continue;
                 const pa = map.latLngToContainerPoint([a.lat, a.lng]);
                 const pb = map.latLngToContainerPoint([b.lat, b.lng]);
@@ -1760,32 +1943,18 @@
                 if (r.d < best) {
                     best = r.d;
                     segTrovato = seg;
-                    dirTrovata = null;
+                    dirTrovata = dir;
                     idxTrovato = i;
                     latTrovata = a.lat + (b.lat - a.lat) * r.t;
                     lngTrovata = a.lng + (b.lng - a.lng) * r.t;
                 }
             }
+        };
+        segmenti.forEach(seg => {
+            if (seg.id === escludiSegId) return;
+            controlla((seg.punti || []).map(m => m.pid), seg, null);
             if (soloTratte) return;
-            (seg.diramazioni || []).forEach(d => {
-                const ids = puntiDiramazione(d);
-                for (let i = 0; i < ids.length - 1; i++) {
-                    const a = getPunto(ids[i]);
-                    const b = getPunto(ids[i + 1]);
-                    if (!a || !b) continue;
-                    const pa = map.latLngToContainerPoint([a.lat, a.lng]);
-                    const pb = map.latLngToContainerPoint([b.lat, b.lng]);
-                    const r = proiezione(clickPt, pa, pb);
-                    if (r.d < best) {
-                        best = r.d;
-                        segTrovato = seg;
-                        dirTrovata = d;
-                        idxTrovato = i;
-                        latTrovata = a.lat + (b.lat - a.lat) * r.t;
-                        lngTrovata = a.lng + (b.lng - a.lng) * r.t;
-                    }
-                }
-            });
+            diramazioniRicorsive(seg).forEach(({ dir }) => controlla(puntiDiramazione(dir), seg, dir));
         });
         return segTrovato
             ? { seg: segTrovato, diramazione: dirTrovata, idx: idxTrovato, lat: latTrovata, lng: lngTrovata }
@@ -1817,7 +1986,7 @@
         const mem = { pid: p.id, numero: '', notaNumero: null };
         if (hit.diramazione) {
             hit.diramazione.punti = Array.isArray(hit.diramazione.punti) ? hit.diramazione.punti : [];
-            hit.diramazione.punti.splice(hit.idx + 1, 0, mem);
+            hit.diramazione.punti.splice(hit.idx, 0, mem);
         } else {
             hit.seg.punti.splice(hit.idx + 1, 0, mem);
         }
@@ -1875,15 +2044,17 @@
         const seg = segmenti.find(s => s.id === segId);
         if (!seg) return;
         seg.punti = seg.punti.filter(m => m.pid !== pid);
-        (seg.diramazioni || []).forEach(d => {
+        const rimuoviDaDiramazioni = lista => (Array.isArray(lista) ? lista : []).map(d => {
             d.punti = (Array.isArray(d.punti) ? d.punti : []).filter(m => m.pid !== pid);
-        });
-        seg.diramazioni = (seg.diramazioni || []).filter(d => d.a !== pid && d.b !== pid);
-        if (!seg.punti.length && !(seg.diramazioni || []).length) {
+            d.diramazioni = rimuoviDaDiramazioni(d.diramazioni);
+            return d;
+        }).filter(d => d.a !== pid && d.b !== pid);
+        seg.diramazioni = rimuoviDaDiramazioni(seg.diramazioni);
+        pulisciDiramazioni();
+        if (!seg.punti.length && !diramazioniRicorsive(seg).length) {
             eliminaTratta(segId);
             return;
         }
-        pulisciDiramazioni();
         rinumeriaTutti();
         const usati = puntiUsati();
         punti = punti.filter(p => usati.has(p.id));
@@ -2010,23 +2181,26 @@
                     lineeViewer.push({ linea, latlngs, offset });
                 });
             }
-            (seg.diramazioni || []).forEach(d => {
-                const path = puntiDiramazione(d).map(id => puntoDiRoute(route, id)).filter(Boolean);
-                if (path.length >= 2) {
-                    L.polyline(path.map(p => [p.lat, p.lng]), { color: colore, weight: 4, opacity: 0.95 }).addTo(layerViewer);
-                }
+            diramazioniRicorsive(seg).forEach(({ dir }) => {
+                const path = puntiDiramazione(dir).map(id => puntoDiRoute(route, id)).filter(Boolean);
+                if (path.length < 2) return;
+                const latlngsDir = path.map(p => [p.lat, p.lng]);
+                opzioniLinea(dir, colore, { weight: 4 }).forEach(({ opzioni, offset }) => {
+                    const linea = L.polyline(offsetLatLngs(latlngsDir, offset), opzioni).addTo(layerViewer);
+                    lineeViewer.push({ linea, latlngs: latlngsDir, offset });
+                });
             });
             seg.punti.forEach(m => {
                 const p = puntoDiRoute(route, m.pid);
                 if (p) aggiungiAlGruppo({ p, numero: p.etichetta || m.numero || '00', colore, senzaNumero: !!p.senzaNumero && !p.etichetta, notaNumero: m.notaNumero });
             });
-            (seg.diramazioni || []).forEach(d => {
-                (d.punti || []).forEach(m => {
+            diramazioniRicorsive(seg).forEach(({ dir }) => {
+                (dir.punti || []).forEach(m => {
                     const p = puntoDiRoute(route, m.pid);
                     if (p) aggiungiAlGruppo({ p, numero: '', colore, senzaNumero: true, notaNumero: m.notaNumero });
                 });
-                const p = puntoDiRoute(route, d.b);
-                if (p) aggiungiAlGruppo({ p, numero: d.etichetta || p.etichetta || '00', colore, senzaNumero: false, notaNumero: d.notaNumero });
+                const p = puntoDiRoute(route, dir.b);
+                if (p) aggiungiAlGruppo({ p, numero: dir.etichetta || p.etichetta || '00', colore, senzaNumero: false, notaNumero: dir.notaNumero });
             });
         });
         gruppi.forEach(arr => {
@@ -2064,10 +2238,7 @@
             colore: coloreTratta(s, i),
             stile: s.stile || 'normale',
             punti: s.punti.map(m => ({ ...m })),
-            diramazioni: (s.diramazioni || []).map(d => ({
-                ...d,
-                punti: (d.punti || []).map(m => ({ ...m }))
-            }))
+            diramazioni: clonaDiramazioni(s.diramazioni)
         }));
         routeInModifica = route.id;
         corrente = segmenti[segmenti.length - 1] || null;
@@ -2163,21 +2334,12 @@
                         colore: s.colore || null,
                         stile: s.stile || 'normale',
                         punti: s.punti.map(m => ({ pid: m.pid, numero: m.numero, notaNumero: m.notaNumero || null })),
-                        diramazioni: (s.diramazioni || []).map(d => ({
-                            a: d.a,
-                            b: d.b,
-                            punti: (d.punti || []).map(m => ({ pid: m.pid, numero: m.numero || '', notaNumero: m.notaNumero || null })),
-                            suffisso: d.suffisso,
-                            etichetta: d.etichetta,
-                            notaNumero: d.notaNumero || null
-                        }))
+                        diramazioni: serializzaDiramazioni(s.diramazioni)
                     }));
                 if (!tratteFinali.length) { toast('Nessuna tratta da salvare.'); return; }
                 const usati = new Set(tratteFinali.flatMap(t => t.punti.map(m => m.pid)));
-                tratteFinali.forEach(t => (t.diramazioni || []).forEach(d => {
-                    usati.add(d.a);
-                    usati.add(d.b);
-                    (d.punti || []).forEach(m => usati.add(m.pid));
+                tratteFinali.forEach(t => diramazioniRicorsive(t).forEach(({ dir }) => {
+                    puntiDiramazione(dir).forEach(id => usati.add(id));
                 }));
                 const puntiFinali = punti.filter(p => usati.has(p.id)).map(p => Object.assign({}, p, { immagini: [...(p.immagini || [])] }));
                 const nome = dati.nome.trim() || 'Percorso senza nome';
@@ -2302,6 +2464,7 @@
                 notaRef.notaNumero = notaSeg ? prossimoNumeroNota(notaSeg) : 1;
             }
         }
+        if (notaSeg) rinumeriaNoteTratta(notaSeg);
         disegnaEditor();
         chiudiNota();
         toast('Nota salvata.');
@@ -2311,6 +2474,7 @@
         if (!notaPunto) return;
         notaPunto.note = null;
         if (notaRef) delete notaRef.notaNumero;
+        if (notaSeg) rinumeriaNoteTratta(notaSeg);
         disegnaEditor();
         chiudiNota();
         toast('Nota eliminata.');
@@ -2934,6 +3098,23 @@
         pdf.setLineDashPattern([]);
     }
 
+    function disegnaPalliniPdf(pdf, segments, colore, raggio = 0.9, passo = 5) {
+        if (!segments.length) return;
+        const punti = [];
+        segments.forEach(([a, b]) => {
+            const len = Math.hypot(b.x - a.x, b.y - a.y);
+            const n = Math.min(400, Math.max(1, Math.round(len / passo)));
+            for (let i = 0; i <= n; i++) {
+                const t = i / n;
+                punti.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+            }
+        });
+        setFillHex(pdf, '#ffffff');
+        punti.forEach(p => pdf.circle(p.x, p.y, raggio + 0.7, 'F'));
+        setFillHex(pdf, colore);
+        punti.forEach(p => pdf.circle(p.x, p.y, raggio, 'F'));
+    }
+
     function segmentiVisibiliPdf(pts, rect) {
         const out = [];
         for (let i = 0; i < pts.length - 1; i++) {
@@ -2995,25 +3176,32 @@
         setFillHex(pdf, '#f1c40f');
         setDrawHex(pdf, '#d35400');
         pdf.setLineWidth(0.7 * scala);
-        pdf.triangle(cx + 6.5 * scala, cy + 1.2 * scala, cx + 12.5 * scala, cy + 7.4 * scala, cx + 5.5 * scala, cy + 7.4 * scala, 'FD');
+        pdf.triangle(
+            cx + 4.5 * scala, cy + 0.6 * scala,
+            cx + 9.3 * scala, cy + 6.8 * scala,
+            cx + 2.1 * scala, cy + 6.8 * scala,
+            'FD'
+        );
         if (ctxTesto) {
-            testoCanvas(ctxTesto, numero || 1, cx + 9 * scala, cy + 6.4 * scala, 5.2 * scala, 700, '#7a3b00', 'center');
+            ctxTesto.save();
+            ctxTesto.textBaseline = 'middle';
+            testoCanvas(ctxTesto, numero || 1, cx + 5.7 * scala, cy + 4.3 * scala, 5.2 * scala, 700, '#7a3b00', 'center');
+            ctxTesto.restore();
             return;
         }
         setTextHex(pdf, '#7a3b00');
         setFontPdf(pdf, 'bold');
         pdf.setFontSize(5.2 * scala);
-        pdf.text(String(numero || 1), cx + 9 * scala, cy + 6.4 * scala, { align: 'center' });
+        pdf.text(String(numero || 1), cx + 5.7 * scala, cy + 5 * scala, { align: 'center' });
     }
 
     function intervalloTratta(seg) {
         const numeri = (seg.punti || [])
             .map(m => String(m.numero || ''))
             .filter(n => /^\d+$/.test(n));
-        const lettere = (seg.diramazioni || []).map(d => etichettaSuffisso(d.etichetta || d.suffisso)).filter(Boolean);
         const primo = numeri[0] || '00';
         const ultimo = numeri[numeri.length - 1] || primo;
-        return `${primo}-${ultimo}` + (lettere.length ? ` · ${lettere.join(', ')}` : '');
+        return `${primo}-${ultimo}`;
     }
 
     function notePerTratta(route) {
@@ -3021,22 +3209,21 @@
         route.tratte.forEach((seg, i) => {
             const visti = new Set();
             const note = [];
-            const aggiungi = (p, notaRef, fallback) => {
+            const aggiungi = (p, notaRef) => {
                 if (!p || !notaValida(p.note) || visti.has(p.id)) return;
                 visti.add(p.id);
                 note.push({
                     p,
                     notaRef,
-                    numero: p.etichetta || (notaRef && notaRef.etichetta) || fallback || '00',
                     notaNumero: (notaRef && notaRef.notaNumero) || 1
                 });
             };
-            seg.punti.forEach(m => aggiungi(puntoDiRoute(route, m.pid), m, m.numero));
-            (seg.diramazioni || []).forEach(d => {
-                (d.punti || []).forEach(m => aggiungi(puntoDiRoute(route, m.pid), m, '•'));
-                aggiungi(puntoDiRoute(route, d.b), d, d.etichetta);
+            seg.punti.forEach(m => aggiungi(puntoDiRoute(route, m.pid), m));
+            diramazioniRicorsive(seg).forEach(({ dir }) => {
+                (dir.punti || []).forEach(m => aggiungi(puntoDiRoute(route, m.pid), m));
+                aggiungi(puntoDiRoute(route, dir.b), dir);
             });
-            note.sort((a, b) => a.notaNumero - b.notaNumero || a.numero.localeCompare(b.numero));
+            note.sort((a, b) => a.notaNumero - b.notaNumero);
             if (note.length) gruppi.push({
                 seg,
                 nome: seg.nome || `Tratta ${i + 1}`,
@@ -3112,15 +3299,25 @@
                 const stile = seg.stile || 'normale';
                 if (stile === 'normale') {
                     disegnaLineePdf(pdf, segmentiVisibiliPdf(lista, rect), colore, 2.8, null, '#ffffff');
+                } else if (stile === 'piedi') {
+                    disegnaPalliniPdf(pdf, segmentiVisibiliPdf(lista, rect), colore, 1.2, 6);
                 } else {
                     disegnaLineePdf(pdf, segmentiVisibiliPdf(offsetPunti(lista, -1.8, false), rect), colore, 1.5, stile === 'latoB' ? [4, 3] : null, '#ffffff');
                     disegnaLineePdf(pdf, segmentiVisibiliPdf(offsetPunti(lista, 1.8, false), rect), colore, 1.5, stile === 'latoA' ? [4, 3] : null, '#ffffff');
                 }
             }
-            (seg.diramazioni || []).forEach(d => {
-                const path = puntiDiramazione(d).map(id => puntoDiRoute(route, id)).filter(Boolean);
-                if (path.length >= 2) {
-                    disegnaLineePdf(pdf, segmentiVisibiliPdf(path.map(pt), rect), colore, 1.8, null, '#ffffff');
+            diramazioniRicorsive(seg).forEach(({ dir }) => {
+                const path = puntiDiramazione(dir).map(id => puntoDiRoute(route, id)).filter(Boolean);
+                if (path.length < 2) return;
+                const ptsDir = path.map(pt);
+                const stileDir = dir.stile || 'normale';
+                if (stileDir === 'piedi') {
+                    disegnaPalliniPdf(pdf, segmentiVisibiliPdf(ptsDir, rect), colore, 0.9, 5);
+                } else if (stileDir === 'normale') {
+                    disegnaLineePdf(pdf, segmentiVisibiliPdf(ptsDir, rect), colore, 1.8, null, '#ffffff');
+                } else {
+                    disegnaLineePdf(pdf, segmentiVisibiliPdf(offsetPunti(ptsDir, -1.4, false), rect), colore, 1.3, stileDir === 'latoB' ? [4, 3] : null, '#ffffff');
+                    disegnaLineePdf(pdf, segmentiVisibiliPdf(offsetPunti(ptsDir, 1.4, false), rect), colore, 1.3, stileDir === 'latoA' ? [4, 3] : null, '#ffffff');
                 }
             });
             puntiSeg.forEach((punto, k) => {
@@ -3133,8 +3330,8 @@
                     notaNumero: seg.punti[k].notaNumero
                 });
             });
-            (seg.diramazioni || []).forEach(d => {
-                (d.punti || []).forEach(m => {
+            diramazioniRicorsive(seg).forEach(({ dir }) => {
+                (dir.punti || []).forEach(m => {
                     const p = puntoDiRoute(route, m.pid);
                     if (p) aggiungiGruppo({
                         p,
@@ -3145,14 +3342,14 @@
                         notaNumero: m.notaNumero
                     });
                 });
-                const p = puntoDiRoute(route, d.b);
+                const p = puntoDiRoute(route, dir.b);
                 if (p) aggiungiGruppo({
                     p,
                     pos: pt(p),
-                    numero: d.etichetta || p.etichetta || '00',
+                    numero: dir.etichetta || p.etichetta || '00',
                     colore,
                     senzaNumero: false,
-                    notaNumero: d.notaNumero
+                    notaNumero: dir.notaNumero
                 });
             });
         });
@@ -3171,7 +3368,7 @@
                 if (!item.senzaNumero) {
                     testoCanvas(ctxTesti, item.numero, cx, cy + 1.8, String(item.numero).length > 2 ? 4 : 5.1, 700, '#ffffff', 'center');
                 }
-                if (notaValida(item.p.note)) disegnaTriangoloNotaPdf(pdf, cx, cy, item.notaNumero, 0.8, ctxTesti);
+                if (notaValida(item.p.note)) disegnaTriangoloNotaPdf(pdf, cx, cy, item.notaNumero, 1, ctxTesti);
             });
         });
 
@@ -3326,13 +3523,13 @@
                 const p = nota.p;
                 const immagini = await Promise.all((p.note.immagini || []).map(src => caricaImmagine(src).catch(() => null)));
                 const conImmagini = immagini.filter(Boolean);
-                const larghezzaTesto = conImmagini.length ? W2 - 2 * PAD - 560 : W2 - 2 * PAD - 120;
-                const testoNota = `${nota.notaNumero} - ${(p.note.testo || '').trim() || '—'}`;
+                const larghezzaTesto = conImmagini.length ? W2 - 2 * PAD - 610 : W2 - 2 * PAD - 170;
+                const testoNota = (p.note.testo || '').trim() || '—';
                 ctx.font = '600 40px "Josefin Sans", sans-serif';
                 const righe = wrapTesto(ctx, testoNota, larghezzaTesto);
                 const hTesto = righe.length * 54;
                 const hImg = conImmagini.length ? 300 : 0;
-                const blockH = Math.max(hTesto, hImg) + 96;
+                const blockH = Math.max(hTesto, hImg) + 70;
 
                 if (y + blockH > H2 - 90) {
                     nuovaPagina(`NOTE - TRATTA ${gruppo.nome}`);
@@ -3345,15 +3542,22 @@
                     y += intestazioneH;
                 }
 
+                const badgeX = PAD + 26, badgeY = y + 30;
                 ctx.fillStyle = '#2c603d';
-                ctx.font = '700 30px "Josefin Sans", sans-serif';
+                ctx.beginPath();
+                ctx.arc(badgeX, badgeY, 16, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#d4e68a';
+                ctx.font = '700 24px "Josefin Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(String(nota.notaNumero), badgeX, badgeY + 1);
+                ctx.textBaseline = 'alphabetic';
                 ctx.textAlign = 'left';
-                ctx.fillText(String(nota.numero), PAD + 10, y + 32);
 
                 ctx.fillStyle = '#2c603d';
                 ctx.font = '600 40px "Josefin Sans", sans-serif';
-                ctx.textAlign = 'left';
-                righe.forEach((riga, i) => ctx.fillText(riga, PAD + 10, y + 78 + i * 54));
+                righe.forEach((riga, i) => ctx.fillText(riga, PAD + 60, y + 44 + i * 54));
 
                 if (conImmagini.length) {
                     const imgX = W2 - PAD - 470;
@@ -3532,8 +3736,11 @@
     document.getElementById('overlayStile').addEventListener('click', e => {
         const opzione = e.target.closest('.stile-opzione');
         if (!opzione || !segStile) return;
-        segStile.stile = opzione.dataset.stile;
-        const nome = etichettaTratta(segStile);
+        const target = segStile.dir || segStile.seg;
+        target.stile = opzione.dataset.stile;
+        const nome = segStile.dir
+            ? `diramazione ${segStile.dir.etichetta || ''}`.trim()
+            : etichettaTratta(segStile.seg);
         chiudiStile();
         disegnaEditor();
         toast(`Aspetto di ${nome} aggiornato.`);
