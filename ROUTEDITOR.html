@@ -101,9 +101,9 @@
             background: rgba(44,96,61,0.94);
             color: #d4e68a;
             cursor: pointer;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.3);
             transition: background 0.25s, color 0.25s, transform 0.25s;
         }
+        button { box-shadow: none !important; }
         .btn-ico svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
         .btn-ico:hover:not(:disabled) { background: #1e4a2a; color: #ffffff; transform: translateY(-2px); }
         .btn-ico:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -156,7 +156,9 @@
             font-weight: 700;
             font-size: 0.9rem;
             margin-bottom: 0.45rem;
+            cursor: pointer;
         }
+        .nota-intervallo:hover, .nota-riga:hover { background: rgba(44,96,61,0.08); }
         .nota-riga {
             display: grid;
             grid-template-columns: 30px 1fr;
@@ -164,6 +166,7 @@
             align-items: start;
             padding: 0.4rem 0;
             border-bottom: 1px solid rgba(44,96,61,0.15);
+            cursor: pointer;
         }
         .nota-riga:last-child { border-bottom: none; }
         .nota-num {
@@ -250,7 +253,8 @@
             padding: 0.5rem 0.7rem;
             font-size: 0.92rem;
         }
-        #elencoTratte .nome-tratta { font-weight: 700; }
+        #elencoTratte .nome-tratta { font-weight: 700; cursor: pointer; text-decoration: underline dotted transparent; }
+        #elencoTratte .nome-tratta:hover { text-decoration-color: currentColor; }
         #elencoTratte .meta-tratta { font-size: 0.8rem; opacity: 0.85; text-align: right; margin-left: auto; }
 
         .overlay {
@@ -374,7 +378,7 @@
         .toast {
             position: fixed;
             left: 50%;
-            bottom: 1.2rem;
+            bottom: 46px;
             transform: translateX(-50%);
             z-index: 3000;
             background: #1e4a2a;
@@ -446,7 +450,7 @@
         .controllo-satellite {
             position: fixed;
             right: 12px;
-            bottom: 34px;
+            bottom: 44px;
             z-index: 1200;
             display: flex;
             align-items: center;
@@ -465,6 +469,44 @@
             cursor: pointer;
         }
         .controllo-satellite input[type="range"]:disabled { opacity: 0.4; cursor: default; }
+
+        .ticker-istruzioni {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 34px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            background: #1e4a2a;
+            border-top: 2px solid #a4bb5b;
+            color: #d4e68a;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            pointer-events: none;
+        }
+        .ticker-traccia {
+            display: flex;
+            flex-wrap: nowrap;
+            width: max-content;
+            white-space: nowrap;
+            will-change: transform;
+            animation: scorrimentoTicker 90s linear infinite;
+        }
+        .ticker-item { display: inline-flex; align-items: center; padding: 0 1.4rem; }
+        .ticker-item::after {
+            content: '◆';
+            margin-left: 2.8rem;
+            color: #a4bb5b;
+            font-size: 0.65rem;
+        }
+        @keyframes scorrimentoTicker {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
 
         @keyframes dashTrattaCorrente {
             from { stroke-dashoffset: 0; }
@@ -490,7 +532,7 @@
             font-size: 0.9rem;
             cursor: pointer;
         }
-        .stile-opzione.selezionato { background: rgba(164,187,91,0.4); box-shadow: inset 0 0 0 2px #2c603d; }
+        .stile-opzione.selezionato { background: rgba(164,187,91,0.4); border-color: #173a22; outline: 2px solid #2c603d; outline-offset: -3px; }
         .stile-opzione .anteprima { position: relative; display: block; width: 84px; height: 22px; flex-shrink: 0; }
         .stile-opzione .anteprima i {
             position: absolute;
@@ -561,7 +603,7 @@
             .toolbar-mappa > .btn-ico, .search-bar > .btn-ico { flex: 0 0 42px; }
             .btn-ico svg { width: 19px; height: 19px; }
             .search-bar { flex: 1 1 160px; min-width: 120px; height: 42px; }
-            .pannello-tratte { left: 8px; bottom: 40px; width: calc(100vw - 16px); }
+            .pannello-tratte { left: 8px; bottom: 44px; width: calc(100vw - 16px); }
             .finestra { padding: 0.9rem; }
         }
     </style>
@@ -721,6 +763,9 @@
                 <button type="button" class="btn-ico mini" id="btnEsportaBackup" title="Backup JSON" aria-label="Backup JSON">
                     <svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>
                 </button>
+                <button type="button" class="btn-ico mini" id="btnGoogleDrive" title="Invia su Google Drive" aria-label="Invia su Google Drive">
+                    <svg viewBox="0 0 24 24"><path d="M9 3h6l6 10-3 5H6l-3-5z"/><path d="M9 3l3 5 3-5M6 18l3-10M18 18l-3-10M3 13h18"/></svg>
+                </button>
                 <button type="button" class="btn-ico mini" id="btnImportaBackup" title="Importa JSON" aria-label="Importa JSON">
                     <svg viewBox="0 0 24 24"><path d="M12 15V3M7 8l5-5 5 5M4 21h16"/></svg>
                 </button>
@@ -745,6 +790,10 @@
 
 <div class="loupe" id="loupe" hidden><div id="loupeMappa"></div></div>
 
+<div class="ticker-istruzioni" id="tickerIstruzioni" aria-label="Istruzioni d'uso dell'editor percorsi">
+    <div class="ticker-traccia" id="tickerTraccia"></div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     const COLORI = ['#c0392b', '#2c603d', '#e67e22', '#2980b9', '#8e44ad', '#16a085', '#d35400', '#7f8c8d'];
@@ -761,6 +810,14 @@
     const SNAP_PUNTO = 18;
     const SNAP_LINEA = 12;
     const CHIAVE_STORAGE = 'routeditor.percorsi.v1';
+    const ISTRUZIONI = [
+        'metti i punti in ORDINE di percorrenza del giro. puoi leggere i sensi unici',
+        'crea il minor numero di TRATTE possibili, usa una TRATTA per ogni via, e i RAMI per i rientri (le tratte sono identificate dai numeri, i rami dalle lettere)',
+        'metti i PUNTI in corrispondenza di incroci o punti da segnalare',
+        'puoi creare delle NOTE per ogni punto',
+        'puoi modificare lo STILE delle linee per specificare come si lavora su quella strada',
+        'RICORDA: i percorsi che crei sono salvati in locale. devi ESPORTARLI una volta che hai finito.'
+    ];
 
     let map, layerEditor, layerViewer, layerSearch;
     let punti = [];
@@ -1085,6 +1142,29 @@
         document.getElementById('status').textContent = messaggio;
     }
 
+    function avviaTickerIstruzioni() {
+        const traccia = document.getElementById('tickerTraccia');
+        if (!traccia || !ISTRUZIONI.length) return;
+        const inizio = Math.floor(Math.random() * ISTRUZIONI.length);
+        const sequenza = ISTRUZIONI.map((_, i) => ISTRUZIONI[(inizio + i) % ISTRUZIONI.length]);
+        traccia.innerHTML = '';
+        traccia.style.animation = 'none';
+        for (let copia = 0; copia < 2; copia++) {
+            sequenza.forEach(testo => {
+                const item = document.createElement('span');
+                item.className = 'ticker-item';
+                item.textContent = testo;
+                traccia.appendChild(item);
+            });
+        }
+        void traccia.offsetWidth;
+        traccia.style.animation = '';
+        requestAnimationFrame(() => {
+            const larghezza = traccia.scrollWidth / 2;
+            traccia.style.animationDuration = Math.max(45, Math.round(larghezza / 70)) + 's';
+        });
+    }
+
     function getPunto(id) {
         return punti.find(p => p.id === id) || null;
     }
@@ -1165,6 +1245,51 @@
     function prossimoColore() {
         const usati = new Set(segmenti.map(s => s.colore).filter(Boolean));
         return COLORI.find(c => !usati.has(c)) || COLORI[segmenti.length % COLORI.length];
+    }
+
+    function coloreContrasto(hex) {
+        const testo = String(hex || '').replace('#', '');
+        if (testo.length < 6) return '#ffffff';
+        const r = parseInt(testo.slice(0, 2), 16) || 0;
+        const g = parseInt(testo.slice(2, 4), 16) || 0;
+        const b = parseInt(testo.slice(4, 6), 16) || 0;
+        const luminanza = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminanza > 0.62 ? '#173a22' : '#ffffff';
+    }
+
+    function puntiInquadraturaTratta(seg, trovaPunto) {
+        const ids = new Set((seg && seg.punti ? seg.punti : []).map(m => m.pid).filter(Boolean));
+        if (seg) diramazioniRicorsive(seg).forEach(({ dir }) => {
+            puntiDiramazione(dir).forEach(id => { if (id) ids.add(id); });
+        });
+        return [...ids].map(trovaPunto).filter(Boolean);
+    }
+
+    function opzioniInquadratura() {
+        const noteAperte = modo === 'viewer' && !document.getElementById('pannelloNote').hidden;
+        const tratteAperte = modo === 'editor' && !document.getElementById('pannelloTratte').hidden;
+        return {
+            paddingTopLeft: [tratteAperte ? 350 : 70, 70],
+            paddingBottomRight: [noteAperte ? 380 : 70, 70],
+            maxZoom: 18,
+            duration: 0.9
+        };
+    }
+
+    function inquadraTratta(seg, trovaPunto = getPunto) {
+        const elenco = puntiInquadraturaTratta(seg, trovaPunto);
+        if (!elenco.length) return;
+        if (elenco.length === 1) {
+            map.flyTo([elenco[0].lat, elenco[0].lng], 18, opzioniInquadratura());
+            return;
+        }
+        const bounds = L.latLngBounds(elenco.map(p => [p.lat, p.lng]));
+        map.flyToBounds(bounds, opzioniInquadratura());
+    }
+
+    function inquadraPunto(p) {
+        if (!p) return;
+        map.flyTo([p.lat, p.lng], 18, opzioniInquadratura());
     }
 
     function numeriDelPunto(pid) {
@@ -1868,12 +1993,14 @@
         gruppi.forEach(g => {
             const div = document.createElement('div');
             div.className = 'nota-gruppo';
-            let html = `<div class="nota-intervallo">${escapeHtml(g.intervallo)}</div>`;
+            const sfondo = g.colore || '#1e4a2a';
+            const testoContrasto = coloreContrasto(sfondo);
+            let html = `<div class="nota-intervallo" data-seg-id="${escapeHtml(g.seg.id)}" title="Vai alla tratta ${escapeHtml(g.intervallo)}" style="background:${sfondo};color:${testoContrasto}">${escapeHtml(g.intervallo)}</div>`;
             g.note.forEach(n => {
                 const testo = escapeHtml((n.p.note && n.p.note.testo) || '').replace(/\n/g, '<br>');
                 const immagini = Array.isArray(n.p.note && n.p.note.immagini) ? n.p.note.immagini : [];
-                html += `<div class="nota-riga">` +
-                    `<div class="nota-num">${Number(n.notaNumero) || 1}</div>` +
+                html += `<div class="nota-riga" data-pid="${escapeHtml(n.p.id)}" title="Vai al punto della nota">` +
+                    `<div class="nota-num" style="background:${sfondo};color:${testoContrasto}">${Number(n.notaNumero) || 1}</div>` +
                     `<div class="nota-testo">${testo || '—'}</div>` +
                     (immagini.length ? `<div class="nota-mini-immagini">` +
                         immagini.slice(0, 4).map(src => `<img src="${escapeHtml(src)}" alt="Immagine nota">`).join('') +
@@ -1895,7 +2022,7 @@
         segmenti.forEach((seg, i) => {
             const li = document.createElement('li');
             const selezionato = scambioNomeId === seg.id;
-            li.innerHTML = `<span class="nome-tratta" style="color:${coloreTratta(seg, i)}">${escapeHtml(etichettaTratta(seg))}</span>` +
+            li.innerHTML = `<span class="nome-tratta" data-id="${seg.id}" title="Vai alla tratta" style="color:${coloreTratta(seg, i)}">${escapeHtml(etichettaTratta(seg))}</span>` +
                 `<span class="meta-tratta">${seg.punti.length} punti<br>${formatKm(lunghezzaSegmento(seg))}</span>` +
                 (seg.nome ? `<button type="button" class="row-scambia${selezionato ? ' selezionato' : ''}" data-id="${seg.id}" title="Scambia il nome con un'altra tratta" aria-label="Scambia il nome con un'altra tratta">` +
                     `<svg viewBox="0 0 24 24"><path d="M4 8h14M15 5l3 3-3 3M20 16H6M9 13l-3 3 3 3"/></svg>` +
@@ -2043,6 +2170,25 @@
     function eliminaAppartenenza(segId, pid) {
         const seg = segmenti.find(s => s.id === segId);
         if (!seg) return;
+        const eraEstremo = seg.punti.length > 1 && (
+            (seg.punti[0] && seg.punti[0].pid === pid) ||
+            (seg.punti[seg.punti.length - 1] && seg.punti[seg.punti.length - 1].pid === pid)
+        );
+        let promuovi = null;
+        if (eraEstremo) {
+            const estremo = getPunto(pid);
+            const intermedi = seg.punti
+                .filter(m => m.pid !== pid)
+                .map(m => ({ mem: m, p: getPunto(m.pid) }))
+                .filter(x => x.p && x.p.senzaNumero && !x.p.etichetta);
+            if (estremo && intermedi.length) {
+                intermedi.sort((a, b) =>
+                    Math.hypot(a.p.lat - estremo.lat, a.p.lng - estremo.lng) -
+                    Math.hypot(b.p.lat - estremo.lat, b.p.lng - estremo.lng)
+                );
+                promuovi = intermedi[0].mem;
+            }
+        }
         seg.punti = seg.punti.filter(m => m.pid !== pid);
         const rimuoviDaDiramazioni = lista => (Array.isArray(lista) ? lista : []).map(d => {
             d.punti = (Array.isArray(d.punti) ? d.punti : []).filter(m => m.pid !== pid);
@@ -2050,6 +2196,23 @@
             return d;
         }).filter(d => d.a !== pid && d.b !== pid);
         seg.diramazioni = rimuoviDaDiramazioni(seg.diramazioni);
+        if (promuovi) {
+            const vecchioPid = promuovi.pid;
+            const promosso = separaSeCondiviso(seg, promuovi);
+            if (promosso) {
+                promosso.senzaNumero = false;
+                promosso.etichetta = '';
+                const aggiornaDiramazioni = lista => (Array.isArray(lista) ? lista : []).forEach(d => {
+                    if (d.a === vecchioPid) d.a = promosso.id;
+                    if (d.b === vecchioPid) d.b = promosso.id;
+                    (Array.isArray(d.punti) ? d.punti : []).forEach(m => {
+                        if (m.pid === vecchioPid) m.pid = promosso.id;
+                    });
+                    aggiornaDiramazioni(d.diramazioni);
+                });
+                aggiornaDiramazioni(seg.diramazioni);
+            }
+        }
         pulisciDiramazioni();
         if (!seg.punti.length && !diramazioniRicorsive(seg).length) {
             eliminaTratta(segId);
@@ -2504,6 +2667,31 @@
     function esportaBackup() {
         downloadBlob(new Blob([JSON.stringify({ versione: 1, percorsi }, null, 2)], { type: 'application/json' }), 'backup-percorsi.json');
         toast('Backup JSON esportato.');
+    }
+
+    async function inviaSuGoogleDrive() {
+        const nome = 'backup-percorsi.json';
+        const blob = new Blob([JSON.stringify({ versione: 1, percorsi }, null, 2)], { type: 'application/json' });
+        const file = typeof File === 'function' ? new File([blob], nome, { type: blob.type, lastModified: Date.now() }) : null;
+        if (file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+                await navigator.share({
+                    files: [file],
+                    title: 'Percorsi ERSU',
+                    text: 'Percorsi salvati con ROUTEDITOR'
+                });
+                toast('Condivisione avviata: scegli Google Drive come destinazione.');
+                return;
+            } catch (e) {
+                if (e && e.name === 'AbortError') return;
+                downloadBlob(blob, nome);
+                toast('Condivisione non riuscita: JSON scaricato per il caricamento manuale.');
+                return;
+            }
+        }
+        downloadBlob(blob, nome);
+        window.open('https://drive.google.com/drive/u/0/my-drive', '_blank', 'noopener,noreferrer');
+        toast('JSON scaricato: caricarlo manualmente su Google Drive.');
     }
 
     function importaBackup(file) {
@@ -3228,6 +3416,7 @@
                 seg,
                 nome: seg.nome || `Tratta ${i + 1}`,
                 intervallo: intervalloTratta(seg),
+                colore: coloreTratta(seg, i),
                 note
             });
         });
@@ -3511,9 +3700,10 @@
         for (const gruppo of gruppiNote) {
             const intestazioneH = 82;
             if (y + intestazioneH + 120 > H2 - 90) nuovaPagina('NOTE (SEGUE)');
-            ctx.fillStyle = '#1e4a2a';
+            const coloreGruppo = gruppo.colore || '#1e4a2a';
+            ctx.fillStyle = coloreGruppo;
             ctx.fillRect(PAD, y, W2 - 2 * PAD, 64);
-            ctx.fillStyle = '#d4e68a';
+            ctx.fillStyle = coloreContrasto(coloreGruppo);
             ctx.font = '700 38px "Josefin Sans", sans-serif';
             ctx.textAlign = 'left';
             ctx.fillText(gruppo.intervallo, PAD + 24, y + 43);
@@ -3533,9 +3723,9 @@
 
                 if (y + blockH > H2 - 90) {
                     nuovaPagina(`NOTE - TRATTA ${gruppo.nome}`);
-                    ctx.fillStyle = '#1e4a2a';
+                    ctx.fillStyle = coloreGruppo;
                     ctx.fillRect(PAD, y, W2 - 2 * PAD, 64);
-                    ctx.fillStyle = '#d4e68a';
+                    ctx.fillStyle = coloreContrasto(coloreGruppo);
                     ctx.font = '700 38px "Josefin Sans", sans-serif';
                     ctx.textAlign = 'left';
                     ctx.fillText(`${gruppo.intervallo} (SEGUE)`, PAD + 24, y + 43);
@@ -3669,10 +3859,29 @@
             toast('Tratta confermata.');
             return;
         }
+        const nome = e.target.closest('.nome-tratta');
+        if (nome) {
+            const seg = segmenti.find(s => s.id === nome.dataset.id);
+            if (seg) inquadraTratta(seg);
+            return;
+        }
         const btn = e.target.closest('.row-x');
         if (!btn) return;
         e.stopPropagation();
         eliminaTratta(btn.dataset.id);
+    });
+
+    document.getElementById('elencoNote').addEventListener('click', e => {
+        if (!routeAperta) return;
+        const riga = e.target.closest('.nota-riga[data-pid]');
+        if (riga) {
+            inquadraPunto(puntoDiRoute(routeAperta, riga.dataset.pid));
+            return;
+        }
+        const intervallo = e.target.closest('.nota-intervallo[data-seg-id]');
+        if (!intervallo) return;
+        const seg = routeAperta.tratte.find(s => s.id === intervallo.dataset.segId);
+        if (seg) inquadraTratta(seg, id => puntoDiRoute(routeAperta, id));
     });
 
     document.getElementById('elencoPercorsi').addEventListener('click', e => {
@@ -3697,6 +3906,7 @@
     });
 
     document.getElementById('btnEsportaBackup').addEventListener('click', esportaBackup);
+    document.getElementById('btnGoogleDrive').addEventListener('click', inviaSuGoogleDrive);
     document.getElementById('btnImportaBackup').addEventListener('click', () => document.getElementById('fileImport').click());
     document.getElementById('fileImport').addEventListener('change', e => {
         if (e.target.files[0]) importaBackup(e.target.files[0]);
@@ -3781,6 +3991,7 @@
     });
     document.getElementById('selComune').addEventListener('change', popolaTerritori);
 
+    avviaTickerIstruzioni();
     iniziaMappa();
 </script>
 </body>
