@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NAV</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        [hidden] { display: none !important; }
+        html, body {
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            overflow: hidden;
+            touch-action: pan-y;
+        }
+        body {
+            background: #e8efd2;
+            color: #2c603d;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #mappa {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            z-index: 0;
+        }
+
+        .brand {
+            position: fixed;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1200;
+            background: linear-gradient(135deg, #1e4a2a, #2c603d);
+            color: #d4e68a;
+            border: 2px solid #a4bb5b;
+            border-radius: 999px;
+            padding: 0.35rem 1rem;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-decoration: none;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+        }
+
+        .widget {
+            position: fixed;
+            z-index: 1200;
+            pointer-events: auto;
+        }
+        .widget-setup { top: 12px; left: 12px; width: min(430px, calc(100vw - 24px)); }
+        .widget-stats { top: 12px; left: 12px; width: 270px; }
+        .widget-dest  { bottom: 12px; left: 12px; width: min(430px, calc(100vw - 24px)); }
+        .widget-liste { top: 12px; right: 12px; width: min(330px, calc(100vw - 24px)); }
+
+        .widget-card {
+            background: rgba(255,255,255,0.93);
+            border: 2px solid #2c603d;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(30,74,42,0.28);
+            backdrop-filter: blur(6px);
+        }
+        .widget-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0.45rem 0.6rem;
+            background: linear-gradient(135deg, #1e4a2a, #2c603d);
+            color: #d4e68a;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .widget-min {
+            width: 26px;
+            height: 26px;
+            flex: 0 0 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(212,230,138,0.75);
+            border-radius: 50%;
+            background: transparent;
+            color: #d4e68a;
+            font-size: 1.1rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .widget-min:hover { background: rgba(212,230,138,0.2); }
+        .widget-body {
+            padding: 0.8rem;
+            max-height: 62vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .widget-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border: 2px solid #2c603d;
+            border-radius: 50%;
+            background: rgba(44,96,61,0.95);
+            color: #d4e68a;
+            cursor: pointer;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+        }
+        .widget-icon:hover { background: #1e4a2a; }
+        .widget-icon svg {
+            width: 22px;
+            height: 22px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .widget-icon .badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 4px;
+            border-radius: 10px;
+            background: #c0392b;
+            color: #fff;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .widget.collapsed { width: auto !important; }
+
+        .riga-input { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+        .riga-input > * { min-width: 0; }
+        input[type=file], select, input[type=number] {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #1e4a2a;
+            background: #fff;
+            border: 2px solid #2c603d;
+            border-radius: 0.65rem;
+            padding: 0.5rem 0.65rem;
+            max-width: 100%;
+        }
+        input[type=file] { flex: 1 1 230px; }
+        select { flex: 1 1 240px; }
+        input[type=number] { width: 84px; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.6rem 0.9rem;
+            border: 2px solid #2c603d;
+            border-radius: 0.75rem;
+            background: #2c603d;
+            color: #a4bb5b;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, transform 0.2s;
+        }
+        .btn:hover:not(:disabled) { background: #1e4a2a; color: #d4e68a; transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .btn-primary { background: #1e4a2a; color: #d4e68a; }
+        .btn-danger { background: #c0392b; border-color: #c0392b; color: #fff; }
+        .btn-small { padding: 0.45rem 0.7rem; font-size: 0.78rem; border-radius: 0.6rem; }
+
+        .messaggio {
+            margin-top: 0.7rem;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            line-height: 1.35;
+        }
+        .messaggio.errore { color: #c0392b; }
+        .sorgente {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            opacity: 0.8;
+        }
+        input[type=file].richiesto {
+            border-color: #c0392b;
+            box-shadow: 0 0 0 3px rgba(192,57,43,0.18);
+        }
+
+        .statistiche { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
+        .stat {
+            background: #1e4a2a;
+            color: #d4e68a;
+            border-radius: 0.7rem;
+            padding: 0.5rem 0.2rem;
+            text-align: center;
+            font-family: 'Josefin Sans', sans-serif;
+        }
+        .stat .val { display: block; font-size: 1.5rem; font-weight: 700; line-height: 1.1; }
+        .stat .lab { display: block; font-size: 0.6rem; letter-spacing: 0.5px; opacity: 0.85; }
+
+        .destinazione {
+            background: linear-gradient(135deg, #1e4a2a 0%, #2c603d 100%);
+            color: #d4e68a;
+        }
+        .destinazione .widget-body { padding: 0.7rem 0.8rem 0.8rem; }
+        .dest-corpo { display: flex; align-items: center; gap: 0.8rem; }
+        .dest-etichetta {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 3.6rem;
+            font-weight: 700;
+            line-height: 1;
+            color: #a4bb5b;
+            min-width: 78px;
+            text-align: center;
+        }
+        .dest-dati { flex: 1; min-width: 0; }
+        .dest-tratta { font-family: 'Josefin Sans', sans-serif; font-size: 1rem; font-weight: 700; letter-spacing: 1px; }
+        .dest-nota { font-size: 0.85rem; line-height: 1.3; margin-top: 0.2rem; overflow-wrap: anywhere; }
+        .dest-bussola {
+            width: 56px; height: 56px; flex: 0 0 56px;
+            border: 2px solid #a4bb5b; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; color: #a4bb5b;
+        }
+        .dest-bussola span { display: inline-block; transition: transform 0.25s linear; }
+        .dest-distanza { font-family: 'Josefin Sans', sans-serif; font-size: 1.25rem; font-weight: 700; margin-top: 0.6rem; color: #fff; }
+        .gps-stato { font-family: 'Josefin Sans', sans-serif; font-size: 0.76rem; font-weight: 600; margin-top: 0.25rem; opacity: 0.9; }
+        .dest-azioni { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.7rem; }
+        .dest-azioni .btn { flex: 1 1 170px; }
+        .completato {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-align: center;
+            padding: 0.8rem 0.3rem;
+            color: #d4e68a;
+        }
+
+        .liste { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+        .lista h3 { font-family: 'Josefin Sans', sans-serif; font-size: 0.78rem; letter-spacing: 1px; margin-bottom: 0.4rem; }
+        .lista ul { list-style: none; max-height: 40vh; overflow-y: auto; }
+        .lista li {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.25rem 0.3rem;
+            border-bottom: 1px dashed rgba(44,96,61,0.25);
+            display: flex; gap: 0.4rem; align-items: baseline;
+        }
+        .lista li .seq { opacity: 0.6; min-width: 24px; }
+        .lista li .et { font-weight: 700; min-width: 28px; }
+        .lista li .tr { opacity: 0.75; font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .lista li.attuale { background: rgba(164,187,91,0.45); border-radius: 0.4rem; }
+        .lista li.fatto { opacity: 0.55; text-decoration: line-through; }
+        .lista .vuoto { opacity: 0.6; font-style: italic; font-weight: 400; }
+
+        .toast {
+            position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%);
+            z-index: 3000;
+            background: #1e4a2a; color: #d4e68a;
+            border: 2px solid #a4bb5b; border-radius: 0.8rem;
+            padding: 0.65rem 1rem;
+            font-family: 'Josefin Sans', sans-serif; font-weight: 700; font-size: 0.9rem;
+            text-align: center; max-width: calc(100% - 2rem);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+        }
+
+        .leaflet-div-icon-nav { background: transparent; border: none; }
+        .pin-nav {
+            display: flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px; border-radius: 50%;
+            border: 2px solid #fff; background: #2c603d; color: #fff;
+            font-family: 'Josefin Sans', sans-serif; font-weight: 700; font-size: 0.72rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+        .pin-nav.fatto { background: #7f8c8d; }
+        .pin-nav.attuale { background: #c0392b; width: 38px; height: 38px; font-size: 0.9rem; }
+
+        @media (max-width: 700px) {
+            .widget-stats, .widget-liste { width: calc(50vw - 14px); }
+            .widget-dest, .widget-setup { width: calc(100vw - 24px); }
+            .widget-dest { bottom: 8px; left: 12px; }
+            .widget-body { max-height: 42vh; }
+            .dest-etichetta { font-size: 2.8rem; min-width: 62px; }
+            .dest-bussola { width: 48px; height: 48px; flex-basis: 48px; font-size: 1.5rem; }
+            .brand { top: 8px; padding: 0.25rem 0.7rem; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="mappa"></div>
+    <a class="brand" href="index.html" title="Torna alla homepage">NAV</a>
+
+    <section class="widget widget-setup" id="widgetSetup">
+        <button type="button" class="widget-icon" data-target="widgetSetup" title="Mostra caricamento percorso" aria-label="Mostra caricamento percorso">
+            <svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+        </button>
+        <div class="widget-card">
+            <div class="widget-head">
+                <span>CARICA PERCORSO</span>
+                <button type="button" class="widget-min" data-target="widgetSetup" title="Riduci a icona" aria-label="Riduci a icona">−</button>
+            </div>
+            <div class="widget-body">
+                <div class="riga-input">
+                    <input type="file" id="fileJson" accept=".json,application/json">
+                    <select id="selPercorso" aria-label="Percorso"></select>
+                </div>
+                <div class="riga-input" style="margin-top:0.7rem;">
+                    <button type="button" class="btn btn-primary" id="btnAvvia">AVVIA NAVIGAZIONE</button>
+                    <label for="raggio" style="font-family:'Josefin Sans',sans-serif;font-size:0.8rem;font-weight:600;">Raggio arrivo (m)</label>
+                    <input type="number" id="raggio" min="5" max="200" step="5" value="25">
+                </div>
+                <div class="riga-input" style="margin-top:0.6rem;">
+                    <button type="button" class="btn btn-small" id="btnCercaMaps">RICERCA IN /maps</button>
+                    <span class="sorgente" id="sorgenteMaps"></span>
+                </div>
+                <div class="messaggio" id="msgSetup" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="widget widget-stats" id="widgetStats" hidden>
+        <button type="button" class="widget-icon" data-target="widgetStats" title="Mostra progresso" aria-label="Mostra progresso">
+            <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+            <span class="badge" id="badgeStats">0</span>
+        </button>
+        <div class="widget-card">
+            <div class="widget-head">
+                <span>PROGRESSO</span>
+                <button type="button" class="widget-min" data-target="widgetStats" title="Riduci a icona" aria-label="Riduci a icona">−</button>
+            </div>
+            <div class="widget-body">
+                <div class="statistiche">
+                    <div class="stat"><span class="val" id="contaRaggiunte">0</span><span class="lab">RAGGIUNTE</span></div>
+                    <div class="stat"><span class="val" id="contaRimaste">0</span><span class="lab">RIMASTE</span></div>
+                    <div class="stat"><span class="val" id="contaTotale">0</span><span class="lab">TOTALE</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="widget widget-dest" id="widgetDest" hidden>
+        <button type="button" class="widget-icon" data-target="widgetDest" title="Mostra destinazione" aria-label="Mostra destinazione">
+            <svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+            <span class="badge" id="badgeDest">1</span>
+        </button>
+        <div class="widget-card destinazione">
+            <div class="widget-head">
+                <span>DESTINAZIONE <span id="idxDest">1</span> / <span id="totDest">0</span></span>
+                <button type="button" class="widget-min" data-target="widgetDest" title="Riduci a icona" aria-label="Riduci a icona">−</button>
+            </div>
+            <div class="widget-body">
+                <div id="destCorpo">
+                    <div class="dest-corpo">
+                        <div class="dest-etichetta" id="destEtichetta">—</div>
+                        <div class="dest-dati">
+                            <div class="dest-tratta" id="destTratta"></div>
+                            <div class="dest-nota" id="destNota"></div>
+                            <div class="gps-stato" id="gpsStato">GPS: non avviato</div>
+                        </div>
+                        <div class="dest-bussola" title="Direzione"><span id="destFreccia">↑</span></div>
+                    </div>
+                    <div class="dest-distanza" id="destDistanza">Distanza: —</div>
+                </div>
+                <div class="completato" id="completato" hidden>PERCORSO COMPLETATO</div>
+                <div class="dest-azioni">
+                    <button type="button" class="btn btn-primary" id="btnSegna">SEGNA COME RAGGIUNTA</button>
+                    <button type="button" class="btn btn-danger btn-small" id="btnReset">AZZERA PROGRESSO</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="widget widget-liste" id="widgetListe" hidden>
+        <button type="button" class="widget-icon" data-target="widgetListe" title="Mostra elenco destinazioni" aria-label="Mostra elenco destinazioni">
+            <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        </button>
+        <div class="widget-card">
+            <div class="widget-head">
+                <span>ELENCO DESTINAZIONI</span>
+                <button type="button" class="widget-min" data-target="widgetListe" title="Riduci a icona" aria-label="Riduci a icona">−</button>
+            </div>
+            <div class="widget-body">
+                <div class="liste">
+                    <div class="lista">
+                        <h3>DA FARE</h3>
+                        <ul id="listaRimaste"></ul>
+                    </div>
+                    <div class="lista">
+                        <h3>RAGGIUNTE</h3>
+                        <ul id="listaRaggiunte"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="toast" id="toast" hidden></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const CHIAVE_PERCORSI = 'nav_percorsi_v1';
+        const CHIAVE_SELEZIONE = 'nav_selezione_v1';
+        const CHIAVE_PROGRESSO = 'nav_progresso_v1';
+        const CHIAVE_RAGGIO = 'nav_raggio_v1';
+
+        let percorsi = [];
+        let percorso = null;
+        let destinazioni = [];
+        let raggiunti = new Set();
+        let indice = 0;
+        let watchId = null;
+        let posizione = null;
+        let map = null;
+        let layerPercorso = null;
+        let layerDestinazioni = null;
+        let markerUtente = null;
+        let cerchioAccuratezza = null;
+        let toastTimer = null;
+
+        const $ = id => document.getElementById(id);
+
+        function toast(testo) {
+            const el = $('toast');
+            el.textContent = testo;
+            el.hidden = false;
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { el.hidden = true; }, 3000);
+        }
+
+        function messaggio(testo, errore = false) {
+            const el = $('msgSetup');
+            el.textContent = testo;
+            el.classList.toggle('errore', errore);
+            el.hidden = !testo;
+        }
+
+        function loadJSON(chiave, fallback) {
+            try {
+                const raw = localStorage.getItem(chiave);
+                return raw ? JSON.parse(raw) : fallback;
+            } catch (e) { return fallback; }
+        }
+
+        function salva(chiave, valore) {
+            try { localStorage.setItem(chiave, JSON.stringify(valore)); } catch (e) {}
+        }
+
+        function normalizzaPercorsi(dati) {
+            let lista = Array.isArray(dati) ? dati : (Array.isArray(dati && dati.percorsi) ? dati.percorsi : [dati]);
+            return lista
+                .filter(r => r && typeof r === 'object' && Array.isArray(r.punti) && Array.isArray(r.tratte))
+                .map(r => {
+                    const punti = r.punti
+                        .filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number')
+                        .map(p => ({ ...p }));
+                    const ids = new Set(punti.map(p => p.id));
+                    const tratte = r.tratte.map((t, i) => ({
+                        id: t.id || 't_' + i,
+                        nome: t.nome || ('Tratta ' + (i + 1)),
+                        colore: t.colore || '#2c603d',
+                        punti: (Array.isArray(t.punti) ? t.punti : [])
+                            .filter(m => m && ids.has(m.pid))
+                            .map(m => ({ pid: m.pid, numero: m.numero == null ? '' : String(m.numero), notaNumero: m.notaNumero || null })),
+                        diramazioni: normalizzaDiramazioni(t.diramazioni, ids)
+                    }));
+                    return {
+                        id: r.id || ('r_' + Math.random().toString(36).slice(2)),
+                        nome: r.nome || 'Percorso senza nome',
+                        comune: r.comune || '',
+                        territorio: r.territorio || '',
+                        veicoli: Array.isArray(r.veicoli) ? r.veicoli : [],
+                        punti,
+                        tratte
+                    };
+                });
+        }
+
+        function normalizzaDiramazioni(lista, ids) {
+            return (Array.isArray(lista) ? lista : [])
+                .filter(d => d && ids.has(d.a) && ids.has(d.b))
+                .map(d => ({
+                    a: d.a,
+                    b: d.b,
+                    punti: (Array.isArray(d.punti) ? d.punti : [])
+                        .filter(m => m && ids.has(m.pid))
+                        .map(m => ({ pid: m.pid, numero: '', notaNumero: m.notaNumero || null })),
+                    etichetta: d.etichetta || d.suffisso || '•',
+                    suffisso: d.suffisso || d.etichetta || '',
+                    diramazioni: normalizzaDiramazioni(d.diramazioni, ids)
+                }));
+        }
+
+        /*
+         * Sequenza destinazioni:
+         * - i punti numerati (01, 02, ...) nell'ordine della tratta;
+         * - ogni diramazione prima del successivo punto numerato della tratta
+         *   su cui è agganciata, usando la posizione del punto "a" nella lista
+         *   dei punti (non l'ordine dell'array "diramazioni");
+         * - ricorsivamente lo stesso per le diramazioni annidate.
+         */
+        function costruisciDestinazioni(route) {
+            const punti = new Map((route.punti || []).map(p => [p.id, p]));
+            const risultato = [];
+            const visti = new Set();
+
+            function aggiungi(pid, etichetta, tipo, tratta) {
+                if (!pid || visti.has(pid)) return;
+                const p = punti.get(pid);
+                if (!p || typeof p.lat !== 'number' || typeof p.lng !== 'number') return;
+                visti.add(pid);
+                risultato.push({
+                    key: pid,
+                    etichetta: String(etichetta || '').trim() || '•',
+                    tipo,
+                    tratta,
+                    lat: p.lat,
+                    lng: p.lng,
+                    nota: (p.note && p.note.testo) ? String(p.note.testo) : ''
+                });
+            }
+
+            function figli(lista, pid) {
+                return (Array.isArray(lista) ? lista : []).filter(d => d && d.a === pid);
+            }
+
+            function espandiDiramazione(dir, tratta) {
+                const etichetta = dir.etichetta || dir.suffisso || '•';
+                const catena = (Array.isArray(dir.punti) ? dir.punti.map(m => m.pid) : []).concat([dir.b]);
+                catena.forEach((pid, i) => {
+                    if (i === catena.length - 1) aggiungi(pid, etichetta, 'diramazione', tratta);
+                    figli(dir.diramazioni, pid).forEach(d => espandiDiramazione(d, tratta));
+                });
+            }
+
+            (route.tratte || []).forEach(t => {
+                const nome = t.nome || 'Tratta';
+                (t.punti || []).forEach(m => {
+                    const numero = String(m.numero || '').trim();
+                    if (/^\d+$/.test(numero)) aggiungi(m.pid, numero, 'tratta', nome);
+                    figli(t.diramazioni, m.pid).forEach(d => espandiDiramazione(d, nome));
+                });
+            });
+            return risultato;
+        }
+
+        function mostraWidget(id, mostra) {
+            $(id).hidden = !mostra;
+        }
+
+        function renderSelect() {
+            const sel = $('selPercorso');
+            const precedente = sel.value;
+            sel.innerHTML = '';
+            percorsi.forEach(r => {
+                const o = document.createElement('option');
+                o.value = r.id;
+                const dove = [r.comune, r.territorio].filter(Boolean).join(' / ');
+                o.textContent = r.nome + (dove ? ' — ' + dove : '');
+                sel.appendChild(o);
+            });
+            if (precedente && percorsi.some(r => r.id === precedente)) sel.value = precedente;
+        }
+
+        function caricaFile(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const dati = JSON.parse(reader.result);
+                    const importati = normalizzaPercorsi(dati);
+                    if (!importati.length) throw new Error('formato');
+                    importati.forEach(r => {
+                        const i = percorsi.findIndex(x => x.id === r.id);
+                        if (i >= 0) percorsi[i] = r; else percorsi.push(r);
+                    });
+                    salva(CHIAVE_PERCORSI, percorsi);
+                    renderSelect();
+                    $('selPercorso').value = importati[0].id;
+                    messaggio(`${importati.length} percorso/i caricato/i. ${importati[0].nome} pronto.`);
+                    if (percorso && percorso.id === importati[0].id) avvia();
+                } catch (e) {
+                    messaggio('File JSON non valido. Usa l\'esportazione di ROUTEDITOR.', true);
+                }
+            };
+            reader.onerror = () => messaggio('Impossibile leggere il file.', true);
+            reader.readAsText(file);
+        }
+
+        async function sorgentiMaps() {
+            const trovati = [];
+            let manifestLetto = false;
+            try {
+                const res = await fetch('maps/manifest.json', { cache: 'no-store' });
+                if (res.ok) {
+                    manifestLetto = true;
+                    const dati = await res.json();
+                    const voci = Array.isArray(dati) ? dati : (Array.isArray(dati && dati.files) ? dati.files : []);
+                    voci.forEach(v => {
+                        const file = typeof v === 'string' ? v : (v.file || v.path || v.nome);
+                        if (!file) return;
+                        const nome = (typeof v === 'object' && (v.nome || v.label)) || file;
+                        const url = 'maps/' + String(file).split('/').map(encodeURIComponent).join('/');
+                        trovati.push({ url, nome: String(nome) });
+                    });
+                }
+            } catch (e) {}
+
+            if (!trovati.length) {
+                try {
+                    const res = await fetch('https://api.github.com/repos/ersudriver/ersuoperator/contents/maps?ref=main', {
+                        headers: { Accept: 'application/vnd.github+json' },
+                        cache: 'no-store'
+                    });
+                    if (res.ok) {
+                        const lista = await res.json();
+                        lista.filter(x => x && x.type === 'file' && /\.json$/i.test(x.name) && x.name.toLowerCase() !== 'manifest.json')
+                            .forEach(x => trovati.push({ url: 'maps/' + encodeURIComponent(x.name), nome: x.name }));
+                        if (trovati.length) return { lista: trovati, fonte: 'github' };
+                    }
+                } catch (e) {}
+            }
+            return { lista: trovati, fonte: manifestLetto ? 'manifest' : null };
+        }
+
+        async function cercaMaps() {
+            const fileInput = $('fileJson');
+            messaggio('Ricerca dei file JSON in /maps…');
+            $('sorgenteMaps').textContent = '';
+            fileInput.classList.remove('richiesto');
+
+            const { lista, fonte } = await sorgentiMaps();
+            let aggiunti = 0;
+            for (const voce of lista) {
+                try {
+                    const res = await fetch(voce.url, { cache: 'no-store' });
+                    if (!res.ok) continue;
+                    normalizzaPercorsi(await res.json()).forEach(r => {
+                        const i = percorsi.findIndex(x => x.id === r.id);
+                        if (i >= 0) percorsi[i] = r; else percorsi.push(r);
+                        aggiunti++;
+                    });
+                } catch (e) {}
+            }
+
+            if (aggiunti) {
+                salva(CHIAVE_PERCORSI, percorsi);
+                renderSelect();
+                messaggio(`${aggiunti} percorso/i caricato/i da /maps.`);
+                $('sorgenteMaps').textContent = fonte === 'github' ? 'Sorgente: GitHub · maps/' : 'Sorgente: maps/manifest.json';
+            } else if (percorsi.length) {
+                messaggio('Nessun nuovo percorso in /maps. Sono disponibili i percorsi già salvati; oppure inserisci un file .json.');
+                $('sorgenteMaps').textContent = '';
+            } else {
+                messaggio('Nessun file JSON trovato in /maps. Inserisci un file .json per continuare.', true);
+                $('sorgenteMaps').textContent = '';
+                fileInput.classList.add('richiesto');
+            }
+            return aggiunti;
+        }
+
+        function avvia() {
+            const id = $('selPercorso').value;
+            percorso = percorsi.find(r => r.id === id) || null;
+            if (!percorso) { messaggio('Carica prima un percorso JSON.', true); return; }
+
+            destinazioni = costruisciDestinazioni(percorso);
+            if (!destinazioni.length) { messaggio('Nessuna destinazione trovata nel percorso.', true); return; }
+
+            const progresso = loadJSON(CHIAVE_PROGRESSO, {});
+            raggiunti = new Set(Array.isArray(progresso[percorso.id]) ? progresso[percorso.id] : []);
+            indice = 0;
+            salva(CHIAVE_SELEZIONE, percorso.id);
+
+            const raggio = Number($('raggio').value) || 25;
+            salva(CHIAVE_RAGGIO, raggio);
+
+            mostraWidget('widgetSetup', false);
+            mostraWidget('widgetStats', true);
+            mostraWidget('widgetDest', true);
+            mostraWidget('widgetListe', true);
+            iniziaMappa();
+            aggiornaUI();
+            avviaGPS();
+        }
+
+        function corrente() {
+            while (indice < destinazioni.length && raggiunti.has(destinazioni[indice].key)) indice++;
+            return destinazioni[indice] || null;
+        }
+
+        function segnaRaggiunta(silenzioso = false) {
+            const d = corrente();
+            if (!d) return;
+            raggiunti.add(d.key);
+            indice++;
+            salvaProgresso();
+            aggiornaUI();
+            if (!silenzioso) {
+                notifica(d);
+                toast(`${d.etichetta} raggiunta — successiva: ${corrente() ? corrente().etichetta : 'fine percorso'}`);
+            }
+        }
+
+        function salvaProgresso() {
+            const progresso = loadJSON(CHIAVE_PROGRESSO, {});
+            progresso[percorso.id] = [...raggiunti];
+            salva(CHIAVE_PROGRESSO, progresso);
+        }
+
+        function resetProgresso() {
+            if (!percorso) return;
+            if (!window.confirm('Azzera tutte le destinazioni raggiunte?')) return;
+            raggiunti = new Set();
+            indice = 0;
+            salvaProgresso();
+            aggiornaUI();
+            toast('Progresso azzerato.');
+        }
+
+        function distanzaMetri(a, b) {
+            const R = 6371000;
+            const dLat = (b.lat - a.lat) * Math.PI / 180;
+            const dLng = (b.lng - a.lng) * Math.PI / 180;
+            const la1 = a.lat * Math.PI / 180;
+            const la2 = b.lat * Math.PI / 180;
+            const h = Math.sin(dLat / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dLng / 2) ** 2;
+            return 2 * R * Math.asin(Math.sqrt(h));
+        }
+
+        function direzione(a, b) {
+            const la1 = a.lat * Math.PI / 180, la2 = b.lat * Math.PI / 180;
+            const dl = (b.lng - a.lng) * Math.PI / 180;
+            const y = Math.sin(dl) * Math.cos(la2);
+            const x = Math.cos(la1) * Math.sin(la2) - Math.sin(la1) * Math.cos(la2) * Math.cos(dl);
+            return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+        }
+
+        function notifica(dest) {
+            try { if (navigator.vibrate) navigator.vibrate([180, 80, 180]); } catch (e) {}
+            try {
+                const Ctx = window.AudioContext || window.webkitAudioContext;
+                if (!Ctx) return;
+                const ctx = new Ctx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = 880;
+                gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + 0.36);
+                osc.onended = () => ctx.close();
+            } catch (e) {}
+        }
+
+        function avviaGPS() {
+            if (!navigator.geolocation) {
+                $('gpsStato').textContent = 'GPS: non disponibile su questo browser';
+                return;
+            }
+            if (navigator.permissions && navigator.permissions.query) {
+                navigator.permissions.query({ name: 'geolocation' })
+                    .then(st => {
+                        if (st.state === 'denied') $('gpsStato').textContent = 'GPS: permesso negato — abilita la posizione nel browser';
+                        st.onchange = () => {
+                            if (st.state === 'denied') $('gpsStato').textContent = 'GPS: permesso negato — abilita la posizione nel browser';
+                        };
+                    })
+                    .catch(() => {});
+            }
+            $('gpsStato').textContent = 'GPS: richiesta del permesso in corso…';
+            const opzioni = { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 };
+            if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+            watchId = navigator.geolocation.watchPosition(
+                p => {
+                    posizione = p.coords;
+                    const accur = Number.isFinite(p.coords.accuracy) ? Math.round(p.coords.accuracy) : null;
+                    $('gpsStato').textContent = 'GPS: attivo' + (accur !== null ? ' · accuratezza ±' + accur + ' m' : '');
+                    aggiornaDistanza();
+                    aggiornaMappaUtente();
+                },
+                err => {
+                    const testi = {
+                        1: 'GPS: permesso negato — abilita la posizione nel browser',
+                        2: 'GPS: posizione non disponibile',
+                        3: 'GPS: timeout — ritento automaticamente'
+                    };
+                    $('gpsStato').textContent = testi[err.code] || 'GPS: errore';
+                },
+                opzioni
+            );
+        }
+
+        function aggiornaDistanza() {
+            const d = corrente();
+            if (!d) return;
+            if (!posizione) {
+                $('destDistanza').textContent = 'Distanza: in attesa del GPS…';
+                return;
+            }
+            const coord = { lat: posizione.latitude, lng: posizione.longitude };
+            const dist = distanzaMetri(coord, d);
+            $('destDistanza').textContent = 'Distanza: ' + (dist < 1000 ? Math.round(dist) + ' m' : (dist / 1000).toFixed(2) + ' km');
+            $('destFreccia').style.transform = 'rotate(' + direzione(coord, d) + 'deg)';
+            const raggio = Number($('raggio').value) || 25;
+            if (dist <= raggio) segnaRaggiunta();
+        }
+
+        function aggiornaUI() {
+            const d = corrente();
+            const totale = destinazioni.length;
+            const fatti = raggiunti.size;
+            $('contaRaggiunte').textContent = fatti;
+            $('contaRimaste').textContent = totale - fatti;
+            $('contaTotale').textContent = totale;
+            $('totDest').textContent = totale;
+            $('idxDest').textContent = d ? (destinazioni.indexOf(d) + 1) : totale;
+            $('badgeStats').textContent = totale - fatti;
+            $('badgeDest').textContent = d ? d.etichetta : '✓';
+
+            $('destCorpo').hidden = !d;
+            $('btnSegna').hidden = !d;
+            $('completato').hidden = !!d;
+
+            if (d) {
+                $('destEtichetta').textContent = d.etichetta;
+                $('destTratta').textContent = d.tratta;
+                $('destNota').textContent = d.nota || '';
+                aggiornaDistanza();
+            }
+
+            const rimaste = $('listaRimaste');
+            const fatte = $('listaRaggiunte');
+            rimaste.innerHTML = '';
+            fatte.innerHTML = '';
+            destinazioni.forEach((x, i) => {
+                const li = document.createElement('li');
+                li.innerHTML = '<span class="seq">' + (i + 1) + '.</span><span class="et">' + x.etichetta + '</span><span class="tr">' + x.tratta + '</span>';
+                if (raggiunti.has(x.key)) {
+                    li.classList.add('fatto');
+                    fatte.appendChild(li);
+                } else {
+                    if (x === d) li.classList.add('attuale');
+                    rimaste.appendChild(li);
+                }
+            });
+            if (!rimaste.children.length) rimaste.innerHTML = '<li class="vuoto">Nessuna destinazione rimasta</li>';
+            if (!fatte.children.length) fatte.innerHTML = '<li class="vuoto">Nessuna destinazione raggiunta</li>';
+
+            aggiornaMarker();
+        }
+
+        function creaMappaBase() {
+            if (map) { map.remove(); map = null; }
+            map = L.map('mappa', { zoomControl: true, attributionControl: true }).setView([43.87, 10.24], 13);
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            layerPercorso = L.layerGroup().addTo(map);
+            layerDestinazioni = L.layerGroup().addTo(map);
+            markerUtente = null;
+            cerchioAccuratezza = null;
+            setTimeout(() => { if (map) map.invalidateSize(); }, 0);
+        }
+
+        function disegnaDiramazioniMappa(lista, punti, colore) {
+            (Array.isArray(lista) ? lista : []).forEach(d => {
+                const ids = [d.a].concat((Array.isArray(d.punti) ? d.punti.map(m => m.pid) : []), [d.b]);
+                const coords = ids.map(id => {
+                    const p = punti.find(x => x.id === id);
+                    return p ? [p.lat, p.lng] : null;
+                }).filter(Boolean);
+                if (coords.length > 1) {
+                    L.polyline(coords, { color: colore, weight: 3, opacity: 0.85, dashArray: '6 5' }).addTo(layerPercorso);
+                }
+                disegnaDiramazioniMappa(d.diramazioni, punti, colore);
+            });
+        }
+
+        function iniziaMappa() {
+            creaMappaBase();
+            const punti = percorso.punti.filter(p => typeof p.lat === 'number' && typeof p.lng === 'number');
+            (percorso.tratte || []).forEach(t => {
+                const coords = (t.punti || []).map(m => {
+                    const p = punti.find(x => x.id === m.pid);
+                    return p ? [p.lat, p.lng] : null;
+                }).filter(Boolean);
+                if (coords.length > 1) {
+                    L.polyline(coords, { color: t.colore || '#2c603d', weight: 4, opacity: 0.8 }).addTo(layerPercorso);
+                }
+                disegnaDiramazioniMappa(t.diramazioni, punti, t.colore || '#2c603d');
+            });
+            if (punti.length) map.fitBounds(L.latLngBounds(punti.map(p => [p.lat, p.lng])), { padding: [25, 25] });
+            aggiornaMarker();
+        }
+
+        function iconaDestinazione(stato, sequenza) {
+            const classe = stato === 'fatto' ? ' fatto' : (stato === 'attuale' ? ' attuale' : '');
+            return L.divIcon({
+                className: 'leaflet-div-icon-nav',
+                html: '<div class="pin-nav' + classe + '">' + sequenza + '</div>',
+                iconSize: stato === 'attuale' ? [38, 38] : [30, 30],
+                iconAnchor: stato === 'attuale' ? [19, 19] : [15, 15]
+            });
+        }
+
+        function aggiornaMarker() {
+            if (!layerDestinazioni) return;
+            layerDestinazioni.clearLayers();
+            const dCorrente = corrente();
+            destinazioni.forEach((d, i) => {
+                const stato = raggiunti.has(d.key) ? 'fatto' : (d === dCorrente ? 'attuale' : 'future');
+                L.marker([d.lat, d.lng], { icon: iconaDestinazione(stato, i + 1) })
+                    .bindPopup('<b>' + d.etichetta + '</b><br>' + d.tratta + (d.nota ? '<br>' + d.nota : ''))
+                    .addTo(layerDestinazioni);
+            });
+            aggiornaMappaUtente();
+        }
+
+        function aggiornaMappaUtente() {
+            if (!map || !posizione) return;
+            const latlng = [posizione.latitude, posizione.longitude];
+            if (!markerUtente) {
+                markerUtente = L.circleMarker(latlng, {
+                    radius: 8, color: '#fff', weight: 3, fillColor: '#2980b9', fillOpacity: 1
+                }).addTo(map).bindPopup('La tua posizione');
+            } else {
+                markerUtente.setLatLng(latlng);
+            }
+            if (Number.isFinite(posizione.accuracy)) {
+                if (!cerchioAccuratezza) cerchioAccuratezza = L.circle(latlng, { radius: posizione.accuracy, color: '#2980b9', weight: 1, fillOpacity: 0.12 }).addTo(map);
+                else { cerchioAccuratezza.setLatLng(latlng); cerchioAccuratezza.setRadius(posizione.accuracy); }
+            }
+        }
+
+        document.querySelectorAll('.widget-min, .widget-icon').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const widget = $(btn.dataset.target);
+                const collapse = !widget.classList.contains('collapsed');
+                widget.classList.toggle('collapsed', collapse);
+                widget.querySelector('.widget-card').hidden = collapse;
+                widget.querySelector('.widget-icon').hidden = !collapse;
+            });
+        });
+        $('fileJson').addEventListener('change', e => { caricaFile(e.target.files[0]); e.target.value = ''; });
+        $('btnAvvia').addEventListener('click', avvia);
+        $('btnCercaMaps').addEventListener('click', () => cercaMaps());
+        $('btnSegna').addEventListener('click', () => segnaRaggiunta(false));
+        $('btnReset').addEventListener('click', resetProgresso);
+        $('raggio').addEventListener('change', () => salva(CHIAVE_RAGGIO, Number($('raggio').value) || 25));
+        window.addEventListener('beforeunload', () => { if (watchId !== null && navigator.geolocation) navigator.geolocation.clearWatch(watchId); });
+
+        (async function init() {
+            percorsi = loadJSON(CHIAVE_PERCORSI, []);
+            renderSelect();
+            const selezionato = loadJSON(CHIAVE_SELEZIONE, null);
+            if (selezionato && percorsi.some(r => r.id === selezionato)) $('selPercorso').value = selezionato;
+            const raggio = loadJSON(CHIAVE_RAGGIO, 25);
+            if (raggio) $('raggio').value = raggio;
+            creaMappaBase();
+            await cercaMaps();
+            if (selezionato && percorsi.some(r => r.id === selezionato)) $('selPercorso').value = selezionato;
+        })();
+    </script>
+</body>
+</html>
