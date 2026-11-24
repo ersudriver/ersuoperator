@@ -299,20 +299,128 @@
         .pin-nav.fatto { background: #7f8c8d; }
         .pin-nav.attuale { background: #c0392b; width: 38px; height: 38px; font-size: 0.9rem; }
 
+        .pin-tappa {
+            display: flex; align-items: center; justify-content: center;
+            width: 34px; height: 34px; border-radius: 50%;
+            border: 2px solid #fff; background: #e67e22; color: #fff;
+            font-size: 1rem; line-height: 1;
+            box-shadow: 0 2px 7px rgba(0,0,0,0.45);
+        }
+
+        /* Cursore della posizione GPS */
+        .cursore-gps {
+            width: 34px; height: 34px;
+            display: flex; align-items: center; justify-content: center;
+            border: 3px solid #fff; border-radius: 50%;
+            background: #2980b9;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.45);
+        }
+        .cursore-gps svg {
+            width: 19px; height: 19px; fill: #fff;
+            transition: transform 0.25s linear;
+        }
+
+        .btn-posizione {
+            position: fixed;
+            top: 50%; right: 16px;
+            transform: translateY(-50%);
+            z-index: 1250;
+            width: 48px; height: 48px;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid #a4bb5b; border-radius: 50%;
+            background: #1e4a2a; color: #d4e68a;
+            cursor: pointer;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.35);
+        }
+        .btn-posizione:hover { background: #2c603d; }
+        .btn-posizione.attivo { background: #2980b9; border-color: #fff; color: #fff; }
+        .btn-posizione svg {
+            width: 24px; height: 24px;
+            fill: none; stroke: currentColor;
+            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+        }
+
         @media (max-width: 700px) {
-            .widget-stats, .widget-liste { width: calc(50vw - 14px); }
-            .widget-dest, .widget-setup { width: calc(100vw - 24px); }
-            .widget-dest { bottom: 8px; left: 12px; }
-            .widget-body { max-height: 42vh; }
-            .dest-etichetta { font-size: 2.8rem; min-width: 62px; }
-            .dest-bussola { width: 48px; height: 48px; flex-basis: 48px; font-size: 1.5rem; }
-            .brand { top: 8px; padding: 0.25rem 0.7rem; font-size: 0.8rem; }
+            .brand {
+                top: 5px;
+                padding: 0.15rem 0.5rem;
+                border-width: 1px;
+                font-size: 0.65rem;
+                letter-spacing: 2px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.28);
+            }
+
+            /* Card compatte, ancorate ai bordi senza sovrapporsi al badge NAV */
+            .widget-setup { top: 34px; left: 8px; width: calc(100vw - 16px); }
+            .widget-stats { top: 34px; left: 8px; width: min(146px, calc(50vw - 12px)); }
+            .widget-liste { top: 34px; right: 8px; width: min(146px, calc(50vw - 12px)); }
+            .widget-dest { bottom: 8px; left: 8px; width: calc(100vw - 16px); }
+
+            .widget-card { border-width: 1px; border-radius: 0.7rem; box-shadow: 0 3px 10px rgba(30,74,42,0.3); }
+            .widget-head { padding: 0.28rem 0.4rem; font-size: 0.66rem; letter-spacing: 0.5px; }
+            .widget-min {
+                width: 22px; height: 22px; flex-basis: 22px;
+                border-width: 1px; font-size: 0.95rem;
+            }
+            .widget-body { padding: 0.45rem; max-height: 27vh; }
+            .widget-icon { width: 40px; height: 40px; border-width: 1px; }
+            .widget-icon svg { width: 18px; height: 18px; }
+            .widget-icon .badge { top: -4px; right: -4px; min-width: 17px; height: 17px; font-size: 0.58rem; }
+
+            /* Caricamento percorso: campi su righe separate e testo ridotto */
+            .riga-input { gap: 0.35rem; }
+            input[type=file], select, input[type=number], .btn {
+                font-size: 0.78rem;
+                padding: 0.38rem 0.45rem;
+                border-width: 1px;
+            }
+            input[type=file], select { flex: 1 1 100%; width: 100%; font-size: 0.72rem; }
+            input[type=number] { width: 64px; flex: 0 0 64px; }
+            .btn { border-radius: 0.5rem; }
+            .btn-small { padding: 0.3rem 0.45rem; font-size: 0.7rem; }
+            .messaggio { font-size: 0.74rem; margin-top: 0.45rem; line-height: 1.25; }
+            .sorgente { font-size: 0.66rem; }
+
+            /* Progresso: tre numeri compatti */
+            .statistiche { gap: 0.2rem; }
+            .stat { padding: 0.3rem 0.05rem; border-radius: 0.45rem; }
+            .stat .val { font-size: 1.05rem; }
+            .stat .lab { font-size: 0.47rem; letter-spacing: 0; }
+
+            /* Destinazione: una sola riga compatta + distanza e pulsanti */
+            .destinazione .widget-body { padding: 0.45rem 0.5rem 0.5rem; }
+            .dest-corpo { gap: 0.45rem; }
+            .dest-etichetta { font-size: 2.1rem; min-width: 48px; }
+            .dest-tratta { font-size: 0.78rem; letter-spacing: 0.5px; }
+            .dest-nota { font-size: 0.7rem; line-height: 1.2; max-height: 2.4em; overflow: hidden; }
+            .dest-bussola { width: 38px; height: 38px; flex-basis: 38px; font-size: 1.25rem; border-width: 1px; }
+            .dest-distanza { font-size: 0.95rem; margin-top: 0.35rem; }
+            .gps-stato { font-size: 0.64rem; margin-top: 0.15rem; }
+            .dest-azioni { gap: 0.35rem; margin-top: 0.45rem; }
+            .dest-azioni .btn { flex: 1 1 100%; }
+            .completato { font-size: 0.95rem; padding: 0.45rem 0.2rem; }
+
+            /* Elenchi: colonna singola, due liste scrollabili */
+            .liste { grid-template-columns: 1fr; gap: 0.3rem; }
+            .lista h3 { font-size: 0.66rem; margin-bottom: 0.2rem; }
+            .lista ul { max-height: 11vh; }
+            .lista li { font-size: 0.7rem; padding: 0.16rem 0.2rem; gap: 0.3rem; }
+            .lista li .seq { min-width: 18px; }
+            .lista li .et { min-width: 22px; }
+            .lista li .tr { font-size: 0.62rem; }
+
+            .toast { bottom: 8px; padding: 0.45rem 0.7rem; font-size: 0.78rem; border-width: 1px; }
+            .btn-posizione { right: 8px; width: 42px; height: 42px; border-width: 1px; }
+            .btn-posizione svg { width: 20px; height: 20px; }
         }
     </style>
 </head>
 <body>
     <div id="mappa"></div>
     <a class="brand" href="index.html" title="Torna alla homepage">NAV</a>
+    <button type="button" class="btn-posizione" id="btnPosizione" title="Mostra la mia posizione" aria-label="Mostra la mia posizione">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>
+    </button>
 
     <section class="widget widget-setup" id="widgetSetup">
         <button type="button" class="widget-icon" data-target="widgetSetup" title="Mostra caricamento percorso" aria-label="Mostra caricamento percorso">
@@ -426,17 +534,21 @@
         const CHIAVE_SELEZIONE = 'nav_selezione_v1';
         const CHIAVE_PROGRESSO = 'nav_progresso_v1';
         const CHIAVE_RAGGIO = 'nav_raggio_v1';
+        const CHIAVE_TAPPE = 'nav_tappe_v1';
 
         let percorsi = [];
         let percorso = null;
         let destinazioni = [];
         let raggiunti = new Set();
+        let tappe = {};
         let indice = 0;
         let watchId = null;
         let posizione = null;
+        let direzioneUtente = 0;
         let map = null;
         let layerPercorso = null;
         let layerDestinazioni = null;
+        let layerTappe = null;
         let markerUtente = null;
         let cerchioAccuratezza = null;
         let toastTimer = null;
@@ -467,6 +579,10 @@
 
         function salva(chiave, valore) {
             try { localStorage.setItem(chiave, JSON.stringify(valore)); } catch (e) {}
+        }
+
+        function salvaTappe() {
+            salva(CHIAVE_TAPPE, tappe);
         }
 
         function normalizzaPercorsi(dati) {
@@ -715,6 +831,18 @@
         function segnaRaggiunta(silenzioso = false) {
             const d = corrente();
             if (!d) return;
+            if (!tappe[percorso.id]) tappe[percorso.id] = {};
+            const coordinate = posizione && Number.isFinite(posizione.latitude) && Number.isFinite(posizione.longitude)
+                ? { lat: posizione.latitude, lng: posizione.longitude }
+                : { lat: d.lat, lng: d.lng };
+            tappe[percorso.id][d.key] = {
+                lat: coordinate.lat,
+                lng: coordinate.lng,
+                etichetta: d.etichetta,
+                tratta: d.tratta,
+                ora: new Date().toISOString()
+            };
+            salvaTappe();
             raggiunti.add(d.key);
             indice++;
             salvaProgresso();
@@ -736,6 +864,8 @@
             if (!window.confirm('Azzera tutte le destinazioni raggiunte?')) return;
             raggiunti = new Set();
             indice = 0;
+            delete tappe[percorso.id];
+            salvaTappe();
             salvaProgresso();
             aggiornaUI();
             toast('Progresso azzerato.');
@@ -826,7 +956,9 @@
             const coord = { lat: posizione.latitude, lng: posizione.longitude };
             const dist = distanzaMetri(coord, d);
             $('destDistanza').textContent = 'Distanza: ' + (dist < 1000 ? Math.round(dist) + ' m' : (dist / 1000).toFixed(2) + ' km');
-            $('destFreccia').style.transform = 'rotate(' + direzione(coord, d) + 'deg)';
+            direzioneUtente = direzione(coord, d);
+            $('destFreccia').style.transform = 'rotate(' + direzioneUtente + 'deg)';
+            aggiornaCursore();
             const raggio = Number($('raggio').value) || 25;
             if (dist <= raggio) segnaRaggiunta();
         }
@@ -884,6 +1016,7 @@
             }).addTo(map);
             layerPercorso = L.layerGroup().addTo(map);
             layerDestinazioni = L.layerGroup().addTo(map);
+            layerTappe = L.layerGroup().addTo(map);
             markerUtente = null;
             cerchioAccuratezza = null;
             setTimeout(() => { if (map) map.invalidateSize(); }, 0);
@@ -930,6 +1063,41 @@
             });
         }
 
+        /*
+         * Per ogni tratta parzialmente percorsa mostra un'icona nell'ultimo
+         * punto raggiunto. Quando la tratta è completa l'icona scompare.
+         */
+        function disegnaTappe() {
+            if (!layerTappe || !percorso) return;
+            layerTappe.clearLayers();
+            const registrate = tappe[percorso.id] || {};
+            const gruppi = new Map();
+            destinazioni.forEach(d => {
+                if (!raggiunti.has(d.key)) return;
+                if (!gruppi.has(d.tratta)) gruppi.set(d.tratta, []);
+                gruppi.get(d.tratta).push(d);
+            });
+            gruppi.forEach((lista, tratta) => {
+                const incompleta = destinazioni.some(x => x.tratta === tratta && !raggiunti.has(x.key));
+                if (!incompleta) return;
+                const ultima = lista[lista.length - 1];
+                const reg = registrate[ultima.key];
+                const lat = reg && Number.isFinite(reg.lat) ? reg.lat : ultima.lat;
+                const lng = reg && Number.isFinite(reg.lng) ? reg.lng : ultima.lng;
+                if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+                const quando = reg && reg.ora ? new Date(reg.ora).toLocaleString('it-IT') : '';
+                L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        className: 'leaflet-div-icon-nav',
+                        html: '<div class="pin-tappa">⚑</div>',
+                        iconSize: [34, 34], iconAnchor: [17, 17]
+                    }),
+                    zIndexOffset: 500
+                }).bindPopup('<b>Tappa raggiunta</b><br>' + ultima.etichetta + ' — ' + tratta + (quando ? '<br>' + quando : ''))
+                  .addTo(layerTappe);
+            });
+        }
+
         function aggiornaMarker() {
             if (!layerDestinazioni) return;
             layerDestinazioni.clearLayers();
@@ -940,32 +1108,65 @@
                     .bindPopup('<b>' + d.etichetta + '</b><br>' + d.tratta + (d.nota ? '<br>' + d.nota : ''))
                     .addTo(layerDestinazioni);
             });
+            disegnaTappe();
             aggiornaMappaUtente();
+        }
+
+        function iconaUtente() {
+            return L.divIcon({
+                className: 'leaflet-div-icon-nav',
+                html: '<div class="cursore-gps"><svg viewBox="0 0 24 24"><path d="M12 2 L20 22 L12 17 L4 22 Z"/></svg></div>',
+                iconSize: [34, 34], iconAnchor: [17, 17]
+            });
+        }
+
+        function aggiornaCursore() {
+            if (!markerUtente) return;
+            const el = markerUtente.getElement();
+            const svg = el && el.querySelector('.cursore-gps svg');
+            if (svg) svg.style.transform = 'rotate(' + direzioneUtente + 'deg)';
         }
 
         function aggiornaMappaUtente() {
             if (!map || !posizione) return;
             const latlng = [posizione.latitude, posizione.longitude];
             if (!markerUtente) {
-                markerUtente = L.circleMarker(latlng, {
-                    radius: 8, color: '#fff', weight: 3, fillColor: '#2980b9', fillOpacity: 1
-                }).addTo(map).bindPopup('La tua posizione');
+                markerUtente = L.marker(latlng, { icon: iconaUtente(), zIndexOffset: 1000 })
+                    .addTo(map).bindPopup('La tua posizione');
             } else {
                 markerUtente.setLatLng(latlng);
             }
+            aggiornaCursore();
+            $('btnPosizione').classList.add('attivo');
             if (Number.isFinite(posizione.accuracy)) {
                 if (!cerchioAccuratezza) cerchioAccuratezza = L.circle(latlng, { radius: posizione.accuracy, color: '#2980b9', weight: 1, fillOpacity: 0.12 }).addTo(map);
                 else { cerchioAccuratezza.setLatLng(latlng); cerchioAccuratezza.setRadius(posizione.accuracy); }
             }
         }
 
+        function mostraPosizione() {
+            if (!map) return;
+            if (!navigator.geolocation) { toast('GPS non disponibile su questo browser.'); return; }
+            if (!posizione) {
+                if (watchId === null) avviaGPS();
+                toast('In attesa del GPS…');
+                return;
+            }
+            map.flyTo([posizione.latitude, posizione.longitude], Math.max(map.getZoom(), 17), { duration: 0.8 });
+            aggiornaMappaUtente();
+            toast('Posizione visualizzata.');
+        }
+
+        function impostaCollasso(widget, collassato) {
+            widget.classList.toggle('collapsed', collassato);
+            widget.querySelector('.widget-card').hidden = collassato;
+            widget.querySelector('.widget-icon').hidden = !collassato;
+        }
+
         document.querySelectorAll('.widget-min, .widget-icon').forEach(btn => {
             btn.addEventListener('click', () => {
                 const widget = $(btn.dataset.target);
-                const collapse = !widget.classList.contains('collapsed');
-                widget.classList.toggle('collapsed', collapse);
-                widget.querySelector('.widget-card').hidden = collapse;
-                widget.querySelector('.widget-icon').hidden = !collapse;
+                impostaCollasso(widget, !widget.classList.contains('collapsed'));
             });
         });
         $('fileJson').addEventListener('change', e => { caricaFile(e.target.files[0]); e.target.value = ''; });
@@ -973,16 +1174,19 @@
         $('btnCercaMaps').addEventListener('click', () => cercaMaps());
         $('btnSegna').addEventListener('click', () => segnaRaggiunta(false));
         $('btnReset').addEventListener('click', resetProgresso);
+        $('btnPosizione').addEventListener('click', mostraPosizione);
         $('raggio').addEventListener('change', () => salva(CHIAVE_RAGGIO, Number($('raggio').value) || 25));
         window.addEventListener('beforeunload', () => { if (watchId !== null && navigator.geolocation) navigator.geolocation.clearWatch(watchId); });
 
         (async function init() {
             percorsi = loadJSON(CHIAVE_PERCORSI, []);
+            tappe = loadJSON(CHIAVE_TAPPE, {});
             renderSelect();
             const selezionato = loadJSON(CHIAVE_SELEZIONE, null);
             if (selezionato && percorsi.some(r => r.id === selezionato)) $('selPercorso').value = selezionato;
             const raggio = loadJSON(CHIAVE_RAGGIO, 25);
             if (raggio) $('raggio').value = raggio;
+            if (window.innerWidth <= 700) impostaCollasso($('widgetListe'), true);
             creaMappaBase();
             await cercaMaps();
             if (selezionato && percorsi.some(r => r.id === selezionato)) $('selPercorso').value = selezionato;
